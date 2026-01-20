@@ -5,7 +5,6 @@
 #include "../../gfx/draw_direct.h"
 #include "../../../gen/assets/sdk_default.h"
 #include "../../../gen/modules_enabled.h"
-#include "../../../gen/bank_nums.h"
 
 #define SPRITE_CHAR_W 8
 #define SPRITE_CHAR_H 8
@@ -71,7 +70,7 @@ void text_print_string(char* str) {
                 }
                 vram[VX] = text_cursor_x;
                 vram[GX] = ((text_tmp & 0x0F) << 3) | font_offset_x;
-                vram[GY] = ((text_tmp & 0xF0) >> 1) | font_offset_y;
+                vram[GY] = (text_tmp & 0x70) | font_offset_y;
                 vram[START] = 1;
                 text_cursor_x += TEXT_CHAR_WIDTH;
                 wait();
@@ -101,7 +100,7 @@ const unsigned char decimal_conversion_table[100] = {
 void text_sprint_num(char* s, unsigned char num) {
     if(num > 99) return;
     push_rom_bank();
-    change_rom_bank(BANK_PROG0);
+change_rom_bank(0xFD);
     num = decimal_conversion_table[num];
     *s = (num >> 4) + '0';
     *(s+1) = (num & 0xF) + '0';
