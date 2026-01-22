@@ -19,6 +19,10 @@ void soundTest(){
     //play_sound_effect(ASSET__audio__hit_bin_ID,1);
     play_sound_effect(ASSET__audio__flongNew_sfx_ID,(char)1);
 }
+void soundTestA(){
+    //play_sound_effect(ASSET__audio__hit_bin_ID,1);
+    play_sound_effect(ASSET__audio__chirp_sfx_ID,(char)1);
+}
 void boxMotion(){
         //boxSkipFrame = !boxSkipFrame;//simulating half-speed motion
         boxSkipCount++;
@@ -50,18 +54,18 @@ void boxAMotion(){
         boxA_y += dyA;
         if(boxA_x <= 1) {
             dxA = 2;
-            soundTest();
+            soundTestA();
 
         } else if(boxA_x >= 119) {
             dxA = -2;
-            soundTest();
+            soundTestA();
         }
         if(boxA_y <= 8) {
             dyA = 2;
-            soundTest();
+            soundTestA();
         } else if(boxA_y >= 112) {
             dyA = -2;
-            soundTest();
+            soundTestA();
         }
 }
 void main () {
