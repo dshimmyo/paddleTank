@@ -17,7 +17,7 @@ char dx = 1, dy = 1;
 char dxA = -2, dyA = 2;
 void soundTest(){
     //play_sound_effect(ASSET__audio__hit_bin_ID,1);
-    play_sound_effect(ASSET__audio__flong_sfx_ID,(char)1);
+    play_sound_effect(ASSET__audio__flongNew_sfx_ID,(char)1);
 }
 void boxMotion(){
         //boxSkipFrame = !boxSkipFrame;//simulating half-speed motion
