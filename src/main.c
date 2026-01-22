@@ -3,45 +3,54 @@
 
 char box_x = 30, box_y = 20;
 char boxA_x = 20, boxA_y = 30;
+char boxSkipFrames = 3;
+char boxSkipCount = 0;
+char bgColor = 0;
 
 char dx = 1, dy = 1;
-char dxA = -1, dyA = 1;
+char dxA = -2, dyA = 2;
 
 void boxMotion(){
-        box_x += dx;
-        box_y += dy;
-        if(box_x == 1) {
-            dx = 1;
-        } else if(box_x == 119) {
-            dx = -1;
-        }
-        if(box_y == 8) {
-            dy = 1;
-        } else if(box_y == 112) {
-            dy = -1;
+        //boxSkipFrame = !boxSkipFrame;//simulating half-speed motion
+        boxSkipCount++;
+        if (boxSkipCount >= boxSkipFrames)
+        {
+            boxSkipCount=0;
+            box_x += dx;
+            box_y += dy;
+            if(box_x == 1) {
+                dx = 1;
+            } else if(box_x == 119) {
+                dx = -1;
+            }
+            if(box_y == 8) {
+                dy = 1;
+            } else if(box_y == 112) {
+                dy = -1;
+            }
         }
 }
 void boxAMotion(){
         boxA_x += dxA;
         boxA_y += dyA;
-        if(boxA_x == 1) {
-            dxA = 1;
-        } else if(boxA_x == 119) {
-            dxA = -1;
+        if(boxA_x <= 1) {
+            dxA = 2;
+        } else if(boxA_x >= 119) {
+            dxA = -2;
         }
-        if(boxA_y == 8) {
-            dyA = 1;
-        } else if(boxA_y == 112) {
-            dyA = -1;
+        if(boxA_y <= 8) {
+            dyA = 2;
+        } else if(boxA_y >= 112) {
+            dyA = -2;
         }
 }
 void main () {
     while (1) {                                     //  Run forever
-        queue_clear_screen(3);
+        queue_clear_screen(256);//256 black
         queue_draw_box(box_x, box_y, 8, 8, 92);
         queue_draw_box(boxA_x, boxA_y, 8, 8, 127);
 
-        queue_clear_border(0);
+        queue_clear_border(2);
         boxMotion();
         boxAMotion();
         // box_x += dx;
