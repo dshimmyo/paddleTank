@@ -104,15 +104,15 @@ char buttons_to_byte(int player1_buttons) {
 void inputButtonsDraw()
 {
     //input testing
-    if (player1_buttons==0){queue_draw_box(1,BUTTONTESTPOSY,8,2,20);}
-    if (player1_buttons & PMASK0){queue_draw_box(11,BUTTONTESTPOSY,8,2,182);}
-    if (player1_buttons & PMASK1){queue_draw_box(21,BUTTONTESTPOSY,8,2,182);}
-    if (player1_buttons & PMASK2){queue_draw_box(31,BUTTONTESTPOSY,8,2,182);}
-    if (player1_buttons & PMASK3){queue_draw_box(41,BUTTONTESTPOSY,8,2,182);}
-    if (player1_buttons & PMASK4){queue_draw_box(51,BUTTONTESTPOSY,8,2,182);}
-    if (player1_buttons & PMASK5){queue_draw_box(61,BUTTONTESTPOSY,8,2,182);}
-    if (player1_buttons & PMASK6){queue_draw_box(71,BUTTONTESTPOSY,8,2,182);}
-    if (player1_buttons & PMASK7){queue_draw_box(81,BUTTONTESTPOSY,8,2,182);}
+    //if (player1_buttons==0){queue_draw_box(1,BUTTONTESTPOSY,8,2,20);}//no button press
+    if (player1_buttons & PMASK0){queue_draw_box(1,BUTTONTESTPOSY,8,2,182);}
+    if (player1_buttons & PMASK1){queue_draw_box(11,BUTTONTESTPOSY,8,2,182);}
+    if (player1_buttons & PMASK2){queue_draw_box(21,BUTTONTESTPOSY,8,2,182);}
+    if (player1_buttons & PMASK3){queue_draw_box(31,BUTTONTESTPOSY,8,2,182);}
+    if (player1_buttons & PMASK4){queue_draw_box(41,BUTTONTESTPOSY,8,2,182);}
+    if (player1_buttons & PMASK5){queue_draw_box(51,BUTTONTESTPOSY,8,2,182);}
+    if (player1_buttons & PMASK6){queue_draw_box(61,BUTTONTESTPOSY,8,2,182);}
+    if (player1_buttons & PMASK7){queue_draw_box(71,BUTTONTESTPOSY,8,2,182);}
 }
 void inputBinaryDraw()
 {
