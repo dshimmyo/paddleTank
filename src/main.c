@@ -2,10 +2,25 @@
 #include "gt/gfx/draw_queue.h"
 #include "gen/assets/audio.h"
 #include "gt/audio/music.h"
+#include "gt/input.h"
 // #define FEEDBACK_AMT 0x04
 // #define PITCH_MSB 0x10
 // #define PITCH_LSB 0x20
 // #define AMPLITUDE 0x30
+#define BOXCOLOR 92
+#define BOXCOLORA 127
+
+//#define INPUT_MASK_ALL_KEYS (INPUT_MASK_UP|INPUT_MASK_DOWN|INPUT_MASK_LEFT|INPUT_MASK_RIGHT|INPUT_MASK_A|INPUT_MASK_B|INPUT_MASK_C|INPUT_MASK_START)
+
+#define PMASK0 (INPUT_MASK_UP)
+#define PMASK1 (INPUT_MASK_DOWN)
+#define PMASK2 (INPUT_MASK_LEFT)
+#define PMASK3 (INPUT_MASK_RIGHT)
+#define PMASK4 (INPUT_MASK_A)
+#define PMASK5 (INPUT_MASK_B)
+#define PMASK6 (INPUT_MASK_C)
+#define PMASK7 (INPUT_MASK_START)
+
 
 char box_x = 30, box_y = 20;
 char boxA_x = 20, boxA_y = 30;
@@ -70,13 +85,24 @@ void boxAMotion(){
 }
 void main () {
     init_music();
+    
     //play_sound_effect(ASSET__audio__hit_bin);
 
     while (1) {                                     //  Run forever
         queue_clear_screen(256);//256 black
-        queue_draw_box(box_x, box_y, 8, 8, 92);
-        queue_draw_box(boxA_x, boxA_y, 8, 8, 127);
+        queue_draw_box(box_x, box_y, 8, 8, BOXCOLOR);
+        queue_draw_box(boxA_x, boxA_y, 8, 8, BOXCOLORA);
 
+        //input testing
+        if (player1_buttons==0){queue_draw_box(1,7,8,2,20);}
+        if (player1_buttons & PMASK0){queue_draw_box(11,7,8,2,182);}
+        if (player1_buttons & PMASK1){queue_draw_box(21,7,8,2,182);}
+        if (player1_buttons & PMASK2){queue_draw_box(31,7,8,2,182);}
+        if (player1_buttons & PMASK3){queue_draw_box(41,7,8,2,182);}
+        if (player1_buttons & PMASK4){queue_draw_box(51,7,8,2,182);}
+        if (player1_buttons & PMASK5){queue_draw_box(61,7,8,2,182);}
+        if (player1_buttons & PMASK6){queue_draw_box(71,7,8,2,182);}
+        if (player1_buttons & PMASK7){queue_draw_box(81,7,8,2,182);}
         queue_clear_border(2);
         boxMotion();
         boxAMotion();
@@ -85,5 +111,6 @@ void main () {
         await_vsync(1);
         flip_pages();
         tick_music();
+        update_inputs();
     }
 }
