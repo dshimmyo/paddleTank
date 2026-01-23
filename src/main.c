@@ -83,6 +83,55 @@ void boxAMotion(){
             soundTestA();
         }
 }
+// Convert individual button states to a 7-bit byte
+char buttons_to_byte(int player1_buttons) {
+    char result = 0;
+    
+    // This could be optimized further if you know your masks are powers of 2
+    if (player1_buttons & PMASK0) result |= (1 << 0);
+    if (player1_buttons & PMASK1) result |= (1 << 1);
+    if (player1_buttons & PMASK2) result |= (1 << 2);
+    if (player1_buttons & PMASK3) result |= (1 << 3);
+    if (player1_buttons & PMASK4) result |= (1 << 4);
+    if (player1_buttons & PMASK5) result |= (1 << 5);
+    if (player1_buttons & PMASK6) result |= (1 << 6);
+    
+    return result;
+}
+#define BUTTONTESTPOSY 7
+#define BINARYTESTPOSY 10
+
+void inputButtonsDraw()
+{
+    //input testing
+    if (player1_buttons==0){queue_draw_box(1,BUTTONTESTPOSY,8,2,20);}
+    if (player1_buttons & PMASK0){queue_draw_box(11,BUTTONTESTPOSY,8,2,182);}
+    if (player1_buttons & PMASK1){queue_draw_box(21,BUTTONTESTPOSY,8,2,182);}
+    if (player1_buttons & PMASK2){queue_draw_box(31,BUTTONTESTPOSY,8,2,182);}
+    if (player1_buttons & PMASK3){queue_draw_box(41,BUTTONTESTPOSY,8,2,182);}
+    if (player1_buttons & PMASK4){queue_draw_box(51,BUTTONTESTPOSY,8,2,182);}
+    if (player1_buttons & PMASK5){queue_draw_box(61,BUTTONTESTPOSY,8,2,182);}
+    if (player1_buttons & PMASK6){queue_draw_box(71,BUTTONTESTPOSY,8,2,182);}
+    if (player1_buttons & PMASK7){queue_draw_box(81,BUTTONTESTPOSY,8,2,182);}
+}
+void inputBinaryDraw()
+{
+    //inputs mapped as 7 bytes from low to high (right to left)
+    //up,down,left,right,a,b,c
+    //128 possibilities, should map cleanly to pixels from left to right
+    //
+
+    //try to convert inputs detected into a byte, then that byte should easily translate to a pixel position
+    char button_byte;
+    button_byte = buttons_to_byte(player1_buttons);
+    
+    //if (player1_buttons==0){queue_draw_box(64,64,1,1,30);}
+    //unsigned int x_position = button_byte;  // Automatically converts to unsigned int
+    queue_draw_box(0,BINARYTESTPOSY,button_byte,1,182);
+
+}
+
+
 void main () {
     init_music();
     
@@ -93,16 +142,10 @@ void main () {
         queue_draw_box(box_x, box_y, 8, 8, BOXCOLOR);
         queue_draw_box(boxA_x, boxA_y, 8, 8, BOXCOLORA);
 
-        //input testing
-        if (player1_buttons==0){queue_draw_box(1,7,8,2,20);}
-        if (player1_buttons & PMASK0){queue_draw_box(11,7,8,2,182);}
-        if (player1_buttons & PMASK1){queue_draw_box(21,7,8,2,182);}
-        if (player1_buttons & PMASK2){queue_draw_box(31,7,8,2,182);}
-        if (player1_buttons & PMASK3){queue_draw_box(41,7,8,2,182);}
-        if (player1_buttons & PMASK4){queue_draw_box(51,7,8,2,182);}
-        if (player1_buttons & PMASK5){queue_draw_box(61,7,8,2,182);}
-        if (player1_buttons & PMASK6){queue_draw_box(71,7,8,2,182);}
-        if (player1_buttons & PMASK7){queue_draw_box(81,7,8,2,182);}
+        inputButtonsDraw();
+
+        inputBinaryDraw();//interpret button presses as 7 byte number
+
         queue_clear_border(2);
         boxMotion();
         boxAMotion();
