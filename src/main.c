@@ -3,18 +3,13 @@
 #include "gen/assets/audio.h"
 #include "gt/audio/music.h"
 #include "gt/input.h"
-// #define FEEDBACK_AMT 0x04
-// #define PITCH_MSB 0x10
-// #define PITCH_LSB 0x20
-// #define AMPLITUDE 0x30
+
 #define BOXCOLOR 92
 #define BOXCOLORA 127
 #define PADDLECOLOR 7
 #define PADDLEWIDTH 12
 #define PADDLEHEIGHT 4
 #define PADDLEY 110
-char halfPaddleWidth = PADDLEWIDTH/2;
-//#define INPUT_MASK_ALL_KEYS (INPUT_MASK_UP|INPUT_MASK_DOWN|INPUT_MASK_LEFT|INPUT_MASK_RIGHT|INPUT_MASK_A|INPUT_MASK_B|INPUT_MASK_C|INPUT_MASK_START)
 
 #define PMASK0 (INPUT_MASK_UP)
 #define PMASK1 (INPUT_MASK_DOWN)
@@ -47,50 +42,102 @@ void soundTestA(){
     //play_sound_effect(ASSET__audio__hit_bin_ID,1);
     play_sound_effect(ASSET__audio__chirp_sfx_ID,(char)1);
 }
+void soundCol(){
+    play_sound_effect(ASSET__audio__bik_sfx_ID,(char)1);
+}
+bool detectPaddleCollision(char x1,char x2,char y1,char y2){
+
+char px1 = paddleX;//leftmost
+char px2 = paddleX + PADDLEWIDTH;//rightmost bount
+char py2 = PADDLEY;//110 //bottom
+char py1 = PADDLEY - PADDLEHEIGHT;
+
+//flawed code only detects corners in bounds, not intersection
+if ((x1 >= px1 & x1 <= px2) | x2 >= px1 & x2 <= px2){//check box inside paddle horizontally
+    if ((py1 >= y1 & py1 <= y2) | (py2 >= y1 & py2 <= y2)){//check paddle inside box vertically
+        return true;
+    }
+} else {
+    return false;
+}
+
+return false;
+
+}
+bool boxColPrev = false;
+bool boxSkipFrame = false;
 void boxMotion(){
-        //boxSkipFrame = !boxSkipFrame;//simulating half-speed motion
+        boxSkipFrame = !boxSkipFrame;//simulating half-speed motion
         boxSkipCount++;
         if (boxSkipCount >= boxSkipFrames)
         {
             boxSkipCount=0;
-            box_x += dx;
-            box_y += dy;
-            if(box_x == 1) {
-                dx = 1;
-                soundTest();
-            } else if(box_x == 119) {
-                dx = -1;
-                soundTest();
-            }
-            if(box_y == 8) {
-                dy = 1;
-                soundTest();
-
-            } else if(box_y == 112) {
+            if (detectPaddleCollision(box_x,box_x+8,box_y - 8, box_y) & !boxColPrev){
+                boxColPrev = true;
                 dy = -1;
-                soundTest();
+                box_x += dx;
+                box_y = PADDLEY-PADDLEHEIGHT;
+                soundCol();
+            }
+            else 
+            {
+                box_x += dx;
+                box_y += dy;
+                boxColPrev = false;
+                if(box_x == 1) {
+                    dx = 1;
+                    soundTest();
+                } else if(box_x == 119) {
+                    dx = -1;
+                    soundTest();
+                }
+                if(box_y == 8) {
+                    dy = 1;
+                    soundTest();
+                } else if(box_y == 112) {
+                    dy = -1;
+                    soundTest();
+                }
             }
         }
+
 }
 
-void boxAMotion(){
-        boxA_x += dxA;
-        boxA_y += dyA;
-        if(boxA_x <= 1) {
-            dxA = 2;
-            soundTestA();
 
-        } else if(boxA_x >= 119) {
-            dxA = -2;
-            soundTestA();
-        }
-        if(boxA_y <= 8) {
-            dyA = 2;
-            soundTestA();
-        } else if(boxA_y >= 112) {
+bool boxAColPrev = false;
+
+void boxAMotion(){
+
+        if (detectPaddleCollision(boxA_x,boxA_x+8,boxA_y - 8, boxA_y)  & !boxAColPrev){
+            boxAColPrev = true;
+            //dxA = -dxA;
             dyA = -2;
-            soundTestA();
+            boxA_x += dxA;
+            boxA_y = PADDLEY-PADDLEHEIGHT;
+            soundCol();
         }
+            else
+        {
+            boxA_x += dxA;
+            boxA_y += dyA;
+            boxAColPrev = false;
+            if (boxA_x <= 1) {
+                dxA = 2;
+                soundTestA();
+
+            } else if(boxA_x >= 119) {
+                dxA = -2;
+                soundTestA();
+            }
+            if(boxA_y <= 8) {
+                dyA = 2;
+                soundTestA();
+            } else if(boxA_y >= 112) {
+                dyA = -2;
+                soundTestA();
+            }
+        }
+
 }
 // Convert individual button states to a 7-bit byte
 char buttons_to_byte(int player1_buttons) {
@@ -118,6 +165,7 @@ void paddleDraw(char potVal)
         paddlex = 127 - PADDLEWIDTH;
     }
     queue_draw_box(paddlex,PADDLEY,PADDLEWIDTH,PADDLEHEIGHT,PADDLECOLOR);
+    paddleX = paddlex;
 }
 void inputButtonsDraw()
 {
@@ -137,12 +185,6 @@ void inputBinaryDraw()
     //inputs mapped as 7 bytes from low to high (right to left)
     //up,down,left,right,a,b,c
     //128 possibilities, should map cleanly to pixels from left to right
-    //
-
-    //try to convert inputs detected into a byte, then that byte should easily translate to a pixel position
-    
-    //if (player1_buttons==0){queue_draw_box(64,64,1,1,30);}
-    //unsigned int x_position = button_byte;  // Automatically converts to unsigned int
     queue_draw_box(0,BINARYTESTPOSY,button_byte,1,182);
 
 }
@@ -164,6 +206,7 @@ void main () {
         queue_clear_border(2);
         boxMotion();
         boxAMotion();
+
         paddleDraw(button_byte);
         await_draw_queue();
         await_vsync(1);
