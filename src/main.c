@@ -20,7 +20,7 @@
 #define PMASK6 (INPUT_MASK_C)
 #define PMASK7 (INPUT_MASK_START)
 
-
+bool demoMode = true;
 char box_x = 30, box_y = 20;
 char boxA_x = 20, boxA_y = 30;
 char boxSkipFrames = 3;
@@ -155,17 +155,28 @@ char buttons_to_byte(int player1_buttons) {
     return result;
 }
 
-
-void paddleDraw(char potVal)
-{
-    char paddlex=potVal;
+char ClampPaddleX(char paddlex){
     if (paddlex < 1){
         paddlex = 1;
     } else if (paddlex>127-PADDLEWIDTH){
         paddlex = 127 - PADDLEWIDTH;
     }
-    queue_draw_box(paddlex,PADDLEY,PADDLEWIDTH,PADDLEHEIGHT,PADDLECOLOR);
-    paddleX = paddlex;
+    return paddlex;
+}
+void paddleXFromPot(char potVal)
+{
+    char paddlex=potVal;
+    paddleX = ClampPaddleX(paddlex);//paddlex;
+
+}
+void paddleXFromClosestBox(){
+    char paddlex=paddleX;
+    if (box_y > boxA_y){
+        paddlex=(box_x + paddlex)/2;//kind of a lerp
+    } else {
+        paddlex=(boxA_x + paddlex)/2;//kind of a lerp
+    }
+    paddleX = ClampPaddleX(paddlex);
 }
 void inputButtonsDraw()
 {
@@ -188,26 +199,44 @@ void inputBinaryDraw()
     queue_draw_box(0,BINARYTESTPOSY,button_byte,1,182);
 
 }
+bool previousStart = false;
 
+void ToggleDemoMode()
+{
+    if (player1_buttons & INPUT_MASK_START)
+    {
+        if (!previousStart){
+            demoMode = !demoMode;
+        }
+        previousStart = true;
+    }
+    else {
+        previousStart = false;
+    }
+}
 void main () {
     init_music();
-    
-    //play_sound_effect(ASSET__audio__hit_bin);
-
     while (1) {                                     //  Run forever
         queue_clear_screen(256);//256 black
         queue_draw_box(box_x, box_y, 8, 8, BOXCOLOR);
         queue_draw_box(boxA_x, boxA_y, 8, 8, BOXCOLORA);
-        button_byte = buttons_to_byte(player1_buttons);
+        button_byte = buttons_to_byte(player1_buttons);//gets paddle input
 
-        inputButtonsDraw();
-        inputBinaryDraw();//interpret button presses as 7 byte number
+        inputButtonsDraw();//debug display
+        inputBinaryDraw();//debug line
 
         queue_clear_border(2);
         boxMotion();
         boxAMotion();
 
-        paddleDraw(button_byte);
+        ToggleDemoMode();
+        if (demoMode){
+            paddleXFromClosestBox();
+        } else {
+            paddleXFromPot(button_byte);
+        }
+        queue_draw_box(paddleX,PADDLEY,PADDLEWIDTH,PADDLEHEIGHT,PADDLECOLOR);//draw paddle
+
         await_draw_queue();
         await_vsync(1);
         flip_pages();
