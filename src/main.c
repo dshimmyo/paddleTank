@@ -16,7 +16,6 @@
 //assignments based on genesis controller pinout
 #define INPUT_MASK_MODE 1//first read 00000001
 #define INPUT_MASK_X 2 //first read 00000010
-//not implemented in current hardware
 #define INPUT_MASK_Y 4 //need to add another multiplexor or build npn/pnp circuit
 #define INPUT_MASK_Z 8 //need to add another multiplexor or build npn/pnp circuit
 
@@ -85,18 +84,9 @@ void boxMotion(){
         if (boxSkipCount >= boxSkipFrames)
         {
             boxSkipCount=0;
-            if (detectPaddleCollision(box_x,box_x+8,box_y - 8, box_y) && !boxColPrev){
-                boxColPrev = true;
-                dy = -1;
-                box_x += dx;
-                box_y = PADDLEY-PADDLEHEIGHT;
-                soundCol();
-            }
-            //else 
             {
                 box_x += dx;
                 box_y += dy;
-                boxColPrev = false;
                 if(box_x == 1) {
                     dx = 1;
                     soundTest();
@@ -112,6 +102,15 @@ void boxMotion(){
                     //dy = -1;
                     soundTest();
                 }
+                if (detectPaddleCollision(box_x,box_x+8,box_y - 8, box_y) && !boxColPrev){
+                    boxColPrev = true;
+                    dy = -1;
+                    box_y = PADDLEY-PADDLEHEIGHT;//height correction, maybe redundant
+                    soundCol();
+                }
+                else{
+                    boxColPrev = false;
+                }
             }
         }
 
@@ -122,19 +121,9 @@ bool boxAColPrev = false;
 
 void boxAMotion(){
 
-        if (detectPaddleCollision(boxA_x,boxA_x+8,boxA_y - 8, boxA_y)  && !boxAColPrev){
-            boxAColPrev = true;
-            //dxA = -dxA;
-            dyA = -2;
-            boxA_x += dxA;
-            boxA_y = PADDLEY-PADDLEHEIGHT;
-            soundCol();
-        }
-            //else
         {
             boxA_x += dxA;
             boxA_y += dyA;
-            boxAColPrev = false;
             if (boxA_x <= 1) {
                 dxA = 2;
                 soundTestA();
@@ -151,6 +140,15 @@ void boxAMotion(){
                 //dyA = -2;
                 soundTestA();
             }
+        }
+        if (detectPaddleCollision(boxA_x,boxA_x+8,boxA_y - 8, boxA_y) && !boxAColPrev){
+            boxAColPrev = true;
+            dyA = -1;
+            boxA_y = PADDLEY-PADDLEHEIGHT;//height correction, maybe redundant
+            soundCol();
+        }
+        else{
+            boxAColPrev = false;
         }
 
 }
@@ -251,17 +249,6 @@ init_game()
 {
     randomizeBox();
     randomizeBoxA();
-    // box_x = rnd_range(0,119);
-    // box_y = rnd_range(68,8);
-    // boxA_x = rnd_range(0,119);
-    // boxA_y = rnd_range(68,8);
-
-    // if (rnd_range(0,10) > 5) dx = -dx;
-    // if (rnd_range(0,10) > 5) dxA = -dxA;
-
-    //dy = 1;
-    //dxA = -2;
-    //dyA = 2;
 }
 void main () {
     init_music();
