@@ -3,6 +3,7 @@
 #include "gen/assets/audio.h"
 #include "gt/audio/music.h"
 #include "gt/input.h"
+#include "gt/feature/random/random.h"
 
 #define BOXCOLOR 92
 #define BOXCOLORA 127
@@ -47,11 +48,9 @@ char paddleX = 64;
 char button_byte=0;
 
 void soundTest(){
-    //play_sound_effect(ASSET__audio__hit_bin_ID,1);
     play_sound_effect(ASSET__audio__flongNew_sfx_ID,(char)1);
 }
 void soundTestA(){
-    //play_sound_effect(ASSET__audio__hit_bin_ID,1);
     play_sound_effect(ASSET__audio__chirp_sfx_ID,(char)1);
 }
 void soundCol(){
@@ -60,13 +59,13 @@ void soundCol(){
 bool detectPaddleCollision(char x1,char x2,char y1,char y2){
 
 char px1 = paddleX;//leftmost
-char px2 = paddleX + PADDLEWIDTH;//rightmost bount
-char py2 = PADDLEY;//110 //bottom
-char py1 = PADDLEY - PADDLEHEIGHT;
+char px2 = paddleX + PADDLEWIDTH;//rightmost bound
+char py2 = PADDLEY;//110 //bottom bount higher number
+char py1 = PADDLEY - PADDLEHEIGHT; //top bound, lower number
 
 //flawed code only detects corners in bounds, not intersection
-if ((x1 >= px1 & x1 <= px2) | x2 >= px1 & x2 <= px2){//check box inside paddle horizontally
-    if ((py1 >= y1 & py1 <= y2) | (py2 >= y1 & py2 <= y2)){//check paddle inside box vertically
+if ((x1 >= px1 && x1 <= px2) || x2 >= px1 && x2 <= px2){//check box inside paddle horizontally
+    if ((py1 >= y1 && py1 <= y2) || (py2 >= y1 && py2 <= y2)){//check paddle inside box vertically
         return true;
     }
 } else {
@@ -78,20 +77,22 @@ return false;
 }
 bool boxColPrev = false;
 bool boxSkipFrame = false;
+void randomizeBox();
+void randomizeBoxA();
 void boxMotion(){
         boxSkipFrame = !boxSkipFrame;//simulating half-speed motion
         boxSkipCount++;
         if (boxSkipCount >= boxSkipFrames)
         {
             boxSkipCount=0;
-            if (detectPaddleCollision(box_x,box_x+8,box_y - 8, box_y) & !boxColPrev){
+            if (detectPaddleCollision(box_x,box_x+8,box_y - 8, box_y) && !boxColPrev){
                 boxColPrev = true;
                 dy = -1;
                 box_x += dx;
                 box_y = PADDLEY-PADDLEHEIGHT;
                 soundCol();
             }
-            else 
+            //else 
             {
                 box_x += dx;
                 box_y += dy;
@@ -107,7 +108,8 @@ void boxMotion(){
                     dy = 1;
                     soundTest();
                 } else if(box_y == 112) {
-                    dy = -1;
+                    randomizeBox();
+                    //dy = -1;
                     soundTest();
                 }
             }
@@ -120,7 +122,7 @@ bool boxAColPrev = false;
 
 void boxAMotion(){
 
-        if (detectPaddleCollision(boxA_x,boxA_x+8,boxA_y - 8, boxA_y)  & !boxAColPrev){
+        if (detectPaddleCollision(boxA_x,boxA_x+8,boxA_y - 8, boxA_y)  && !boxAColPrev){
             boxAColPrev = true;
             //dxA = -dxA;
             dyA = -2;
@@ -128,7 +130,7 @@ void boxAMotion(){
             boxA_y = PADDLEY-PADDLEHEIGHT;
             soundCol();
         }
-            else
+            //else
         {
             boxA_x += dxA;
             boxA_y += dyA;
@@ -145,7 +147,8 @@ void boxAMotion(){
                 dyA = 2;
                 soundTestA();
             } else if(boxA_y >= 112) {
-                dyA = -2;
+                randomizeBoxA();
+                //dyA = -2;
                 soundTestA();
             }
         }
@@ -231,8 +234,38 @@ void ToggleDemoMode()
         previousStart = false;
     }
 }
+
+void randomizeBox(){
+    box_x = rnd_range(0,119);
+    box_y = rnd_range(8,68);
+    if (rnd_range(0,10) > 5) dx = -dx;
+    if (rnd_range(0,10) > 5) dy = -dy;
+}
+void randomizeBoxA(){
+    boxA_x = rnd_range(0,119);
+    boxA_y = rnd_range(8,68);
+    if (rnd_range(0,10) > 5) dxA = -dxA;
+    if (rnd_range(0,10) > 5) dyA = -dyA;
+}
+init_game()
+{
+    randomizeBox();
+    randomizeBoxA();
+    // box_x = rnd_range(0,119);
+    // box_y = rnd_range(68,8);
+    // boxA_x = rnd_range(0,119);
+    // boxA_y = rnd_range(68,8);
+
+    // if (rnd_range(0,10) > 5) dx = -dx;
+    // if (rnd_range(0,10) > 5) dxA = -dxA;
+
+    //dy = 1;
+    //dxA = -2;
+    //dyA = 2;
+}
 void main () {
     init_music();
+    init_game;
     while (1) {                                     //  Run forever
         queue_clear_screen(256);//256 black
         queue_draw_box(box_x, box_y, 8, 8, BOXCOLOR);
