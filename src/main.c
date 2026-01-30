@@ -19,7 +19,7 @@
 #define INPUT_MASK_Y 4 //need to add another multiplexor or build npn/pnp circuit
 #define INPUT_MASK_Z 8 //need to add another multiplexor or build npn/pnp circuit
 
-#define PMASK0 (INPUT_MASK_UP)
+#define PMASK0 (INPUT_MASK_UP) //should be second read pin 1
 #define PMASK1 (INPUT_MASK_DOWN)
 #define PMASK2 (INPUT_MASK_LEFT)
 #define PMASK3 (INPUT_MASK_RIGHT)
@@ -27,8 +27,10 @@
 #define PMASK5 (INPUT_MASK_B)
 #define PMASK6 (INPUT_MASK_C)
 #define PMASK7 (INPUT_MASK_START)
-#define PMASK8 (INPUT_MASK_MODE) //EXPERIMENTAL GAME HARDWARE
-#define PMASK9 (INPUT_MASK_X) //EXPERIMENTAL GAME HARDWARE
+#define PMASK8 (INPUT_MASK_X) //EXPERIMENTAL GAME HARDWARE
+#define PMASK9 (INPUT_MASK_Y) //EXPERIMENTAL GAME HARDWARE
+#define PMASK10 (INPUT_MASK_Z) //EXPERIMENTAL GAME HARDWARE
+#define PMASK11 (INPUT_MASK_MODE) //EXPERIMENTAL GAME HARDWARE
 
 bool demoMode = true;
 char box_x = 30, box_y = 20;
@@ -200,8 +202,10 @@ void inputButtonsDraw()
     if (player1_buttons & PMASK5){queue_draw_box(51,BUTTONTESTPOSY,8,2,182);}
     if (player1_buttons & PMASK6){queue_draw_box(61,BUTTONTESTPOSY,8,2,182);}
     if (player1_buttons & PMASK7){queue_draw_box(71,BUTTONTESTPOSY,8,2,182);}
-    if (player1_buttons & PMASK8){queue_draw_box(81,BUTTONTESTPOSY,8,2,64);}//mode
-    if (player1_buttons & PMASK9){queue_draw_box(91,BUTTONTESTPOSY,8,2,64);}//x
+    if (player1_buttons & INPUT_MASK_X){queue_draw_box(81,BUTTONTESTPOSY,8,2,199);}//mode
+    if (player1_buttons & INPUT_MASK_Y){queue_draw_box(91,BUTTONTESTPOSY,8,2,199);}//x
+    if (player1_buttons & INPUT_MASK_Z){queue_draw_box(101,BUTTONTESTPOSY,8,2,199);}//Z
+    if (player1_buttons & INPUT_MASK_MODE){queue_draw_box(111,BUTTONTESTPOSY,8,2,199);}//Z
 
 }
 void inputBinaryDraw()
