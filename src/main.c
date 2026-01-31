@@ -55,7 +55,8 @@ void soundTestA(){
 void soundCol(){
     play_sound_effect(ASSET__audio__bik_sfx_ID,(char)1);
 }
-bool detectPaddleCollision(char x1,char x2,char y1,char y2){
+bool detectPaddleCollision(char x1,char x2,char y1,char y2)
+{
 
 char px1 = paddleX;//leftmost
 char px2 = paddleX + PADDLEWIDTH;//rightmost bound
@@ -63,10 +64,12 @@ char py2 = PADDLEY;//110 //bottom bount higher number
 char py1 = PADDLEY - PADDLEHEIGHT; //top bound, lower number
 
 //flawed code only detects corners in bounds, not intersection
-if ((x1 >= px1 && x1 <= px2) || x2 >= px1 && x2 <= px2){//check box inside paddle horizontally
-    if ((py1 >= y1 && py1 <= y2) || (py2 >= y1 && py2 <= y2)){//check paddle inside box vertically
+if ((x1 >= px1-1 && x1 <= px2+1) || (x2 >= px1-1 && x2 <= px2+1)){//check box inside paddle horizontally
+    if (y2 == py1-2 && y1 < py1-2){//bottom of box is at or below the top of the paddle
+    //if ((py1 >= y1-2 && py1 <= y2+2) || (py2 >= y1-2 && py2 <= y2+2)){//check paddle inside box vertically
         return true;
     }
+    else return false;
 } else {
     return false;
 }
@@ -79,6 +82,7 @@ bool boxSkipFrame = false;
 void randomizeBox();
 void randomizeBoxA();
 void boxMotion(){
+        //boxColPrev = false;//hack test
         boxSkipFrame = !boxSkipFrame;//simulating half-speed motion
         boxSkipCount++;
         if (boxSkipCount >= boxSkipFrames)
@@ -102,55 +106,55 @@ void boxMotion(){
                     //dy = -1;
                     soundTest();
                 }
-                if (detectPaddleCollision(box_x,box_x+8,box_y - 8, box_y) && !boxColPrev){
-                    boxColPrev = true;
+                if (detectPaddleCollision(box_x,box_x+8,box_y - 8, box_y) 
+                //&& !boxColPrev
+                ){
+                    //boxColPrev = true;
                     dy = -1;
-                    box_y = PADDLEY-PADDLEHEIGHT;//height correction, maybe redundant
+                    //box_y = PADDLEY-PADDLEHEIGHT-1;//height correction, maybe redundant
                     soundCol();
                 }
                 else{
-                    boxColPrev = false;
+                    //boxColPrev = false;
                 }
             }
         }
-
 }
 
-
-bool boxAColPrev = false;
-
-void boxAMotion(){
-
-        {
-            boxA_x += dxA;
-            boxA_y += dyA;
-            if (boxA_x <= 1) {
-                dxA = 2;
-                soundTestA();
-
-            } else if(boxA_x >= 119) {
-                dxA = -2;
-                soundTestA();
-            }
-            if(boxA_y <= 8) {
-                dyA = 2;
-                soundTestA();
-            } else if(boxA_y >= 112) {
-                randomizeBoxA();
-                //dyA = -2;
-                soundTestA();
-            }
+//bool boxAColPrev = false;
+void boxAMotion()
+{
+    //boxAColPrev = false;//hack test
+    {
+        boxA_x += dxA;
+        boxA_y += dyA;
+        if (boxA_x <= 1) {
+            dxA = 2;
+            soundTestA();
+        } else if(boxA_x >= 119) {
+            dxA = -2;
+            soundTestA();
         }
-        if (detectPaddleCollision(boxA_x,boxA_x+8,boxA_y - 8, boxA_y) && !boxAColPrev){
-            boxAColPrev = true;
-            dyA = -1;
-            boxA_y = PADDLEY-PADDLEHEIGHT;//height correction, maybe redundant
-            soundCol();
+        if(boxA_y <= 8) {
+            dyA = 2;
+            soundTestA();
+        } else if(boxA_y >= 112) {
+            randomizeBoxA();
+            //dyA = -2;
+            soundTestA();
         }
-        else{
-            boxAColPrev = false;
-        }
-
+    }
+    if (detectPaddleCollision(boxA_x,boxA_x+8,boxA_y - 8, boxA_y)
+        // && !boxAColPrev
+        ){
+        //boxAColPrev = true;
+        dyA = -1;
+        //boxA_y = PADDLEY-PADDLEHEIGHT-1;//height correction, maybe redundant
+        soundCol();
+    }
+    // else{
+    //     boxAColPrev = false;
+    // }
 }
 // Convert individual button states to a 7-bit byte
 char buttons_to_byte(int player1_buttons) {
