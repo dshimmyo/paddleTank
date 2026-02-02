@@ -5,12 +5,22 @@
 #include "gt/input.h"
 #include "gt/feature/random/random.h"
 
-#define BOXCOLOR 92
-#define BOXCOLORA 127
-#define PADDLECOLOR 7
+#define YELLOW 0b00011111
+#define ORANGE 0b00111111 
+#define PEACH 0b01011111 
+#define LAVENDER 0b01111111 
+#define PERIWINKLE 0b10011111
+#define SKY 0b10111111
+#define OCEAN 0b11011111
+#define ALGAE 0b11111111
+#define WHITE 0b00000111
+ 
+#define BOXCOLOR PEACH//92
+#define BOXCOLORA ALGAE
+#define PADDLECOLOR WHITE
 #define PADDLEWIDTH 12
 #define PADDLEHEIGHT 4
-#define PADDLEY 110
+#define PADDLEY 108
 
 //new masks for experimental gamepad hardware:
 //assignments based on genesis controller pinout
@@ -254,11 +264,33 @@ init_game()
     randomizeBox();
     randomizeBoxA();
 }
+void ColorTest(){
+    //boxes draw left-right top-down 0-127, 0-120
+    queue_draw_box(0, 112, 8, 8, 0b00011111);
+    queue_draw_box(8, 113, 8, 8, 0b00111111);
+    queue_draw_box(16, 114, 8, 8, 0b01011111);
+    queue_draw_box(24, 115, 8, 8, 0b01111111);
+    queue_draw_box(32, 116, 8, 8, 0b10011111);
+    queue_draw_box(40, 117, 8, 8, 0b10111111);
+    queue_draw_box(48, 118, 8, 8, 0b11011111);
+    queue_draw_box(56, 119, 8, 8, 0b11111111);
+
+    queue_draw_box(64, 119, 8, 8, 0b00011100);
+    queue_draw_box(72, 118, 8, 8, 0b00111100);
+    queue_draw_box(80, 117, 8, 8, 0b01011100);
+    queue_draw_box(88, 116, 8, 8, 0b01111100);
+    queue_draw_box(96, 115, 8, 8, 0b10011100);
+    queue_draw_box(104, 114, 8, 8, 0b10111100);
+    queue_draw_box(112, 113, 8, 8, 0b11011100);
+    queue_draw_box(120, 112, 8, 8, 0b11111100);
+
+}
 void main () {
     init_music();
     init_game;
     while (1) {                                     //  Run forever
         queue_clear_screen(256);//256 black
+        ColorTest();
         queue_draw_box(box_x, box_y, 8, 8, BOXCOLOR);
         queue_draw_box(boxA_x, boxA_y, 8, 8, BOXCOLORA);
         button_byte = buttons_to_byte(player1_buttons);//gets paddle input
