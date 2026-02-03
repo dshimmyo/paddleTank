@@ -264,25 +264,42 @@ init_game()
     randomizeBox();
     randomizeBoxA();
 }
+// Define the structure to hold Color properties
+unsigned char hue;        // 3 bits (0-7)
+//unsigned char saturation; // 2 bits (0-3)
+//unsigned char luminosity; // 3 bits (0-7)
+// Function to pack hue, saturation, and luminosity into an 8-bit value
+unsigned char packColor(unsigned char h,unsigned char s, unsigned char v) {
+    return (h & 0x07) << 5 | (s & 0x03) << 3 | (v & 0x07);
+}
+char colorTestHueOffset = 0;
+char hueTimer = 0;
 void ColorTest(){
+    if (++hueTimer > 8) {
+        colorTestHueOffset++;
+        hueTimer = 0;
+    }
+    hue = colorTestHueOffset % 7;
+    //saturation = 3;
+    //luminosity = 7;
     //boxes draw left-right top-down 0-127, 0-120
-    queue_draw_box(0, 112, 8, 8, 0b00011111);
-    queue_draw_box(8, 113, 8, 8, 0b00111111);
-    queue_draw_box(16, 114, 8, 8, 0b01011111);
-    queue_draw_box(24, 115, 8, 8, 0b01111111);
-    queue_draw_box(32, 116, 8, 8, 0b10011111);
-    queue_draw_box(40, 117, 8, 8, 0b10111111);
-    queue_draw_box(48, 118, 8, 8, 0b11011111);
-    queue_draw_box(56, 119, 8, 8, 0b11111111);
+    queue_draw_box(0, 112, 8, 8, packColor(hue,7,7));//0b00011111);
+    queue_draw_box(8, 113, 8, 8, packColor(hue+1,7,7));//0b00111111);
+    queue_draw_box(16, 114, 8, 8, packColor(hue+2,7,7));//0b01011111);
+    queue_draw_box(24, 115, 8, 8, packColor(hue+3,7,7));//0b01111111);
+    queue_draw_box(32, 116, 8, 8, packColor(hue+4,7,7));//0b10011111);
+    queue_draw_box(40, 117, 8, 8, packColor(hue+5,7,7));//0b10111111);
+    queue_draw_box(48, 118, 8, 8, packColor(hue+6,7,7));//0b11011111);
+    queue_draw_box(56, 119, 8, 8, packColor(hue+7,7,7));//0b11111111);
 
-    queue_draw_box(64, 119, 8, 8, 0b00011100);
-    queue_draw_box(72, 118, 8, 8, 0b00111100);
-    queue_draw_box(80, 117, 8, 8, 0b01011100);
-    queue_draw_box(88, 116, 8, 8, 0b01111100);
-    queue_draw_box(96, 115, 8, 8, 0b10011100);
-    queue_draw_box(104, 114, 8, 8, 0b10111100);
-    queue_draw_box(112, 113, 8, 8, 0b11011100);
-    queue_draw_box(120, 112, 8, 8, 0b11111100);
+    queue_draw_box(64, 119, 8, 8, packColor(hue+7,7,4));//0b00011100);
+    queue_draw_box(72, 118, 8, 8, packColor(hue+6,7,4));//0b00111100);
+    queue_draw_box(80, 117, 8, 8, packColor(hue+5,7,4));//0b01011100);
+    queue_draw_box(88, 116, 8, 8, packColor(hue+4,7,4));//0b01111100);
+    queue_draw_box(96, 115, 8, 8, packColor(hue+3,7,4));//0b10011100);
+    queue_draw_box(104, 114, 8, 8, packColor(hue+2,7,4));//0b10111100);
+    queue_draw_box(112, 113, 8, 8, packColor(hue+1,7,4));//0b11011100);
+    queue_draw_box(120, 112, 8, 8, packColor(hue,7,4));//0b11111100);
 
 }
 void main () {
