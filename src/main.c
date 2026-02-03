@@ -4,16 +4,7 @@
 #include "gt/audio/music.h"
 #include "gt/input.h"
 #include "gt/feature/random/random.h"
-
-#define YELLOW 0b00011111
-#define ORANGE 0b00111111 
-#define PEACH 0b01011111 
-#define LAVENDER 0b01111111 
-#define PERIWINKLE 0b10011111
-#define SKY 0b10111111
-#define OCEAN 0b11011111
-#define ALGAE 0b11111111
-#define WHITE 0b00000111
+#include "paddleUtils.h"
  
 #define BOXCOLOR PEACH//92
 #define BOXCOLORA ALGAE
@@ -52,7 +43,6 @@ char bgColor = 0;
 char dx = 1, dy = 1;
 char dxA = -2, dyA = 2;
 char paddleX = 64;
-#define BUTTONTESTPOSY 7
 #define BINARYTESTPOSY 10
 char button_byte=0;
 
@@ -65,33 +55,57 @@ void soundTestA(){
 void soundCol(){
     play_sound_effect(ASSET__audio__bik_sfx_ID,(char)1);
 }
-bool detectPaddleCollision(char x1,char x2,char y1,char y2)
+/*bool detectPaddleCollision(char sourceXLow,char sourceXHi,char sourceYLow,char sourceYHi)
 {
 
-char px1 = paddleX;//leftmost
-char px2 = paddleX + PADDLEWIDTH;//rightmost bound
-char py2 = PADDLEY;//110 //bottom bount higher number
-char py1 = PADDLEY - PADDLEHEIGHT; //top bound, lower number
+    char px1 = paddleX;//leftmost
+    char px2 = paddleX + PADDLEWIDTH;//rightmost bound
+    char py2 = PADDLEY;//110 //bottom bount higher number
+    char py1 = PADDLEY - PADDLEHEIGHT; //top bound, lower number
 
-//flawed code only detects corners in bounds, not intersection
-if ((x1 >= px1-1 && x1 <= px2+1) || (x2 >= px1-1 && x2 <= px2+1)){//check box inside paddle horizontally
-    if (y2 == py1-2 && y1 < py1-2){//bottom of box is at or below the top of the paddle
-    //if ((py1 >= y1-2 && py1 <= y2+2) || (py2 >= y1-2 && py2 <= y2+2)){//check paddle inside box vertically
-        return true;
+    //flawed code only detects corners in bounds, not intersection
+    if ((sourceXLow >= px1-1 && sourceXLow <= px2+1) || (sourceXHi >= px1-1 && sourceXHi <= px2+1)){//check box inside paddle horizontally
+        if (sourceYHi == py1-2 && sourceYLow < py1-2){//bottom of box is at or below the top of the paddle
+        //if ((py1 >= y1-2 && py1 <= y2+2) || (py2 >= y1-2 && py2 <= y2+2)){//check paddle inside box vertically
+            return true;
+        }
+        else return false;
+    } else {
+        return false;
     }
-    else return false;
-} else {
-    return false;
+
+}*/
+
+bool detectPaddleCollision(char sourceXLow,char sourceXHi,char sourceYLow,char sourceYHi,
+    char targetXLow,char targetXHi,char targetYLow, char targetYHi)
+{
+
+    char px1 = targetXLow;//paddleX;//leftmost
+    char px2 = targetXHi;//paddleX + PADDLEWIDTH;//rightmost bound
+    char py2 = targetYHi;//PADDLEY;//110 //bottom bount higher number
+    char py1 = targetYLow;//PADDLEY - PADDLEHEIGHT; //top bound, lower number
+
+    //flawed code only detects corners in bounds, not intersection
+    if ((sourceXLow >= px1-1 && sourceXLow <= px2+1) || (sourceXHi >= px1-1 && sourceXHi <= px2+1)){//check box inside paddle horizontally
+        if (sourceYHi == py1-2 && sourceYLow < py1-2){//bottom of box is at or below the top of the paddle
+            return true;
+        }
+        else return false;
+    } else {
+        return false;
+    }
+
 }
 
-return false;
-
-}
 bool boxColPrev = false;
 bool boxSkipFrame = false;
 void randomizeBox();
 void randomizeBoxA();
 void boxMotion(){
+    char px1 = paddleX;//leftmost
+    char px2 = paddleX + PADDLEWIDTH;//rightmost bound
+    char py2 = PADDLEY;//110 //bottom bount higher number
+    char py1 = PADDLEY - PADDLEHEIGHT; //top bound, lower number
         //boxColPrev = false;//hack test
         boxSkipFrame = !boxSkipFrame;//simulating half-speed motion
         boxSkipCount++;
@@ -116,7 +130,7 @@ void boxMotion(){
                     //dy = -1;
                     soundTest();
                 }
-                if (detectPaddleCollision(box_x,box_x+8,box_y - 8, box_y) 
+                if (detectPaddleCollision(box_x,box_x+8,box_y - 8, box_y,px1,px2,py1,py2) 
                 //&& !boxColPrev
                 ){
                     //boxColPrev = true;
@@ -134,6 +148,10 @@ void boxMotion(){
 //bool boxAColPrev = false;
 void boxAMotion()
 {
+    char px1 = paddleX;//leftmost
+    char px2 = paddleX + PADDLEWIDTH;//rightmost bound
+    char py2 = PADDLEY;//110 //bottom bount higher number
+    char py1 = PADDLEY - PADDLEHEIGHT; //top bound, lower number
     //boxAColPrev = false;//hack test
     {
         boxA_x += dxA;
@@ -154,7 +172,7 @@ void boxAMotion()
             soundTestA();
         }
     }
-    if (detectPaddleCollision(boxA_x,boxA_x+8,boxA_y - 8, boxA_y)
+    if (detectPaddleCollision(boxA_x,boxA_x+8,boxA_y - 8, boxA_y,px1,px2,py1,py2)
         // && !boxAColPrev
         ){
         //boxAColPrev = true;
@@ -209,18 +227,18 @@ void inputButtonsDraw()
 {
     //input testing
     //if (player1_buttons==0){queue_draw_box(1,BUTTONTESTPOSY,8,2,20);}//no button press
-    if (player1_buttons & PMASK0){queue_draw_box(1,BUTTONTESTPOSY,8,2,182);}
-    if (player1_buttons & PMASK1){queue_draw_box(11,BUTTONTESTPOSY,8,2,182);}
-    if (player1_buttons & PMASK2){queue_draw_box(21,BUTTONTESTPOSY,8,2,182);}
-    if (player1_buttons & PMASK3){queue_draw_box(31,BUTTONTESTPOSY,8,2,182);}
-    if (player1_buttons & PMASK4){queue_draw_box(41,BUTTONTESTPOSY,8,2,182);}
-    if (player1_buttons & PMASK5){queue_draw_box(51,BUTTONTESTPOSY,8,2,182);}
-    if (player1_buttons & PMASK6){queue_draw_box(61,BUTTONTESTPOSY,8,2,182);}
-    if (player1_buttons & PMASK7){queue_draw_box(71,BUTTONTESTPOSY,8,2,182);}
-    if (player1_buttons & INPUT_MASK_X){queue_draw_box(81,BUTTONTESTPOSY,8,2,199);}//mode
-    if (player1_buttons & INPUT_MASK_Y){queue_draw_box(91,BUTTONTESTPOSY,8,2,199);}//x
-    if (player1_buttons & INPUT_MASK_Z){queue_draw_box(101,BUTTONTESTPOSY,8,2,199);}//Z
-    if (player1_buttons & INPUT_MASK_MODE){queue_draw_box(111,BUTTONTESTPOSY,8,2,199);}//Z
+    if (player1_buttons & PMASK0){queue_draw_box(1,7,8,2,182);}
+    if (player1_buttons & PMASK1){queue_draw_box(11,7,8,2,182);}
+    if (player1_buttons & PMASK2){queue_draw_box(21,7,8,2,182);}
+    if (player1_buttons & PMASK3){queue_draw_box(31,7,8,2,182);}
+    if (player1_buttons & PMASK4){queue_draw_box(41,7,8,2,182);}
+    if (player1_buttons & PMASK5){queue_draw_box(51,7,8,2,182);}
+    if (player1_buttons & PMASK6){queue_draw_box(61,7,8,2,182);}
+    if (player1_buttons & PMASK7){queue_draw_box(71,7,8,2,182);}
+    if (player1_buttons & INPUT_MASK_X){queue_draw_box(81,7,8,2,199);}//mode
+    if (player1_buttons & INPUT_MASK_Y){queue_draw_box(91,7,8,2,199);}//x
+    if (player1_buttons & INPUT_MASK_Z){queue_draw_box(101,7,8,2,199);}//Z
+    if (player1_buttons & INPUT_MASK_MODE){queue_draw_box(111,7,8,2,199);}//Z
 
 }
 void inputBinaryDraw()
@@ -268,10 +286,7 @@ init_game()
 unsigned char hue;        // 3 bits (0-7)
 //unsigned char saturation; // 2 bits (0-3)
 //unsigned char luminosity; // 3 bits (0-7)
-// Function to pack hue, saturation, and luminosity into an 8-bit value
-unsigned char packColor(unsigned char h,unsigned char s, unsigned char v) {
-    return (h & 0x07) << 5 | (s & 0x03) << 3 | (v & 0x07);
-}
+
 char colorTestHueOffset = 0;
 char hueTimer = 0;
 void ColorTest(){
