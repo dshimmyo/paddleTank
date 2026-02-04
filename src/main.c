@@ -257,7 +257,7 @@ void randomizeBoxA(){
     if (rnd_range(0,10) > 5) dxA = -dxA;
     if (rnd_range(0,10) > 5) dyA = -dyA;
 }
-init_game()
+void init_game()
 {
     randomizeBox();
     randomizeBoxA();
@@ -297,44 +297,38 @@ void ColorTest(){
     queue_draw_box(120, 112, 8, 8, packColor(hue,3,4));//0b11111100);
 
 }
-char spiralX=0;spiralY=0;
-//char timer = 0;
-bool ColorSpiral()
+char spiralX=0;
+char spiralY=0;
+void ColorSpiral()
 {
     //packColor(hue,sat,lum) (7,3,7)//i.e. 111 11 111 for hue sat lum
-    // if (spiralY < 1)
-    // {
-        //draw every frame
-        unsigned char x=0;
-        unsigned char y=0;
-        char colorTemplate = 0b000111111;
-        //for (x=0; x<=spiralX;x+=8){
-            unsigned char colorIndex = (spiralX+spiralY) / 8 & 0b00000111;
-            unsigned char hueShift = colorIndex<<6;
-            unsigned char color = 0b000111111 | hueShift;
-            for (y=0; y<=spiralY;y+=8){
-                queue_draw_box(spiralX,y,8,8,color);
-            }
-        //}
-        spiralX+=8;
-        if (spiralX >= 120) 
-        {
-            spiralX = 0;
-            spiralY+=8;
+    //draw every frame
+    unsigned char x=0;
+    unsigned char y=0;
+    //for (x=0; x<=spiralX;x+=8){
+        unsigned char colorIndex = (spiralX+spiralY) / 8 & 0b00000111;
+        unsigned char hueShift = colorIndex<<6;
+        unsigned char color = 0b000111111 | hueShift;
+        for (y=0; y<=spiralY;y+=8){
+            queue_draw_box(spiralX,y,8,8,color);
         }
-    //     return true;
-    // }
-    // return false;
+    //}
+    spiralX+=8;
+    if (spiralX >= 120) 
+    {
+        spiralX = 0;
+        spiralY+=8;
+    }
 }
 int gamestate = 0;
 void main () {
     init_music();
-    init_game;
+    init_game();
     queue_clear_screen(256);//256 black
-
+    set_note(1,256);
     while (1) 
     {                                     //  Run forever
-        if (spiralY<=120){
+        if (spiralY<=120){ //intro color test sequence
             //queue_clear_screen(256);//256 black
             ColorSpiral();
         }
