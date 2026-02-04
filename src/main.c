@@ -55,26 +55,6 @@ void soundTestA(){
 void soundCol(){
     play_sound_effect(ASSET__audio__bik_sfx_ID,(char)1);
 }
-/*bool detectPaddleCollision(char sourceXLow,char sourceXHi,char sourceYLow,char sourceYHi)
-{
-
-    char px1 = paddleX;//leftmost
-    char px2 = paddleX + PADDLEWIDTH;//rightmost bound
-    char py2 = PADDLEY;//110 //bottom bount higher number
-    char py1 = PADDLEY - PADDLEHEIGHT; //top bound, lower number
-
-    //flawed code only detects corners in bounds, not intersection
-    if ((sourceXLow >= px1-1 && sourceXLow <= px2+1) || (sourceXHi >= px1-1 && sourceXHi <= px2+1)){//check box inside paddle horizontally
-        if (sourceYHi == py1-2 && sourceYLow < py1-2){//bottom of box is at or below the top of the paddle
-        //if ((py1 >= y1-2 && py1 <= y2+2) || (py2 >= y1-2 && py2 <= y2+2)){//check paddle inside box vertically
-            return true;
-        }
-        else return false;
-    } else {
-        return false;
-    }
-
-}*/
 
 bool detectPaddleCollision(char sourceXLow,char sourceXHi,char sourceYLow,char sourceYHi,
     char targetXLow,char targetXHi,char targetYLow, char targetYHi)
@@ -297,55 +277,95 @@ void ColorTest(){
     hue = colorTestHueOffset % 7;
     //saturation = 3;
     //luminosity = 7;
-    //boxes draw left-right top-down 0-127, 0-120
-    queue_draw_box(0, 112, 8, 8, packColor(hue,7,7));//0b00011111);
-    queue_draw_box(8, 113, 8, 8, packColor(hue+1,7,7));//0b00111111);
-    queue_draw_box(16, 114, 8, 8, packColor(hue+2,7,7));//0b01011111);
-    queue_draw_box(24, 115, 8, 8, packColor(hue+3,7,7));//0b01111111);
-    queue_draw_box(32, 116, 8, 8, packColor(hue+4,7,7));//0b10011111);
-    queue_draw_box(40, 117, 8, 8, packColor(hue+5,7,7));//0b10111111);
-    queue_draw_box(48, 118, 8, 8, packColor(hue+6,7,7));//0b11011111);
-    queue_draw_box(56, 119, 8, 8, packColor(hue+7,7,7));//0b11111111);
+    //boxes draw left-right top-down 0->127, 0->120
+    queue_draw_box(0, 112, 8, 8, packColor(hue,3,7));//0b00011111);
+    queue_draw_box(8, 113, 8, 8, packColor(hue+1,3,7));//0b00111111);
+    queue_draw_box(16, 114, 8, 8, packColor(hue+2,3,7));//0b01011111);
+    queue_draw_box(24, 115, 8, 8, packColor(hue+3,3,7));//0b01111111);
+    queue_draw_box(32, 116, 8, 8, packColor(hue+4,3,7));//0b10011111);
+    queue_draw_box(40, 117, 8, 8, packColor(hue+5,3,7));//0b10111111);
+    queue_draw_box(48, 118, 8, 8, packColor(hue+6,3,7));//0b11011111);
+    queue_draw_box(56, 119, 8, 8, packColor(hue+7,3,7));//0b11111111);
 
-    queue_draw_box(64, 119, 8, 8, packColor(hue+7,7,4));//0b00011100);
-    queue_draw_box(72, 118, 8, 8, packColor(hue+6,7,4));//0b00111100);
-    queue_draw_box(80, 117, 8, 8, packColor(hue+5,7,4));//0b01011100);
-    queue_draw_box(88, 116, 8, 8, packColor(hue+4,7,4));//0b01111100);
-    queue_draw_box(96, 115, 8, 8, packColor(hue+3,7,4));//0b10011100);
-    queue_draw_box(104, 114, 8, 8, packColor(hue+2,7,4));//0b10111100);
-    queue_draw_box(112, 113, 8, 8, packColor(hue+1,7,4));//0b11011100);
-    queue_draw_box(120, 112, 8, 8, packColor(hue,7,4));//0b11111100);
+    queue_draw_box(64, 119, 8, 8, packColor(hue+7,3,4));//0b00011100);
+    queue_draw_box(72, 118, 8, 8, packColor(hue+6,3,4));//0b00111100);
+    queue_draw_box(80, 117, 8, 8, packColor(hue+5,3,4));//0b01011100);
+    queue_draw_box(88, 116, 8, 8, packColor(hue+4,3,4));//0b01111100);
+    queue_draw_box(96, 115, 8, 8, packColor(hue+3,3,4));//0b10011100);
+    queue_draw_box(104, 114, 8, 8, packColor(hue+2,3,4));//0b10111100);
+    queue_draw_box(112, 113, 8, 8, packColor(hue+1,3,4));//0b11011100);
+    queue_draw_box(120, 112, 8, 8, packColor(hue,3,4));//0b11111100);
 
 }
+char spiralX=0;spiralY=0;
+//char timer = 0;
+bool ColorSpiral()
+{
+    //packColor(hue,sat,lum) (7,3,7)//i.e. 111 11 111 for hue sat lum
+    // if (spiralY < 1)
+    // {
+        //draw every frame
+        unsigned char x=0;
+        unsigned char y=0;
+        char colorTemplate = 0b000111111;
+        //for (x=0; x<=spiralX;x+=8){
+            unsigned char colorIndex = (spiralX+spiralY) / 8 & 0b00000111;
+            unsigned char hueShift = colorIndex<<6;
+            unsigned char color = 0b000111111 | hueShift;
+            for (y=0; y<=spiralY;y+=8){
+                queue_draw_box(spiralX,y,8,8,color);
+            }
+        //}
+        spiralX+=8;
+        if (spiralX >= 120) 
+        {
+            spiralX = 0;
+            spiralY+=8;
+        }
+    //     return true;
+    // }
+    // return false;
+}
+int gamestate = 0;
 void main () {
     init_music();
     init_game;
-    while (1) {                                     //  Run forever
-        queue_clear_screen(256);//256 black
-        ColorTest();
-        queue_draw_box(box_x, box_y, 8, 8, BOXCOLOR);
-        queue_draw_box(boxA_x, boxA_y, 8, 8, BOXCOLORA);
-        button_byte = buttons_to_byte(player1_buttons);//gets paddle input
+    queue_clear_screen(256);//256 black
 
-        inputButtonsDraw();//debug display
-        inputBinaryDraw();//debug line
-
-        queue_clear_border(2);
-        boxMotion();
-        boxAMotion();
-
-        ToggleDemoMode();
-        if (demoMode){
-            paddleXFromClosestBox();
-        } else {
-            paddleXFromPot(button_byte);
+    while (1) 
+    {                                     //  Run forever
+        if (spiralY<=120){
+            //queue_clear_screen(256);//256 black
+            ColorSpiral();
         }
-        queue_draw_box(paddleX,PADDLEY,PADDLEWIDTH,PADDLEHEIGHT,PADDLECOLOR);//draw paddle
+        else
+        {
+            queue_clear_screen(256);//256 black
+            ColorTest();
+            queue_draw_box(box_x, box_y, 8, 8, BOXCOLOR);
+            queue_draw_box(boxA_x, boxA_y, 8, 8, BOXCOLORA);
+            button_byte = buttons_to_byte(player1_buttons);//gets paddle input
 
+            inputButtonsDraw();//debug display
+            inputBinaryDraw();//debug line
+
+            queue_clear_border(2);
+            boxMotion();
+            boxAMotion();
+
+            ToggleDemoMode();
+            if (demoMode){
+                paddleXFromClosestBox();
+            } else {
+                paddleXFromPot(button_byte);
+            }
+            queue_draw_box(paddleX,PADDLEY,PADDLEWIDTH,PADDLEHEIGHT,PADDLECOLOR);//draw paddle
+        }
         await_draw_queue();
         await_vsync(1);
         flip_pages();
         tick_music();
         update_inputs();
     }
+    
 }
