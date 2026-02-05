@@ -298,90 +298,83 @@ void ColorTest(){
 
 }
 char spiralX=0;
-char spiralY=0;
+char spiralY=1;
 unsigned char spiralEndTimer=0;
 void ColorSpiral()
 {
-    unsigned char x=0;
-    unsigned char y=0;
-
-    if (spiralY>=119){
-        spiralY=119;
-        if (spiralEndTimer++ > 120)
-        { 
-            spiralY+=8;
-        }
-        return;
-    }
-    else 
-    {
 
     //packColor(hue,sat,lum) (7,3,7)//i.e. 111 11 111 for hue sat lum
-    //draw every frame
-
-    //for (x=0; x<=spiralX;x+=8){
+    // queue_clear_screen(256);//256 black
+    // unsigned char x=0;
+    // unsigned char y=0;
+    // queue_clear_screen(256);//256 black
+    // for (x=0; x<=spiralX;x+=8){
         unsigned char colorIndex = (spiralX+spiralY) / 8 & 0b00000111;
         unsigned char hueShift = colorIndex<<6;
         unsigned char color = 0b000111111 | hueShift;
-        //for (y=0; y<=spiralY;y+=8){
+        // for (y=0; y<=spiralY;y+=8){
             queue_draw_box(spiralX,spiralY,8,8,color);
-        //}
-    //}
+    //     }
+    // }
     spiralX+=8;
     if (spiralX == 120) 
     {
         spiralX = 0;
-        spiralY+=8;
+        spiralY +=8;
     }
-    if (spiralY>119){ //hacky fix
-        spiralY=119;
-    }
-    }
+    await_draw_queue();
+    await_vsync(1);
+    flip_pages();
 }
-int gamestate = 0;
+void Intro_sequence(){
+    while (spiralY<120){ //intro color test sequence
+        ColorSpiral();
+    }
+    await_draw_queue();
+    await_vsync(64);
+    flip_pages();
+}
+//int gamestate = 0;
+
+void BreakoutGame(){
+    queue_clear_screen(256);//256 black
+    ColorTest();
+    queue_draw_box(box_x, box_y, 8, 8, BOXCOLOR);
+    queue_draw_box(boxA_x, boxA_y, 8, 8, BOXCOLORA);
+    button_byte = buttons_to_byte(player1_buttons);//gets paddle input
+
+    inputButtonsDraw();//debug display
+    inputBinaryDraw();//debug line
+
+    queue_clear_border(2);
+    boxMotion();
+    boxAMotion();
+
+    ToggleDemoMode();
+    if (demoMode){
+        paddleXFromClosestBox();
+    } else {
+        paddleXFromPot(button_byte);
+    }
+    queue_draw_box(paddleX,PADDLEY,PADDLEWIDTH,PADDLEHEIGHT,PADDLECOLOR);//draw paddle
+}
 void main () {
     init_music();
     init_game();
     queue_clear_screen(256);//256 black
     set_note(1,256);
+    Intro_sequence();
     while (1) 
     {                                     //  Run forever
-        if (spiralY<=120){ //intro color test sequence
-            //queue_clear_screen(256);//256 black
-            ColorSpiral();
-            await_draw_queue();
-            await_vsync(1);
-            flip_pages();
-        }
-        else
-        {
-            queue_clear_screen(256);//256 black
-            ColorTest();
-            queue_draw_box(box_x, box_y, 8, 8, BOXCOLOR);
-            queue_draw_box(boxA_x, boxA_y, 8, 8, BOXCOLORA);
-            button_byte = buttons_to_byte(player1_buttons);//gets paddle input
-
-            inputButtonsDraw();//debug display
-            inputBinaryDraw();//debug line
-
-            queue_clear_border(2);
-            boxMotion();
-            boxAMotion();
-
-            ToggleDemoMode();
-            if (demoMode){
-                paddleXFromClosestBox();
-            } else {
-                paddleXFromPot(button_byte);
-            }
-            queue_draw_box(paddleX,PADDLEY,PADDLEWIDTH,PADDLEHEIGHT,PADDLECOLOR);//draw paddle
+        
+        BreakoutGame();
         
         await_draw_queue();
         await_vsync(1);
         flip_pages();
         tick_music();
         update_inputs();
-        }
+        
     }
     
 }
