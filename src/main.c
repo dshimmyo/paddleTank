@@ -239,14 +239,14 @@ void ToggleDemoMode()
 }
 
 void randomizeBox(){
-    box_x = rnd_range(0,119);
-    box_y = rnd_range(8,68);
+    box_x = rnd_range(5,114);
+    box_y = rnd_range(64,68);
     if (rnd_range(0,10) > 5) dx = -dx;
     if (rnd_range(0,10) > 5) dy = -dy;
 }
 void randomizeBoxA(){
-    boxA_x = rnd_range(0,119);
-    boxA_y = rnd_range(8,68);
+    boxA_x = rnd_range(5,114);
+    boxA_y = rnd_range(64,68);
     if (rnd_range(0,10) > 5) dxA = -dxA;
     if (rnd_range(0,10) > 5) dyA = -dyA;
 }
