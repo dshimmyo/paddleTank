@@ -37,7 +37,7 @@
 bool demoMode = true;
 char box_x = 30, box_y = 20;
 char boxA_x = 20, boxA_y = 30;
-char boxSkipFrames = 3;
+char boxSkipFrames = 1;//2 is pretty slow but maybe for easy mode
 char boxSkipCount = 0;
 char bgColor = 0;
 
@@ -190,9 +190,9 @@ char ClampLeft(int x){
 void paddleXFromClosestBox(){
     char paddlex=paddleX;
     if (box_y > boxA_y){
-        paddlex=(ClampLeft(box_x - 5) + paddlex)/2;//kind of a lerp
+        paddlex=(ClampLeft(box_x - (PADDLEWIDTH>>1)) + paddlex)>>1;//kind of a lerp
     } else {
-        paddlex=(ClampLeft(boxA_x - 5) + paddlex)/2;//kind of a lerp
+        paddlex=(ClampLeft(boxA_x - (PADDLEWIDTH>>1)) + paddlex)>>1;//kind of a lerp
     }
     paddleX = ClampPaddleX(paddlex);
 }
@@ -302,7 +302,7 @@ void ColorSpiral()
     // unsigned char y=0;
     // queue_clear_screen(256);//256 black
     // for (x=0; x<=spiralX;x+=8){
-        unsigned char colorIndex = (spiralX+spiralY) / 8 & 0b00000111;
+        unsigned char colorIndex = ((spiralX+spiralY)>>3) & 0b00000111;
         unsigned char hueShift = colorIndex<<6;
         unsigned char color = 0b000111111 | hueShift;
         // for (y=0; y<=spiralY;y+=8){
