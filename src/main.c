@@ -12,6 +12,7 @@
 #define PADDLEWIDTH 12
 #define PADDLEHEIGHT 4
 #define PADDLEY 108
+#define BALLSIZE 2
 
 //new masks for experimental gamepad hardware:
 //assignments based on genesis controller pinout
@@ -99,31 +100,27 @@ void boxMotion(){
                 if(box_x == 1) {
                     dx = 1;
                     soundTest();
-                } else if(box_x == 119) {
+                } else if(box_x == 127-BALLSIZE /*119*/) {
                     dx = -1;
                     soundTest();
                 }
-                if(box_y == 8) {
+                if(box_y == BALLSIZE) {
                     dy = 1;
                     soundTest();
-                } else if(box_y == 112) {
+                } else if(box_y == 120-BALLSIZE){//112) {
                     randomizeBox();
                     soundTest();
                 }
-                if (detectPaddleCollision(box_x,box_x+8,box_y, box_y+8,px1,px2,py1,py2))
+                if (detectPaddleCollision(box_x,box_x+BALLSIZE,box_y, box_y+BALLSIZE,px1,px2,py1,py2))
                 {
                     dy = -1;
-                    box_y = PADDLEY-8;//height correction, maybe redundant
+                    box_y = PADDLEY-BALLSIZE;//height correction, maybe redundant
                     soundCol();
-                }
-                else{
-                    //boxColPrev = false;
                 }
             }
         }
 }
 
-//bool boxAColPrev = false;
 void boxAMotion()
 {
     char px1 = paddleX;//leftmost
@@ -136,21 +133,21 @@ void boxAMotion()
         if (boxA_x <= 1) {
             dxA = 2;
             soundTestA();
-        } else if(boxA_x >= 119) {
+        } else if(boxA_x >= 127-BALLSIZE/*119*/) {
             dxA = -2;
             soundTestA();
         }
-        if(boxA_y <= 8) {
+        if(boxA_y <= BALLSIZE) {
             dyA = 2;
             soundTestA();
-        } else if(boxA_y >= 112) {
+        } else if(boxA_y >= 120-BALLSIZE/*112*/) {
             randomizeBoxA();
             soundTestA();
         }
     }
-    if (detectPaddleCollision(boxA_x,boxA_x+8,boxA_y, boxA_y+8,px1,px2,py1,py2)){
+    if (detectPaddleCollision(boxA_x,boxA_x+BALLSIZE,boxA_y, boxA_y+BALLSIZE,px1,px2,py1,py2)){
         dyA = -1;
-        boxA_y = PADDLEY-8;//height correction, maybe redundant
+        boxA_y = PADDLEY-BALLSIZE;//height correction, maybe redundant
         soundCol();
     }
     // else{
@@ -185,14 +182,17 @@ void paddleXFromPot(char potVal)
 {
     char paddlex=potVal;
     paddleX = ClampPaddleX(paddlex);//paddlex;
-
+}
+char ClampLeft(int x){
+    if (x<1){return 1;}
+    return x;
 }
 void paddleXFromClosestBox(){
     char paddlex=paddleX;
     if (box_y > boxA_y){
-        paddlex=(box_x + paddlex)/2;//kind of a lerp
+        paddlex=(ClampLeft(box_x - 5) + paddlex)/2;//kind of a lerp
     } else {
-        paddlex=(boxA_x + paddlex)/2;//kind of a lerp
+        paddlex=(ClampLeft(boxA_x - 5) + paddlex)/2;//kind of a lerp
     }
     paddleX = ClampPaddleX(paddlex);
 }
@@ -332,8 +332,8 @@ void Intro_sequence(){
 void BreakoutGame(){
     queue_clear_screen(256);//256 black
     ColorTest();
-    queue_draw_box(box_x, box_y, 8, 8, BOXCOLOR);
-    queue_draw_box(boxA_x, boxA_y, 8, 8, BOXCOLORA);
+    queue_draw_box(box_x, box_y, BALLSIZE, BALLSIZE, BOXCOLOR);
+    queue_draw_box(boxA_x, boxA_y, BALLSIZE, BALLSIZE, BOXCOLORA);
     button_byte = buttons_to_byte(player1_buttons);//gets paddle input
 
     inputButtonsDraw();//debug display
