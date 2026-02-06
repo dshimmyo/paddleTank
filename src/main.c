@@ -160,19 +160,19 @@ char ClampPaddleX(char paddlex){
 }
 void paddleXFromPot(char potVal)
 {
-    char paddlex=potVal;
-    paddleX = ClampPaddleX(paddlex);//paddlex;
+    //paddleX=ClampPaddleX((potVal + paddleX)>>1);//kind of a lerp
+    paddleX=ClampPaddleX(((potVal<<1)/3 + paddleX/3));//fast and smooth
 }
 char ClampLeft(int x){
     if (x<1){return 1;}
     return x;
 }
 void paddleXFromClosestBox(){
-    char paddlex=paddleX;
+    char paddlex=0;
     if (box_y > boxA_y){
-        paddlex=(ClampLeft(box_x - (PADDLEWIDTH>>1)) + paddlex)>>1;//kind of a lerp
+        paddlex=ClampLeft(box_x - (PADDLEWIDTH>>1))/3 + (paddleX<<1)/3;//slow lerp
     } else {
-        paddlex=(ClampLeft(boxA_x - (PADDLEWIDTH>>1)) + paddlex)>>1;//kind of a lerp
+        paddlex=ClampLeft(boxA_x - (PADDLEWIDTH>>1))/3 + (paddleX<<1)/3;//slow lerp
     }
     paddleX = ClampPaddleX(paddlex);
 }
