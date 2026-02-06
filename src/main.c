@@ -14,26 +14,6 @@
 #define PADDLEY 108
 #define BALLSIZE 2
 
-//new masks for experimental gamepad hardware:
-//assignments based on genesis controller pinout
-#define INPUT_MASK_MODE 1//first read 00000001
-#define INPUT_MASK_X 2 //first read 00000010
-#define INPUT_MASK_Y 4 //need to add another multiplexor or build npn/pnp circuit
-#define INPUT_MASK_Z 8 //need to add another multiplexor or build npn/pnp circuit
-
-#define PMASK0 (INPUT_MASK_UP) //should be second read pin 1
-#define PMASK1 (INPUT_MASK_DOWN)
-#define PMASK2 (INPUT_MASK_LEFT)
-#define PMASK3 (INPUT_MASK_RIGHT)
-#define PMASK4 (INPUT_MASK_A)
-#define PMASK5 (INPUT_MASK_B)
-#define PMASK6 (INPUT_MASK_C)
-#define PMASK7 (INPUT_MASK_START)
-#define PMASK8 (INPUT_MASK_X) //EXPERIMENTAL GAME HARDWARE
-#define PMASK9 (INPUT_MASK_Y) //EXPERIMENTAL GAME HARDWARE
-#define PMASK10 (INPUT_MASK_Z) //EXPERIMENTAL GAME HARDWARE
-#define PMASK11 (INPUT_MASK_MODE) //EXPERIMENTAL GAME HARDWARE
-
 bool demoMode = true;
 char box_x = 30, box_y = 20;
 char boxA_x = 20, boxA_y = 30;
@@ -60,7 +40,7 @@ void soundCol(){
 bool detectPaddleCollision(char sourceXLow,char sourceXHi,char sourceYLow,char sourceYHi,
     char targetXLow,char targetXHi,char targetYLow, char targetYHi)
 {
-    //boxes draw left-right top-down 0->127, 0->120
+    //boxes draw left-right top-down 0->127, 7->120
 
     char px1 = targetXLow;//paddleX;//leftmost
     char px2 = targetXHi;//paddleX + PADDLEWIDTH;//rightmost bound
@@ -97,17 +77,17 @@ void boxMotion(){
             {
                 box_x += dx;
                 box_y += dy;
-                if(box_x == 1) {
+                if(box_x <= 1) {
                     dx = 1;
                     soundTest();
-                } else if(box_x == 127-BALLSIZE /*119*/) {
+                } else if(box_x >= 127-BALLSIZE /*119*/) {
                     dx = -1;
                     soundTest();
                 }
-                if(box_y == BALLSIZE) {
+                if(box_y <= 7) {
                     dy = 1;
                     soundTest();
-                } else if(box_y == 120-BALLSIZE){//112) {
+                } else if(box_y >= 120-BALLSIZE){//112) {
                     randomizeBox();
                     soundTest();
                 }
@@ -137,7 +117,7 @@ void boxAMotion()
             dxA = -2;
             soundTestA();
         }
-        if(boxA_y <= BALLSIZE) {
+        if(boxA_y <= 7) {
             dyA = 2;
             soundTestA();
         } else if(boxA_y >= 120-BALLSIZE/*112*/) {
@@ -291,7 +271,7 @@ void ColorTest(){
 
 }
 char spiralX=0;
-char spiralY=1;
+char spiralY=7;
 unsigned char spiralEndTimer=0;
 void ColorSpiral()
 {
