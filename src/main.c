@@ -59,15 +59,16 @@ void soundCol(){
 bool detectPaddleCollision(char sourceXLow,char sourceXHi,char sourceYLow,char sourceYHi,
     char targetXLow,char targetXHi,char targetYLow, char targetYHi)
 {
+    //boxes draw left-right top-down 0->127, 0->120
 
     char px1 = targetXLow;//paddleX;//leftmost
     char px2 = targetXHi;//paddleX + PADDLEWIDTH;//rightmost bound
-    char py2 = targetYHi;//PADDLEY;//110 //bottom bount higher number
     char py1 = targetYLow;//PADDLEY - PADDLEHEIGHT; //top bound, lower number
+    char py2 = targetYHi;//PADDLEY;//110 //bottom bount higher number
 
     //flawed code only detects corners in bounds, not intersection
     if ((sourceXLow >= px1-1 && sourceXLow <= px2+1) || (sourceXHi >= px1-1 && sourceXHi <= px2+1)){//check box inside paddle horizontally
-        if (sourceYHi == py1-2 && sourceYLow < py1-2){//bottom of box is at or below the top of the paddle
+        if (sourceYHi >= py1 && sourceYLow < py2){//bottom of box is at or below the top of the paddle
             return true;
         }
         else return false;
@@ -84,8 +85,8 @@ void randomizeBoxA();
 void boxMotion(){
     char px1 = paddleX;//leftmost
     char px2 = paddleX + PADDLEWIDTH;//rightmost bound
-    char py2 = PADDLEY;//110 //bottom bount higher number
-    char py1 = PADDLEY - PADDLEHEIGHT; //top bound, lower number
+    char py1 = PADDLEY;//110 //bottom bount higher number
+    char py2 = PADDLEY + PADDLEHEIGHT; //top bound, lower number
         //boxColPrev = false;//hack test
         boxSkipFrame = !boxSkipFrame;//simulating half-speed motion
         boxSkipCount++;
@@ -107,15 +108,12 @@ void boxMotion(){
                     soundTest();
                 } else if(box_y == 112) {
                     randomizeBox();
-                    //dy = -1;
                     soundTest();
                 }
-                if (detectPaddleCollision(box_x,box_x+8,box_y - 8, box_y,px1,px2,py1,py2) 
-                //&& !boxColPrev
-                ){
-                    //boxColPrev = true;
+                if (detectPaddleCollision(box_x,box_x+8,box_y, box_y+8,px1,px2,py1,py2))
+                {
                     dy = -1;
-                    //box_y = PADDLEY-PADDLEHEIGHT-1;//height correction, maybe redundant
+                    box_y = PADDLEY-8;//height correction, maybe redundant
                     soundCol();
                 }
                 else{
@@ -130,9 +128,8 @@ void boxAMotion()
 {
     char px1 = paddleX;//leftmost
     char px2 = paddleX + PADDLEWIDTH;//rightmost bound
-    char py2 = PADDLEY;//110 //bottom bount higher number
-    char py1 = PADDLEY - PADDLEHEIGHT; //top bound, lower number
-    //boxAColPrev = false;//hack test
+    char py1 = PADDLEY;//110 //bottom bount higher number
+    char py2 = PADDLEY + PADDLEHEIGHT; //top bound, lower number
     {
         boxA_x += dxA;
         boxA_y += dyA;
@@ -148,16 +145,12 @@ void boxAMotion()
             soundTestA();
         } else if(boxA_y >= 112) {
             randomizeBoxA();
-            //dyA = -2;
             soundTestA();
         }
     }
-    if (detectPaddleCollision(boxA_x,boxA_x+8,boxA_y - 8, boxA_y,px1,px2,py1,py2)
-        // && !boxAColPrev
-        ){
-        //boxAColPrev = true;
+    if (detectPaddleCollision(boxA_x,boxA_x+8,boxA_y, boxA_y+8,px1,px2,py1,py2)){
         dyA = -1;
-        //boxA_y = PADDLEY-PADDLEHEIGHT-1;//height correction, maybe redundant
+        boxA_y = PADDLEY-8;//height correction, maybe redundant
         soundCol();
     }
     // else{
