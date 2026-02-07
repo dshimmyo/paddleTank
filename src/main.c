@@ -154,23 +154,20 @@ char ClampPaddleX(char paddlex){
     }
     return paddlex;
 }
-char setRange(char input, char inMin, char inMax, char outMin, char outMax)
+int setRange(char input, char inMin, char inMax, char outMin, char outMax)
 {
-    char output = 0;
+    int output = 0;
     if (input<inMin)input=inMin;
     else if (input>inMax)input=inMax;
 
-    output = ((outMax - outMin)*256/(inMax-inMin)*(input-inMin) + outMin*256)/256;
+    output = ((outMax - outMin)*256/(inMax-inMin)*(input-inMin)/256 + outMin);
     return output;
-    //range = inMax - inMin;
-    //output = input * range; //scaled down the range
-    //output *= (outMax - outMin); //scaled to new range
     
 }
 void paddleXFromPot(char potVal)
 {
-    char newPotVal = setRange(potVal,32,96,0,127);
-    paddleX=ClampPaddleX(((newPotVal<<1)/3 + paddleX/3));//fast and smooth
+    int newPotVal = setRange(potVal,32,96,0,127);//38,90 too fast,(32,96)maybe better
+    paddleX=ClampPaddleX((((char)newPotVal<<1)/3 + paddleX/3));//fast and smooth
     //paddleX = ClampPaddleX(newPotVal);
 }
 char ClampLeft(int x){
