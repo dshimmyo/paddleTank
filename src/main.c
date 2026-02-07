@@ -154,9 +154,24 @@ char ClampPaddleX(char paddlex){
     }
     return paddlex;
 }
+char setRange(char input, char inMin, char inMax, char outMin, char outMax)
+{
+    char output = 0;
+    if (input<inMin)input=inMin;
+    else if (input>inMax)input=inMax;
+
+    output = ((outMax - outMin)*256/(inMax-inMin)*(input-inMin) + outMin*256)/256;
+    return output;
+    //range = inMax - inMin;
+    //output = input * range; //scaled down the range
+    //output *= (outMax - outMin); //scaled to new range
+    
+}
 void paddleXFromPot(char potVal)
 {
-    paddleX=ClampPaddleX(((potVal<<1)/3 + paddleX/3));//fast and smooth
+    char newPotVal = setRange(potVal,32,96,0,127);
+    paddleX=ClampPaddleX(((newPotVal<<1)/3 + paddleX/3));//fast and smooth
+    //paddleX = ClampPaddleX(newPotVal);
 }
 char ClampLeft(int x){
     if (x<1){return 1;}
@@ -308,15 +323,19 @@ void ColorSpiral(bool last)
 }
 void Intro_sequence(){
     char i=0;
-    while (spiralY<112){ //intro color test sequence
+    bool skipSequence=false;
+    while (spiralY<112 && !skipSequence){ //intro color test sequence
         ColorSpiral(false);
+        if (player1_buttons & INPUT_MASK_START) skipSequence=true;
     }
+
     spiralY=112;
     for (i=0;i<64;i++)
-    {
-        ColorSpiral(true);
+        {
+            ColorSpiral(true);
+            //if (player1_buttons & INPUT_MASK_START) i=16;
+        }
     }
-}
 //int gamestate = 0;
 
 void BreakoutGame(){
