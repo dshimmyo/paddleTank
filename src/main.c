@@ -251,23 +251,23 @@ void ColorTest(){
     //saturation = 3;
     //luminosity = 7;
     //boxes draw left-right top-down 0->127, 0->120
-    queue_draw_box(0, 112, 8, 8, packColor(hue,3,7));//0b00011111);
-    queue_draw_box(8, 113, 8, 8, packColor(hue+1,3,7));//0b00111111);
-    queue_draw_box(16, 114, 8, 8, packColor(hue+2,3,7));//0b01011111);
-    queue_draw_box(24, 115, 8, 8, packColor(hue+3,3,7));//0b01111111);
-    queue_draw_box(32, 116, 8, 8, packColor(hue+4,3,7));//0b10011111);
-    queue_draw_box(40, 117, 8, 8, packColor(hue+5,3,7));//0b10111111);
-    queue_draw_box(48, 118, 8, 8, packColor(hue+6,3,7));//0b11011111);
-    queue_draw_box(56, 119, 8, 8, packColor(hue+7,3,7));//0b11111111);
+    queue_draw_box(0, 118, 8, 2, packColor(hue,3,7));//0b00011111);
+    queue_draw_box(8, 118, 8, 2, packColor(hue+1,3,7));//0b00111111);
+    queue_draw_box(16, 118, 8, 2, packColor(hue+2,3,7));//0b01011111);
+    queue_draw_box(24, 118, 8, 2, packColor(hue+3,3,7));//0b01111111);
+    queue_draw_box(32, 118, 8, 2, packColor(hue+4,3,7));//0b10011111);
+    queue_draw_box(40, 118, 8, 2, packColor(hue+5,3,7));//0b10111111);
+    queue_draw_box(48, 118, 8, 2, packColor(hue+6,3,7));//0b11011111);
+    queue_draw_box(56, 118, 8, 2, packColor(hue+7,3,7));//0b11111111);
 
-    queue_draw_box(64, 119, 8, 8, packColor(hue+7,3,4));//0b00011100);
-    queue_draw_box(72, 118, 8, 8, packColor(hue+6,3,4));//0b00111100);
-    queue_draw_box(80, 117, 8, 8, packColor(hue+5,3,4));//0b01011100);
-    queue_draw_box(88, 116, 8, 8, packColor(hue+4,3,4));//0b01111100);
-    queue_draw_box(96, 115, 8, 8, packColor(hue+3,3,4));//0b10011100);
-    queue_draw_box(104, 114, 8, 8, packColor(hue+2,3,4));//0b10111100);
-    queue_draw_box(112, 113, 8, 8, packColor(hue+1,3,4));//0b11011100);
-    queue_draw_box(120, 112, 8, 8, packColor(hue,3,4));//0b11111100);
+    queue_draw_box(64, 118, 8, 2, packColor(hue+4,3,7));//0b00011100);
+    queue_draw_box(72, 118, 8, 2, packColor(hue+3,3,7));//0b00111100);
+    queue_draw_box(80, 118, 8, 2, packColor(hue+2,3,7));//0b01011100);
+    queue_draw_box(88, 118, 8, 2, packColor(hue+1,3,7));//0b01111100);
+    queue_draw_box(96, 118, 8, 2, packColor(hue,3,7));//0b10011100);
+    queue_draw_box(104, 118, 8, 2, packColor(hue+7,3,7));//0b10111100);
+    queue_draw_box(112, 118, 8, 2, packColor(hue+6,3,7));//0b11011100);
+    queue_draw_box(120, 118, 8, 2, packColor(hue+5,3,7));//0b11111100);
 
 }
 char spiralX=0;
