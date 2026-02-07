@@ -47,7 +47,6 @@ bool detectPaddleCollision(char sourceXLow,char sourceXHi,char sourceYLow,char s
     char py1 = targetYLow;//PADDLEY - PADDLEHEIGHT; //top bound, lower number
     char py2 = targetYHi;//PADDLEY;//110 //bottom bount higher number
 
-    //flawed code only detects corners in bounds, not intersection
     if ((sourceXLow >= px1-1 && sourceXLow <= px2+1) || (sourceXHi >= px1-1 && sourceXHi <= px2+1)){//check box inside paddle horizontally
         if (sourceYHi >= py1 && sourceYLow < py2){//bottom of box is at or below the top of the paddle
             return true;
@@ -130,9 +129,6 @@ void boxAMotion()
         boxA_y = PADDLEY-BALLSIZE;//height correction, maybe redundant
         soundCol();
     }
-    // else{
-    //     boxAColPrev = false;
-    // }
 }
 // Convert individual button states to a 7-bit byte
 char buttons_to_byte(int player1_buttons) {
@@ -160,7 +156,6 @@ char ClampPaddleX(char paddlex){
 }
 void paddleXFromPot(char potVal)
 {
-    //paddleX=ClampPaddleX((potVal + paddleX)>>1);//kind of a lerp
     paddleX=ClampPaddleX(((potVal<<1)/3 + paddleX/3));//fast and smooth
 }
 char ClampLeft(int x){
@@ -179,7 +174,6 @@ void paddleXFromClosestBox(){
 void inputButtonsDraw()
 {
     //input testing
-    //if (player1_buttons==0){queue_draw_box(1,BUTTONTESTPOSY,8,2,20);}//no button press
     if (player1_buttons & PMASK0){queue_draw_box(1,7,8,2,182);}
     if (player1_buttons & PMASK1){queue_draw_box(11,7,8,2,182);}
     if (player1_buttons & PMASK2){queue_draw_box(21,7,8,2,182);}
@@ -273,27 +267,29 @@ void ColorTest(){
 char spiralX=0;
 char spiralY=7;
 unsigned char spiralEndTimer=0;
+unsigned char GetSpiralColor(unsigned char y)
+{
+        unsigned char colorIndex = ((y)>>3) & 0b00000111;
+        unsigned char hueShift = colorIndex<<6;
+        unsigned char color = 0b000111111 | hueShift;
+        return color;
+}
 void ColorSpiral()
 {
-
     //packColor(hue,sat,lum) (7,3,7)//i.e. 111 11 111 for hue sat lum
     unsigned char x=0;
     unsigned char y=0;
-    // queue_clear_screen(256);//256 black
-    unsigned char color=0;
-        queue_clear_screen(256);//256 black
+    // // queue_clear_screen(256);//256 black
+    // unsigned char color=0;
+    queue_clear_screen(256);//256 black
 
-    for (y=8; y<=spiralY-1;y+=8){
-
-        unsigned char colorIndex = ((y)>>3) & 0b00000111;
-        unsigned char hueShift = colorIndex<<6;
-        color = 0b000111111 | hueShift;
-
+    for (y=8; y<=spiralY;y+=8){//fill in previous rows
+        //color = GetSpiralColor();
         //for (x=0; x<=spiralX;x+=8){
-            queue_draw_box(1,y,120,8,color);
+            queue_draw_box(1,y,120,8,GetSpiralColor(y-8));
         //}
     }
-    queue_draw_box(1,spiralY,spiralX+8,8,color);
+    queue_draw_box(1,spiralY,spiralX+8,8,GetSpiralColor(spiralY));//this row draws dynamically
 
     spiralX+=8;
     if (spiralX == 120) 
