@@ -274,7 +274,7 @@ unsigned char GetSpiralColor(unsigned char y)
         unsigned char color = 0b000111111 | hueShift;
         return color;
 }
-void ColorSpiral()
+void ColorSpiral(bool last)
 {
     //packColor(hue,sat,lum) (7,3,7)//i.e. 111 11 111 for hue sat lum
     unsigned char x=0;
@@ -289,13 +289,16 @@ void ColorSpiral()
             queue_draw_box(1,y,120,8,GetSpiralColor(y-8));
         //}
     }
-    queue_draw_box(1,spiralY,spiralX+8,8,GetSpiralColor(spiralY));//this row draws dynamically
-
-    spiralX+=8;
-    if (spiralX == 120) 
+    if (!last) //draws dynamic row and increments values for the next frame
     {
-        spiralX = 0;
-        spiralY +=8;
+        queue_draw_box(1,spiralY,spiralX+8,8,GetSpiralColor(spiralY));//this row draws the last row dynamically
+
+        spiralX+=8;
+        if (spiralX == 120) 
+        {
+            spiralX = 0;
+            spiralY +=8;
+        }
     }
         await_draw_queue();
         await_vsync(1);
@@ -304,14 +307,15 @@ void ColorSpiral()
         update_inputs();//optional?
 }
 void Intro_sequence(){
+    char i=0;
     while (spiralY<112){ //intro color test sequence
-        ColorSpiral();
+        ColorSpiral(false);
     }
-        await_draw_queue();
-        await_vsync(64);
-        flip_pages();
-        tick_music();
-        update_inputs();
+    spiralY=112;
+    for (i=0;i<64;i++)
+    {
+        ColorSpiral(true);
+    }
 }
 //int gamestate = 0;
 
