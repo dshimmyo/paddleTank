@@ -146,7 +146,7 @@ char buttons_to_byte(int player1_buttons) {
     return result;
 }
 
-char ClampPaddleX(char paddlex){
+int ClampPaddleX(int paddlex){
     if (paddlex < 1){
         paddlex = 1;
     } else if (paddlex>127-PADDLEWIDTH){
@@ -167,19 +167,28 @@ int setRange(char input, char inMin, char inMax, char outMin, char outMax)
 void paddleXFromPot(char potVal)
 {
     int newPotVal = setRange(potVal,32,96,0,127);//38,90 too fast,(32,96)maybe better
-    paddleX=ClampPaddleX((((char)newPotVal<<1)/3 + paddleX/3));//fast and smooth
-    //paddleX = ClampPaddleX(newPotVal);
+    paddleX=ClampPaddleX(((newPotVal<<1)/3 + paddleX/3));//fast and smooth
 }
 char ClampLeft(int x){
     if (x<1){return 1;}
     return x;
 }
+int SlowLerp(int source, int target)
+{
+    //return target/3 + (source<<1)/3;//1/3 effort
+    //return (target>>2) + ((source*3)>>2);//1/4 effort
+    //return (target/5) + ((source<<2)/5);//1/5 effort
+    //return (target/6) + ((source*5)/6);//1/6 effort
+    //return (target/7) + ((source*6)/7);//1/7 effort
+    return (target>>3) + ((source*7)>>3);//1/8 effort
+}
 void paddleXFromClosestBox(){
-    char paddlex=0;
+    int paddlex=0;
     if (box_y > boxA_y){
-        paddlex=ClampLeft(box_x - (PADDLEWIDTH>>1))/3 + (paddleX<<1)/3;//slow lerp
+        paddlex=SlowLerp(paddleX,box_x - (PADDLEWIDTH>>1));
     } else {
-        paddlex=ClampLeft(boxA_x - (PADDLEWIDTH>>1))/3 + (paddleX<<1)/3;//slow lerp
+        paddlex=SlowLerp(paddleX,boxA_x - (PADDLEWIDTH>>1));
+
     }
     paddleX = ClampPaddleX(paddlex);
 }
