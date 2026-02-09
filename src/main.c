@@ -182,13 +182,24 @@ int SlowLerp(int source, int target)
     //return (target/7) + ((source*6)/7);//1/7 effort
     return (target>>3) + ((source*7)>>3);//1/8 effort
 }
+int ConstVelocity(char source, char target, char vel){
+    int result = source;
+    if (source < target){
+        result = source + vel;
+        if (result > target) result = target;
+    }
+    else if (source > target){
+        result = source - vel;
+        if (result < target) result = target;
+    }
+    return ClampPaddleX(result);
+}
 void paddleXFromClosestBox(){
     int paddlex=0;
     if (box_y > boxA_y){
-        paddlex=SlowLerp(paddleX,box_x - (PADDLEWIDTH>>1));
+        paddlex=ConstVelocity(paddleX,box_x - (PADDLEWIDTH>>1),4);//SlowLerp(paddleX,box_x - (PADDLEWIDTH>>1));
     } else {
-        paddlex=SlowLerp(paddleX,boxA_x - (PADDLEWIDTH>>1));
-
+        paddlex=ConstVelocity(paddleX,boxA_x - (PADDLEWIDTH>>1),4);//SlowLerp(paddleX,boxA_x - (PADDLEWIDTH>>1));
     }
     paddleX = ClampPaddleX(paddlex);
 }
