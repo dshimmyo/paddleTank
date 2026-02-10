@@ -17,12 +17,19 @@
 bool demoMode = true;
 char box_x = 30, box_y = 20;
 char boxA_x = 20, boxA_y = 30;
-char boxSkipFrames = 1;//2 is pretty slow but maybe for easy mode
-char boxSkipCount = 0;
+
 char bgColor = 0;
 
 char dx = 1, dy = 1;
-char dxA = -2, dyA = 2;
+char dxA = 2, dyA = 2;//2,2
+char boxSkipFrames = 1;//subframe
+char boxASkipFrames = 0;//subframe
+
+char boxSkipCount = 0;
+char boxASkipCount = 0;
+
+
+
 char paddleX = 64;
 #define BINARYTESTPOSY 10
 char button_byte=0;
@@ -59,7 +66,6 @@ bool detectPaddleCollision(char sourceXLow,char sourceXHi,char sourceYLow,char s
 }
 
 bool boxColPrev = false;
-bool boxSkipFrame = false;
 void randomizeBox();
 void randomizeBoxA();
 void boxMotion(){
@@ -67,37 +73,39 @@ void boxMotion(){
     char px2 = paddleX + PADDLEWIDTH;//rightmost bound
     char py1 = PADDLEY;//110 //bottom bount higher number
     char py2 = PADDLEY + PADDLEHEIGHT; //top bound, lower number
-        //boxColPrev = false;//hack test
-        boxSkipFrame = !boxSkipFrame;//simulating half-speed motion
-        boxSkipCount++;
-        if (boxSkipCount >= boxSkipFrames)
-        {
-            boxSkipCount=0;
-            {
-                box_x += dx;
-                box_y += dy;
-                if(box_x <= 1) {
-                    dx = 1;
-                    soundTest();
-                } else if(box_x >= 127-BALLSIZE /*119*/) {
-                    dx = -1;
-                    soundTest();
-                }
-                if(box_y <= 7) {
-                    dy = 1;
-                    soundTest();
-                } else if(box_y >= 120-BALLSIZE){//112) {
-                    randomizeBox();
-                    soundTest();
-                }
-                if (detectPaddleCollision(box_x,box_x+BALLSIZE,box_y, box_y+BALLSIZE,px1,px2,py1,py2))
-                {
-                    dy = -1;
-                    box_y = PADDLEY-BALLSIZE;//height correction, maybe redundant
-                    soundCol();
-                }
-            }
+    if (boxSkipFrames) boxSkipCount++;
+    if (boxSkipCount >= boxSkipFrames)
+    {
+        boxSkipCount=0;
+        box_x += dx;
+        box_y += dy;
+        if(box_x == 1) {
+            boxSkipCount = boxSkipFrames+1;
+            dx = (unsigned char) dx;//1
+            soundTest();
+        } else if(box_x >= 127-BALLSIZE /*119*/) {
+            boxSkipCount = boxSkipFrames+1;
+            dx = -((unsigned char) dx);////-1;
+            soundTest();
         }
+        if(box_y <= 7) {
+            //if (dy < 0)//goes up into the ceiling
+            {
+                //boxSkipCount = boxSkipFrames+1;
+                dy = 1;//(unsigned char) dy;//1;//gets stuck here for some reason
+                soundTest();
+            }
+        } else if(box_y >= 120-BALLSIZE){//112) {
+            randomizeBox();
+            soundTest();
+        }
+        if (detectPaddleCollision(box_x,box_x+BALLSIZE,box_y, box_y+BALLSIZE,px1,px2,py1,py2))
+        {
+            dy = -((unsigned char) dy);//-1;
+            box_y = PADDLEY-BALLSIZE;//height correction, maybe redundant
+            soundCol();
+        }
+    }
 }
 
 void boxAMotion()
@@ -106,7 +114,10 @@ void boxAMotion()
     char px2 = paddleX + PADDLEWIDTH;//rightmost bound
     char py1 = PADDLEY;//110 //bottom bount higher number
     char py2 = PADDLEY + PADDLEHEIGHT; //top bound, lower number
+    if (boxSkipFrames) boxSkipCount++;
+    if (boxSkipCount >= boxSkipFrames)
     {
+        boxSkipCount=0;
         boxA_x += dxA;
         boxA_y += dyA;
         if (boxA_x <= 1) {
@@ -123,11 +134,11 @@ void boxAMotion()
             randomizeBoxA();
             soundTestA();
         }
-    }
-    if (detectPaddleCollision(boxA_x,boxA_x+BALLSIZE,boxA_y, boxA_y+BALLSIZE,px1,px2,py1,py2)){
-        dyA = -1;
-        boxA_y = PADDLEY-BALLSIZE;//height correction, maybe redundant
-        soundCol();
+        if (detectPaddleCollision(boxA_x,boxA_x+BALLSIZE,boxA_y, boxA_y+BALLSIZE,px1,px2,py1,py2)){
+            dyA = -2;
+            boxA_y = PADDLEY-BALLSIZE;//height correction, maybe redundant
+            soundCol();
+        }
     }
 }
 // Convert individual button states to a 7-bit byte
