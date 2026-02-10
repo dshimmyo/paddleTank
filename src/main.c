@@ -5,7 +5,7 @@
 #include "gt/input.h"
 #include "gt/feature/random/random.h"
 #include "paddleUtils.h"
- 
+
 #define BOXCOLOR PEACH//92
 #define BOXCOLORA ALGAE
 #define PADDLECOLOR WHITE
@@ -28,11 +28,12 @@ char boxASkipFrames = 0;//subframe
 char boxSkipCount = 0;
 char boxASkipCount = 0;
 
-
-
 char paddleX = 64;
 #define BINARYTESTPOSY 10
 char button_byte=0;
+
+char ClampLeft(int x);
+
 
 void soundTest(){
     play_sound_effect(ASSET__audio__flongNew_sfx_ID,(char)1);
@@ -68,43 +69,47 @@ bool detectPaddleCollision(char sourceXLow,char sourceXHi,char sourceYLow,char s
 bool boxColPrev = false;
 void randomizeBox();
 void randomizeBoxA();
+
 void boxMotion(){
     char px1 = paddleX;//leftmost
     char px2 = paddleX + PADDLEWIDTH;//rightmost bound
     char py1 = PADDLEY;//110 //bottom bount higher number
     char py2 = PADDLEY + PADDLEHEIGHT; //top bound, lower number
     if (boxSkipFrames) boxSkipCount++;
+
+    //check collision for every frame
+    //frameskipping/subframe should only limit incrementing movement
+    //boxes draw left-right top-down 0->127, 7->120
+
     if (boxSkipCount >= boxSkipFrames)
     {
         boxSkipCount=0;
         box_x += dx;
         box_y += dy;
-        if(box_x == 1) {
-            boxSkipCount = boxSkipFrames+1;
-            dx = (unsigned char) dx;//1
-            soundTest();
-        } else if(box_x >= 127-BALLSIZE /*119*/) {
-            boxSkipCount = boxSkipFrames+1;
-            dx = -((unsigned char) dx);////-1;
-            soundTest();
-        }
-        if(box_y <= 7) {
-            //if (dy < 0)//goes up into the ceiling
-            {
-                //boxSkipCount = boxSkipFrames+1;
-                dy = 1;//(unsigned char) dy;//1;//gets stuck here for some reason
-                soundTest();
-            }
-        } else if(box_y >= 120-BALLSIZE){//112) {
-            randomizeBox();
-            soundTest();
-        }
-        if (detectPaddleCollision(box_x,box_x+BALLSIZE,box_y, box_y+BALLSIZE,px1,px2,py1,py2))
-        {
-            dy = -((unsigned char) dy);//-1;
-            box_y = PADDLEY-BALLSIZE;//height correction, maybe redundant
-            soundCol();
-        }
+    }
+    if(box_x == 1) {
+        int temp = (unsigned char) dx;
+        if (temp > 127) temp = 1;
+        dx = 1;// (unsigned char) dx;//1//works but lingers for a few frames
+        soundTest();
+    } else if(box_x >= 127-BALLSIZE /*119*/) {
+        dx = -((unsigned char) dx);////-1;
+        soundTest();
+    }
+    if(box_y <= 7) {
+        int temp = (unsigned char) dy;
+        if (temp > 127) temp = 1;
+        dy = temp;//(unsigned char) dy;//1;//always fails to flip from negative to positive
+        soundTest();
+    } else if(box_y >= 120-BALLSIZE){//112) {
+        randomizeBox();
+        soundTest();
+    }
+    if (detectPaddleCollision(box_x,box_x+BALLSIZE,box_y, box_y+BALLSIZE,px1,px2,py1,py2))
+    {
+        dy = -((unsigned char) dy);//-1;
+        box_y = PADDLEY-BALLSIZE;//height correction, maybe redundant
+        soundCol();
     }
 }
 
