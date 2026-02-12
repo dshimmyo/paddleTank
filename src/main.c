@@ -30,7 +30,7 @@ char boxASkipCount = 0;
 
 char paddleX = 64;
 #define BINARYTESTPOSY 10
-char button_byte=0;
+unsigned char button_byte=0;
 
 char ClampLeft(int x);
 
@@ -147,7 +147,7 @@ void boxAMotion()
     }
 }
 // Convert individual button states to a 7-bit byte
-char buttons_to_byte(int player1_buttons) {
+unsigned char buttons_to_byte(int player1_buttons) {
     char result = 0;
     
     // This could be optimized further if you know your masks are powers of 2
@@ -159,6 +159,22 @@ char buttons_to_byte(int player1_buttons) {
     if (player1_buttons & PMASK5) result |= (1 << 5);
     if (player1_buttons & PMASK6) result |= (1 << 6);
     
+    return result;
+}
+// Convert individual button states to a 8-bit byte
+unsigned char buttons_to_byte_xyzm(int player1_buttons) {
+    char result = 0;
+    
+    // This could be optimized further if you know your masks are powers of 2
+    if (player1_buttons & PMASK0) result |= (1 << 0);
+    if (player1_buttons & PMASK1) result |= (1 << 1);
+    if (player1_buttons & PMASK2) result |= (1 << 2);
+    if (player1_buttons & PMASK3) result |= (1 << 3);
+    if (player1_buttons & INPUT_MASK_X) result |= (1 << 4);
+    if (player1_buttons & INPUT_MASK_Y) result |= (1 << 5);
+    if (player1_buttons & INPUT_MASK_Z) result |= (1 << 6);
+    if (player1_buttons & INPUT_MASK_MODE) result |= (1 << 7);
+
     return result;
 }
 
@@ -180,10 +196,17 @@ int setRange(char input, char inMin, char inMax, char outMin, char outMax)
     return output;
     
 }
-void paddleXFromPot(char potVal)
+char paddleXFromPot(unsigned char potVal)
 {
-    int newPotVal = setRange(potVal,32,96,0,127);//38,90 too fast,(32,96)maybe better
-    paddleX=ClampPaddleX(((newPotVal<<1)/3 + paddleX/3));//fast and smooth
+    unsigned char newPotVal = setRange(potVal,32,96,0,127);//38,90 too fast,(32,96)maybe better
+    return ClampPaddleX(((newPotVal<<1)/3 + paddleX/3));//fast and smooth
+}
+char paddleXFromPot8(unsigned char potVal)
+{
+    //unsigned char newPotVal = setRange(potVal,0b00011111,0b11100000,0,127);//changed for 8-bit
+    unsigned char newPotVal = setRange(potVal,0b01000000,0b11000000,0,127);//changed for 8-bit
+
+    return ClampPaddleX(((newPotVal<<1)/3 + paddleX/3));//fast and smooth
 }
 char ClampLeft(int x){
     if (x<1){return 1;}
@@ -210,14 +233,14 @@ int ConstVelocity(char source, char target, char vel){
     }
     return ClampPaddleX(result);
 }
-void paddleXFromClosestBox(){
+char paddleXFromClosestBox(){
     int paddlex=0;
     if (box_y > boxA_y){
         paddlex=ConstVelocity(paddleX,box_x - (PADDLEWIDTH>>1),4);//SlowLerp(paddleX,box_x - (PADDLEWIDTH>>1));
     } else {
         paddlex=ConstVelocity(paddleX,boxA_x - (PADDLEWIDTH>>1),4);//SlowLerp(paddleX,boxA_x - (PADDLEWIDTH>>1));
     }
-    paddleX = ClampPaddleX(paddlex);
+    return ClampPaddleX(paddlex);
 }
 void inputButtonsDraw()
 {
@@ -241,8 +264,7 @@ void inputBinaryDraw()
     //inputs mapped as 7 bytes from low to high (right to left)
     //up,down,left,right,a,b,c
     //128 possibilities, should map cleanly to pixels from left to right
-    queue_draw_box(0,BINARYTESTPOSY,button_byte,1,182);
-
+    queue_draw_box(0,BINARYTESTPOSY,button_byte>>1,1,182);
 }
 bool previousStart = false;
 
@@ -376,7 +398,7 @@ void BreakoutGame(){
     ColorTest();
     queue_draw_box(box_x, box_y, BALLSIZE, BALLSIZE, BOXCOLOR);
     queue_draw_box(boxA_x, boxA_y, BALLSIZE, BALLSIZE, BOXCOLORA);
-    button_byte = buttons_to_byte(player1_buttons);//gets paddle input
+    button_byte = buttons_to_byte_xyzm(player1_buttons);//gets paddle input
 
     inputButtonsDraw();//debug display
     inputBinaryDraw();//debug line
@@ -387,9 +409,9 @@ void BreakoutGame(){
 
     ToggleDemoMode();
     if (demoMode){
-        paddleXFromClosestBox();
+        paddleX = paddleXFromClosestBox();
     } else {
-        paddleXFromPot(button_byte);
+        paddleX = paddleXFromPot8(button_byte);
     }
     queue_draw_box(paddleX,PADDLEY,PADDLEWIDTH,PADDLEHEIGHT,PADDLECOLOR);//draw paddle
 }
