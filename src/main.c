@@ -14,7 +14,7 @@
 #define PADDLEY 108
 #define BALLSIZE 2
 #define BRICKSROWSIZE 14
-#define BRICKWIDTH 8
+#define BRICKWIDTH 9
 #define BRICKHEIGHT 4
 
 // typedef struct {
@@ -29,63 +29,55 @@ typedef struct {
     // char sizey;
 } Entity1;
 
-Entity1 bricks[56] = {
-    {2,20,true},
-    {11,20,true},
-    {20,20,true},
-    {29,20,true},
-    {38,20,true},
-    {47,20,true},
-    {56,20,true},
+Entity1 bricks[48] = {
+    {5,20,true},
+    {15,20,true},
+    {25,20,true},
+    {35,20,true},
+    {45,20,true},
+    {55,20,true},
     {65,20,true},
-    {74,20,true},
-    {83,20,true},
-    {92,20,true},
-    {101,20,true},
-    {110,20,true},
-    {119,20,true},
-    {2,25,true},
-    {11,25,true},
-    {20,25,true},
-    {29,25,true},
-    {38,25,true},
-    {47,25,true},
-    {56,25,true},
+    {75,20,true},
+    {85,20,true},
+    {95,20,true},
+    {105,20,true},
+    {115,20,true},
+    {5,25,true},
+    {15,25,true},
+    {25,25,true},
+    {35,25,true},
+    {45,25,true},
+    {55,25,true},
     {65,25,true},
-    {74,25,true},
-    {83,25,true},
-    {92,25,true},
-    {101,25,true},
-    {110,25,true},
-    {119,25,true},
-    {2,30,true},
-    {11,30,true},
-    {20,30,true},
-    {29,30,true},
-    {38,30,false},
-    {47,30,true},
-    {56,30,true},
+    {75,25,true},
+    {85,25,true},
+    {95,25,true},
+    {105,25,true},
+    {115,25,true},
+    {5,30,true},
+    {15,30,true},
+    {25,30,true},
+    {35,30,true},
+    {45,30,false},
+    {55,30,true},
     {65,30,true},
-    {74,30,true},
-    {83,30,true},
-    {92,30,true},
-    {101,30,true},
-    {110,30,true},
-    {119,30,true},
-    {2,35,true},
-    {11,35,true},
-    {20,35,true},
-    {29,35,true},
-    {38,35,true},
-    {47,35,true},
-    {56,35,true},
+    {75,30,true},
+    {85,30,true},
+    {95,30,true},
+    {105,30,true},
+    {115,30,true},
+    {5,35,true},
+    {15,35,true},
+    {25,35,true},
+    {35,35,true},
+    {45,35,true},
+    {55,35,true},
     {65,35,false},
-    {74,35,true},
-    {83,35,true},
-    {92,35,true},
-    {101,35,true},
-    {110,35,true},
-    {119,35,true},
+    {75,35,true},
+    {85,35,true},
+    {95,35,true},
+    {105,35,true},
+    {115,35,true},
 };
 char brickRowColors[4] = {
     0b00011111,
@@ -488,11 +480,11 @@ void DrawBricks(){
     //char color;
     for (y=0;y<4;y++)
     {
-        unsigned char yIndexOffset = y*14;
+        unsigned char yIndexOffset = y*12;
         unsigned char posy = brickRowYPos[y];
         unsigned char rowColor = brickRowColors[y];
         unsigned char x;
-        for (x=0;x<14;x++)
+        for (x=0;x<12;x++)
         {
             if (bricks[yIndexOffset + x].visible){
                 queue_draw_box(bricks[x].posx, posy, BRICKWIDTH, BRICKHEIGHT, rowColor);
