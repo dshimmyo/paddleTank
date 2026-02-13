@@ -452,7 +452,7 @@ void DrawBricks(){
 }
 void BreakoutGame(){
     queue_clear_screen(256);//256 black
-    ColorTest();
+    //ColorTest();
     queue_draw_box(box_x, box_y, BALLSIZE, BALLSIZE, BOXCOLOR);
     queue_draw_box(boxA_x, boxA_y, BALLSIZE, BALLSIZE, BOXCOLORA);
     button_byte = buttons_to_byte_xyzm(player1_buttons);//gets paddle input
