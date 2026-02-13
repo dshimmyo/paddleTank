@@ -14,6 +14,8 @@
 #define PADDLEY 108
 #define BALLSIZE 2
 #define BRICKSROWSIZE 14
+#define BRICKWIDTH 8
+#define BRICKHEIGHT 4
 
 // typedef struct {
 //     char x;
@@ -22,43 +24,80 @@
 typedef struct {
     char posx;
     char posy;
-    char sizex;
-    char sizey;
+    bool visible;
+    // char sizex;
+    // char sizey;
 } Entity1;
 
-Entity1 paddleData;
-Entity1 bricks[28] = {
-    {2,20,8,4},
-    {11,20,8,4},
-    {20,20,8,4},
-    {29,20,8,4},
-    {38,20,8,4},
-    {47,20,8,4},
-    {56,20,8,4},
-    {65,20,8,4},
-    {74,20,8,4},
-    {83,20,8,4},
-    {92,20,8,4},
-    {101,20,8,4},
-    {110,20,8,4},
-    {119,20,8,4},
-    {2,25,8,4},
-    {11,25,8,4},
-    {20,25,8,4},
-    {29,25,8,4},
-    {38,25,8,4},
-    {47,25,8,4},
-    {56,25,8,4},
-    {65,25,8,4},
-    {74,25,8,4},
-    {83,25,8,4},
-    {92,25,8,4},
-    {101,25,8,4},
-    {110,25,8,4},
-    {119,25,8,4}
+Entity1 bricks[56] = {
+    {2,20,true},
+    {11,20,true},
+    {20,20,true},
+    {29,20,true},
+    {38,20,true},
+    {47,20,true},
+    {56,20,true},
+    {65,20,true},
+    {74,20,true},
+    {83,20,true},
+    {92,20,true},
+    {101,20,true},
+    {110,20,true},
+    {119,20,true},
+    {2,25,true},
+    {11,25,true},
+    {20,25,true},
+    {29,25,true},
+    {38,25,true},
+    {47,25,true},
+    {56,25,true},
+    {65,25,true},
+    {74,25,true},
+    {83,25,true},
+    {92,25,true},
+    {101,25,true},
+    {110,25,true},
+    {119,25,true},
+    {2,30,true},
+    {11,30,true},
+    {20,30,true},
+    {29,30,true},
+    {38,30,false},
+    {47,30,true},
+    {56,30,true},
+    {65,30,true},
+    {74,30,true},
+    {83,30,true},
+    {92,30,true},
+    {101,30,true},
+    {110,30,true},
+    {119,30,true},
+    {2,35,true},
+    {11,35,true},
+    {20,35,true},
+    {29,35,true},
+    {38,35,true},
+    {47,35,true},
+    {56,35,true},
+    {65,35,false},
+    {74,35,true},
+    {83,35,true},
+    {92,35,true},
+    {101,35,true},
+    {110,35,true},
+    {119,35,true},
 };
-
+char brickRowColors[4] = {
+    0b00011111,
+    0b01011111,
+    0b10011111,
+    0b11011111
+};
+char brickRowYPos[4] = {
+    20,25,30,35
+};
 bool demoMode = true;
+bool debugMode = false;
 char box_x = 30, box_y = 20;
 char boxA_x = 20, boxA_y = 30;
 
@@ -132,8 +171,8 @@ void boxMotion(){
         box_y += dy;
     }
     if(box_x == 1) {
-        int temp = (unsigned char) dx;
-        if (temp > 127) temp = 1;
+        // int temp = (unsigned char) dx;
+        // if (temp > 127) temp = 1;
         dx = 1;// (unsigned char) dx;//1//works but lingers for a few frames
         soundTest();
     } else if(box_x >= 127-BALLSIZE /*119*/) {
@@ -442,16 +481,22 @@ void Intro_sequence(){
 }
 //int gamestate = 0;
 void DrawBricks(){
-    int x;
-    int y;
-    int index;
-    char colors[2]={YELLOW,PEACH};
-    for (y=0;y<2;y++)
+    //int x;
+    unsigned char y;
+    //int posy=0;
+    //int posx=0;
+    //char color;
+    for (y=0;y<4;y++)
     {
+        unsigned char yIndexOffset = y*14;
+        unsigned char posy = brickRowYPos[y];
+        unsigned char rowColor = brickRowColors[y];
+        unsigned char x;
         for (x=0;x<14;x++)
         {
-            index = y * 14 + x;
-            queue_draw_box(bricks[index].posx, bricks[index].posy, bricks[index].sizex, bricks[index].sizey, colors[y]);
+            if (bricks[yIndexOffset + x].visible){
+                queue_draw_box(bricks[x].posx, posy, BRICKWIDTH, BRICKHEIGHT, rowColor);
+            }
         }
     }
 }
@@ -461,8 +506,10 @@ void BreakoutGame(){
 
     button_byte = buttons_to_byte_xyzm(player1_buttons);//gets paddle input
 
-    inputButtonsDraw();//debug display
-    inputBinaryDraw();//debug line
+    if (debugMode){
+        inputButtonsDraw();//debug display
+        inputBinaryDraw();//debug line
+    }
     DrawBricks();
     boxMotion();
     boxAMotion();
@@ -479,14 +526,6 @@ void BreakoutGame(){
 }
 
 void main () {
-    Entity1 testEntity = {1,1,16,108};
-
-//     bricks[0] = {
-//     {10,20,8,4},
-//     {19,20,8,4},
-//     {27,20,8,4},
-//     {35,20,8,4}
-// };
     //init_paddle();
     init_music();
     init_game();
@@ -494,7 +533,6 @@ void main () {
     Intro_sequence();
     while (1) 
     {                                     //  Run forever
-        
         BreakoutGame();
         queue_clear_border(1);
         await_draw_queue();
@@ -502,7 +540,6 @@ void main () {
         flip_pages();
         tick_music();
         update_inputs();
-        
     }
     
 }
