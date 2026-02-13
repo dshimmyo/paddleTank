@@ -9,10 +9,29 @@
 #define BOXCOLOR PEACH//92
 #define BOXCOLORA ALGAE
 #define PADDLECOLOR WHITE
-#define PADDLEWIDTH 12
+#define PADDLEWIDTH 16
 #define PADDLEHEIGHT 4
 #define PADDLEY 108
 #define BALLSIZE 2
+
+// typedef struct {
+//     char x;
+//     char y;
+// } Vector2;
+typedef struct {
+    char posx;
+    char posy;
+    char sizex;
+    char sizey;
+} Entity1;
+
+Entity1 paddleData;
+Entity1 bricks[4] = {
+    {10,20,8,4},
+    {19,20,8,4},
+    {28,20,8,4},
+    {37,20,8,4}
+};
 
 bool demoMode = true;
 char box_x = 30, box_y = 20;
@@ -392,7 +411,12 @@ void Intro_sequence(){
         }
     }
 //int gamestate = 0;
-
+void DrawBricks(){
+    int i;
+    for (i=0;i<4;i++){
+        queue_draw_box(bricks[i].posx, bricks[i].posy, bricks[i].sizex, bricks[i].sizey, YELLOW);
+    }
+}
 void BreakoutGame(){
     queue_clear_screen(256);//256 black
     ColorTest();
@@ -402,7 +426,7 @@ void BreakoutGame(){
 
     inputButtonsDraw();//debug display
     inputBinaryDraw();//debug line
-
+    DrawBricks();
     queue_clear_border(2);
     boxMotion();
     boxAMotion();
@@ -415,7 +439,17 @@ void BreakoutGame(){
     }
     queue_draw_box(paddleX,PADDLEY,PADDLEWIDTH,PADDLEHEIGHT,PADDLECOLOR);//draw paddle
 }
+
 void main () {
+    Entity1 testEntity = {1,1,16,108};
+
+//     bricks[0] = {
+//     {10,20,8,4},
+//     {19,20,8,4},
+//     {27,20,8,4},
+//     {35,20,8,4}
+// };
+    //init_paddle();
     init_music();
     init_game();
     queue_clear_screen(256);//256 black
