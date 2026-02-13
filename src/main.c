@@ -350,32 +350,37 @@ unsigned char hue;        // 3 bits (0-7)
 
 char colorTestHueOffset = 0;
 char hueTimer = 0;
+unsigned char simplePack(unsigned char h)
+{
+    return (h & 0x07) << 5 | 0b00011111;
+}
 void ColorTest(){
     if (++hueTimer > 8) {
         colorTestHueOffset++;
         hueTimer = 0;
     }
-    hue = colorTestHueOffset % 7;
+    if (colorTestHueOffset > 7) colorTestHueOffset = 0;
+    hue = colorTestHueOffset;//colorTestHueOffset % 7;
     //saturation = 3;
     //luminosity = 7;
     //boxes draw left-right top-down 0->127, 0->120
-    queue_draw_box(0, 118, 8, 2, packColor(hue,3,7));//0b00011111);
-    queue_draw_box(8, 118, 8, 2, packColor(hue+1,3,7));//0b00111111);
-    queue_draw_box(16, 118, 8, 2, packColor(hue+2,3,7));//0b01011111);
-    queue_draw_box(24, 118, 8, 2, packColor(hue+3,3,7));//0b01111111);
-    queue_draw_box(32, 118, 8, 2, packColor(hue+4,3,7));//0b10011111);
-    queue_draw_box(40, 118, 8, 2, packColor(hue+5,3,7));//0b10111111);
-    queue_draw_box(48, 118, 8, 2, packColor(hue+6,3,7));//0b11011111);
-    queue_draw_box(56, 118, 8, 2, packColor(hue+7,3,7));//0b11111111);
+    queue_draw_box(0, 118, 8, 2, simplePack(hue));//packColor(hue,3,7));//0b00011111);
+    queue_draw_box(8, 118, 8, 2, simplePack(hue+1));//packColor(hue+1,3,7));//0b00111111);
+    queue_draw_box(16, 118, 8, 2, simplePack(hue+2));//packColor(hue+2,3,7));//0b01011111);
+    queue_draw_box(24, 118, 8, 2, simplePack(hue+3));//packColor(hue+3,3,7));//0b01111111);
+    queue_draw_box(32, 118, 8, 2, simplePack(hue+4));//packColor(hue+4,3,7));//0b10011111);
+    queue_draw_box(40, 118, 8, 2, simplePack(hue+5));//packColor(hue+5,3,7));//0b10111111);
+    queue_draw_box(48, 118, 8, 2, simplePack(hue+6));//packColor(hue+6,3,7));//0b11011111);
+    queue_draw_box(56, 118, 8, 2, simplePack(hue+7));//packColor(hue+7,3,7));//0b11111111);
 
-    queue_draw_box(64, 118, 8, 2, packColor(hue+4,3,7));//0b00011100);
-    queue_draw_box(72, 118, 8, 2, packColor(hue+3,3,7));//0b00111100);
-    queue_draw_box(80, 118, 8, 2, packColor(hue+2,3,7));//0b01011100);
-    queue_draw_box(88, 118, 8, 2, packColor(hue+1,3,7));//0b01111100);
-    queue_draw_box(96, 118, 8, 2, packColor(hue,3,7));//0b10011100);
-    queue_draw_box(104, 118, 8, 2, packColor(hue+7,3,7));//0b10111100);
-    queue_draw_box(112, 118, 8, 2, packColor(hue+6,3,7));//0b11011100);
-    queue_draw_box(120, 118, 8, 2, packColor(hue+5,3,7));//0b11111100);
+    queue_draw_box(64, 118, 8, 2, simplePack(hue+4));//packColor(hue+4,3,7));//0b00011100);
+    queue_draw_box(72, 118, 8, 2, simplePack(hue+3));//packColor(hue+3,3,7));//0b00111100);
+    queue_draw_box(80, 118, 8, 2, simplePack(hue+2));//packColor(hue+2,3,7));//0b01011100);
+    queue_draw_box(88, 118, 8, 2, simplePack(hue+1));//packColor(hue+1,3,7));//0b01111100);
+    queue_draw_box(96, 118, 8, 2, simplePack(hue));//packColor(hue,3,7));//0b10011100);
+    queue_draw_box(104, 118, 8, 2, simplePack(hue+7));//packColor(hue+7,3,7));//0b10111100);
+    queue_draw_box(112, 118, 8, 2, simplePack(hue+6));//packColor(hue+6,3,7));//0b11011100);
+    queue_draw_box(120, 118, 8, 2, simplePack(hue+5));//packColor(hue+5,3,7));//0b11111100);
 
 }
 char spiralX=0;
@@ -390,7 +395,6 @@ unsigned char GetSpiralColor(unsigned char y)
 }
 void ColorSpiral(bool last)
 {
-    //packColor(hue,sat,lum) (7,3,7)//i.e. 111 11 111 for hue sat lum
     unsigned char x=0;
     unsigned char y=0;
     // // queue_clear_screen(256);//256 black
@@ -434,7 +438,8 @@ void Intro_sequence(){
             ColorSpiral(true);
             //if (player1_buttons & INPUT_MASK_START) i=16;
         }
-    }
+    queue_clear_border(1);
+}
 //int gamestate = 0;
 void DrawBricks(){
     int x;
@@ -452,15 +457,13 @@ void DrawBricks(){
 }
 void BreakoutGame(){
     queue_clear_screen(256);//256 black
-    //ColorTest();
-    queue_draw_box(box_x, box_y, BALLSIZE, BALLSIZE, BOXCOLOR);
-    queue_draw_box(boxA_x, boxA_y, BALLSIZE, BALLSIZE, BOXCOLORA);
+    //ColorTest();//expensive calculation
+
     button_byte = buttons_to_byte_xyzm(player1_buttons);//gets paddle input
 
     inputButtonsDraw();//debug display
     inputBinaryDraw();//debug line
     DrawBricks();
-    queue_clear_border(2);
     boxMotion();
     boxAMotion();
 
@@ -470,6 +473,8 @@ void BreakoutGame(){
     } else {
         paddleX = paddleXFromPot8(button_byte);
     }
+    queue_draw_box(box_x, box_y, BALLSIZE, BALLSIZE, BOXCOLOR);
+    queue_draw_box(boxA_x, boxA_y, BALLSIZE, BALLSIZE, BOXCOLORA);
     queue_draw_box(paddleX,PADDLEY,PADDLEWIDTH,PADDLEHEIGHT,PADDLECOLOR);//draw paddle
 }
 
@@ -491,7 +496,7 @@ void main () {
     {                                     //  Run forever
         
         BreakoutGame();
-        
+        queue_clear_border(1);
         await_draw_queue();
         await_vsync(1);
         flip_pages();
