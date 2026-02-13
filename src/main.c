@@ -13,6 +13,7 @@
 #define PADDLEHEIGHT 4
 #define PADDLEY 108
 #define BALLSIZE 2
+#define BRICKSROWSIZE 14
 
 // typedef struct {
 //     char x;
@@ -26,11 +27,35 @@ typedef struct {
 } Entity1;
 
 Entity1 paddleData;
-Entity1 bricks[4] = {
-    {10,20,8,4},
-    {19,20,8,4},
-    {28,20,8,4},
-    {37,20,8,4}
+Entity1 bricks[28] = {
+    {2,20,8,4},
+    {11,20,8,4},
+    {20,20,8,4},
+    {29,20,8,4},
+    {38,20,8,4},
+    {47,20,8,4},
+    {56,20,8,4},
+    {65,20,8,4},
+    {74,20,8,4},
+    {83,20,8,4},
+    {92,20,8,4},
+    {101,20,8,4},
+    {110,20,8,4},
+    {119,20,8,4},
+    {2,25,8,4},
+    {11,25,8,4},
+    {20,25,8,4},
+    {29,25,8,4},
+    {38,25,8,4},
+    {47,25,8,4},
+    {56,25,8,4},
+    {65,25,8,4},
+    {74,25,8,4},
+    {83,25,8,4},
+    {92,25,8,4},
+    {101,25,8,4},
+    {110,25,8,4},
+    {119,25,8,4}
 };
 
 bool demoMode = true;
@@ -412,9 +437,17 @@ void Intro_sequence(){
     }
 //int gamestate = 0;
 void DrawBricks(){
-    int i;
-    for (i=0;i<4;i++){
-        queue_draw_box(bricks[i].posx, bricks[i].posy, bricks[i].sizex, bricks[i].sizey, YELLOW);
+    int x;
+    int y;
+    int index;
+    char colors[2]={YELLOW,PEACH};
+    for (y=0;y<2;y++)
+    {
+        for (x=0;x<14;x++)
+        {
+            index = y * 14 + x;
+            queue_draw_box(bricks[index].posx, bricks[index].posy, bricks[index].sizex, bricks[index].sizey, colors[y]);
+        }
     }
 }
 void BreakoutGame(){
