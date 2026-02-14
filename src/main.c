@@ -5,6 +5,7 @@
 #include "gt/input.h"
 #include "gt/feature/random/random.h"
 #include "paddleUtils.h"
+#include "scoring.h"
 
 #define BOXCOLOR WHITE//92
 #define BOXCOLORA WHITE
@@ -370,6 +371,7 @@ void init_game()
 {
     randomizeBox();
     randomizeBoxA();
+    scoring_init();
 }
 // Define the structure to hold Color properties
 unsigned char hue;        // 3 bits (0-7)
@@ -480,6 +482,7 @@ void DrawBricks(){
     }
 }
 void BreakoutGame(){
+    char * num = "   ";
     queue_clear_screen(256);//256 black
     //ColorTest();//expensive calculation
 
@@ -492,6 +495,7 @@ void BreakoutGame(){
         inputButtonsDraw();//debug display
         inputBinaryDraw();//debug line
     }
+
     DrawBricks();
     boxMotion();
     boxAMotion();
@@ -505,6 +509,8 @@ void BreakoutGame(){
     queue_draw_box(box_x, box_y, BALLSIZE, BALLSIZE, BOXCOLOR);
     queue_draw_box(boxA_x, boxA_y, BALLSIZE, BALLSIZE, BOXCOLORA);
     queue_draw_box(paddleX,PADDLEY,PADDLEWIDTH,PADDLEHEIGHT,PADDLECOLOR);//draw paddle
+    print_scores(10);
+    
 }
 
 void main () {
