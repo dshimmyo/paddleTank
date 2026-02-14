@@ -6,8 +6,8 @@
 #include "gt/feature/random/random.h"
 #include "paddleUtils.h"
 
-#define BOXCOLOR PEACH//92
-#define BOXCOLORA ALGAE
+#define BOXCOLOR WHITE//92
+#define BOXCOLORA WHITE
 #define PADDLECOLOR WHITE
 #define PADDLEWIDTH 16
 #define PADDLEHEIGHT 4
@@ -16,77 +16,76 @@
 #define BRICKSROWSIZE 14
 #define BRICKWIDTH 9
 #define BRICKHEIGHT 4
+#define BINARYTESTPOSY 10
 
-// typedef struct {
-//     char x;
-//     char y;
-// } Vector2;
 typedef struct {
     char posx;
-    char posy;
     bool visible;
     // char sizex;
     // char sizey;
 } Entity1;
 
 Entity1 bricks[48] = {
-    {5,20,true},
-    {15,20,true},
-    {25,20,true},
-    {35,20,true},
-    {45,20,true},
-    {55,20,true},
-    {65,20,true},
-    {75,20,true},
-    {85,20,true},
-    {95,20,true},
-    {105,20,true},
-    {115,20,true},
-    {5,25,true},
-    {15,25,true},
-    {25,25,true},
-    {35,25,true},
-    {45,25,true},
-    {55,25,true},
-    {65,25,true},
-    {75,25,true},
-    {85,25,true},
-    {95,25,true},
-    {105,25,true},
-    {115,25,true},
-    {5,30,true},
-    {15,30,true},
-    {25,30,true},
-    {35,30,true},
-    {45,30,false},
-    {55,30,true},
-    {65,30,true},
-    {75,30,true},
-    {85,30,true},
-    {95,30,true},
-    {105,30,true},
-    {115,30,true},
-    {5,35,true},
-    {15,35,true},
-    {25,35,true},
-    {35,35,true},
-    {45,35,true},
-    {55,35,true},
-    {65,35,false},
-    {75,35,true},
-    {85,35,true},
-    {95,35,true},
-    {105,35,true},
-    {115,35,true},
+    {5,true},
+    {15,true},
+    {25,true},
+    {35,true},
+    {45,true},
+    {55,true},
+    {65,true},
+    {75,true},
+    {85,true},
+    {95,true},
+    {105,true},
+    {115,true},
+    {5,true},
+    {15,true},
+    {25,true},
+    {35,true},
+    {45,true},
+    {55,true},
+    {65,true},
+    {75,true},
+    {85,true},
+    {95,true},
+    {105,true},
+    {115,true},
+    {5,true},
+    {15,true},
+    {25,true},
+    {35,true},
+    {45,false},
+    {55,true},
+    {65,true},
+    {75,true},
+    {85,true},
+    {95,true},
+    {105,true},
+    {115,true},
+    {5,true},
+    {15,true},
+    {25,true},
+    {35,true},
+    {45,true},
+    {55,true},
+    {65,false},
+    {75,true},
+    {85,true},
+    {95,true},
+    {105,true},
+    {115,true},
 };
-char brickRowColors[4] = {
-    0b00011111,
-    0b01011111,
-    0b10011111,
-    0b11011111
+unsigned char brickColumnPos[12] = {
+    5,15,25,35,45,55,65,75,85,95,105,115
 };
-char brickRowYPos[4] = {
-    20,25,30,35
+unsigned char brickRowColors[4] = {
+    0b01011011,//2
+    0b00011111,//0
+    0b10111011,//4 , 5
+    0b01111011//3
+};
+unsigned char brickRowYPos[4] = {
+    25,30,35,40
 };
 bool demoMode = true;
 bool debugMode = false;
@@ -104,7 +103,6 @@ char boxSkipCount = 0;
 char boxASkipCount = 0;
 
 char paddleX = 64;
-#define BINARYTESTPOSY 10
 unsigned char button_byte=0;
 
 char ClampLeft(int x);
@@ -166,16 +164,16 @@ void boxMotion(){
         // int temp = (unsigned char) dx;
         // if (temp > 127) temp = 1;
         dx = 1;// (unsigned char) dx;//1//works but lingers for a few frames
-        soundTest();
+        soundTestA();
     } else if(box_x >= 127-BALLSIZE /*119*/) {
         dx = -((unsigned char) dx);////-1;
-        soundTest();
+        soundTestA();
     }
     if(box_y <= 7) {
         int temp = (unsigned char) dy;
         if (temp > 127) temp = 1;
         dy = temp;//(unsigned char) dy;//1;//always fails to flip from negative to positive
-        soundTest();
+        soundTestA();
     } else if(box_y >= 120-BALLSIZE){//112) {
         randomizeBox();
         soundTest();
@@ -212,7 +210,7 @@ void boxAMotion()
             soundTestA();
         } else if(boxA_y >= 120-BALLSIZE/*112*/) {
             randomizeBoxA();
-            soundTestA();
+            soundTest();
         }
         if (detectPaddleCollision(boxA_x,boxA_x+BALLSIZE,boxA_y, boxA_y+BALLSIZE,px1,px2,py1,py2)){
             dyA = -2;
@@ -428,15 +426,10 @@ void ColorSpiral(bool last)
 {
     unsigned char x=0;
     unsigned char y=0;
-    // // queue_clear_screen(256);//256 black
-    // unsigned char color=0;
     queue_clear_screen(256);//256 black
 
     for (y=8; y<=spiralY;y+=8){//fill in previous rows
-        //color = GetSpiralColor();
-        //for (x=0; x<=spiralX;x+=8){
-            queue_draw_box(1,y,120,8,GetSpiralColor(y-8));
-        //}
+        queue_draw_box(1,y,120,8,GetSpiralColor(y-8));
     }
     if (!last) //draws dynamic row and increments values for the next frame
     {
@@ -473,11 +466,7 @@ void Intro_sequence(){
 }
 //int gamestate = 0;
 void DrawBricks(){
-    //int x;
     unsigned char y;
-    //int posy=0;
-    //int posx=0;
-    //char color;
     for (y=0;y<4;y++)
     {
         unsigned char yIndexOffset = y*12;
@@ -487,7 +476,7 @@ void DrawBricks(){
         for (x=0;x<12;x++)
         {
             if (bricks[yIndexOffset + x].visible){
-                queue_draw_box(bricks[x].posx, posy, BRICKWIDTH, BRICKHEIGHT, rowColor);
+                queue_draw_box(brickColumnPos[x], posy, BRICKWIDTH, BRICKHEIGHT, rowColor);
             }
         }
     }
@@ -526,7 +515,7 @@ void main () {
     while (1) 
     {                                     //  Run forever
         BreakoutGame();
-        queue_clear_border(1);
+        queue_clear_border(2);
         await_draw_queue();
         await_vsync(1);
         flip_pages();
