@@ -5,6 +5,7 @@
 #include "gt/input.h"
 #include "gt/feature/random/random.h"
 #include "paddleUtils.h"
+#include "scoring.h"
 
 #define BOXCOLOR WHITE//92
 #define BOXCOLORA WHITE
@@ -19,61 +20,74 @@
 #define BINARYTESTPOSY 10
 
 typedef struct {
-    char posx;
+    //char posx;
     bool visible;
     // char sizex;
     // char sizey;
 } Entity1;
 
 Entity1 bricks[48] = {
-    {5,true},
-    {15,true},
-    {25,true},
-    {35,true},
-    {45,true},
-    {55,true},
-    {65,true},
-    {75,true},
-    {85,true},
-    {95,true},
-    {105,true},
-    {115,true},
-    {5,true},
-    {15,true},
-    {25,true},
-    {35,true},
-    {45,true},
-    {55,true},
-    {65,true},
-    {75,true},
-    {85,true},
-    {95,true},
-    {105,true},
-    {115,true},
-    {5,true},
-    {15,true},
-    {25,true},
-    {35,true},
-    {45,false},
-    {55,true},
-    {65,true},
-    {75,true},
-    {85,true},
-    {95,true},
-    {105,true},
-    {115,true},
-    {5,true},
-    {15,true},
-    {25,true},
-    {35,true},
-    {45,true},
-    {55,true},
-    {65,false},
-    {75,true},
-    {85,true},
-    {95,true},
-    {105,true},
-    {115,true},
+    {true},
+    {true},
+    {true},
+    {true},
+    {true},
+    {true},
+    {true},
+    {true},
+    {true},
+    {true},
+    {true},
+    {true},
+    {true},
+    {true},
+    {true},
+    {true},
+    {true},
+    {true},
+    {true},
+    {true},
+    {true},
+    {true},
+    {true},
+    {true},
+    {true},
+    {true},
+    {true},
+    {true},
+    {false},
+    {true},
+    {true},
+    {true},
+    {true},
+    {true},
+    {true},
+    {true},
+    {true},
+    {true},
+    {true},
+    {true},
+    {true},
+    {true},
+    {false},
+    {true},
+    {true},
+    {true},
+    {true},
+    {true},
+};
+typedef struct {
+    unsigned char posy;
+    unsigned char color;
+    // char sizex;
+    // char sizey;
+} ROW;
+
+ROW brickRow[4] = {
+    {25,0b01011011},
+    {30,0b00011111},
+    {35,0b10111011},
+    {40,0b01111011}
 };
 unsigned char brickColumnPos[12] = {
     5,15,25,35,45,55,65,75,85,95,105,115
@@ -104,7 +118,7 @@ char boxASkipCount = 0;
 
 char paddleX = 64;
 unsigned char button_byte=0;
-
+int numCollisions = 0;
 char ClampLeft(int x);
 
 
@@ -113,6 +127,7 @@ void soundTest(){
 }
 void soundTestA(){
     play_sound_effect(ASSET__audio__chirp_sfx_ID,(char)1);
+    numCollisions++;
 }
 void soundCol(){
     play_sound_effect(ASSET__audio__bik_sfx_ID,(char)1);
@@ -219,30 +234,16 @@ void boxAMotion()
         }
     }
 }
-// Convert individual button states to a 7-bit byte
-unsigned char buttons_to_byte(int player1_buttons) {
-    char result = 0;
-    
-    // This could be optimized further if you know your masks are powers of 2
-    if (player1_buttons & PMASK0) result |= (1 << 0);
-    if (player1_buttons & PMASK1) result |= (1 << 1);
-    if (player1_buttons & PMASK2) result |= (1 << 2);
-    if (player1_buttons & PMASK3) result |= (1 << 3);
-    if (player1_buttons & PMASK4) result |= (1 << 4);
-    if (player1_buttons & PMASK5) result |= (1 << 5);
-    if (player1_buttons & PMASK6) result |= (1 << 6);
-    
-    return result;
-}
+
 // Convert individual button states to a 8-bit byte
 unsigned char buttons_to_byte_xyzm(int player1_buttons) {
     char result = 0;
     
     // This could be optimized further if you know your masks are powers of 2
-    if (player1_buttons & PMASK0) result |= (1 << 0);
-    if (player1_buttons & PMASK1) result |= (1 << 1);
-    if (player1_buttons & PMASK2) result |= (1 << 2);
-    if (player1_buttons & PMASK3) result |= (1 << 3);
+    if (player1_buttons & INPUT_MASK_UP) result |= (1 << 0);
+    if (player1_buttons & INPUT_MASK_DOWN) result |= (1 << 1);
+    if (player1_buttons & INPUT_MASK_LEFT) result |= (1 << 2);
+    if (player1_buttons & INPUT_MASK_RIGHT) result |= (1 << 3);
     if (player1_buttons & INPUT_MASK_X) result |= (1 << 4);
     if (player1_buttons & INPUT_MASK_Y) result |= (1 << 5);
     if (player1_buttons & INPUT_MASK_Z) result |= (1 << 6);
@@ -262,10 +263,20 @@ int ClampPaddleX(int paddlex){
 int setRange(char input, char inMin, char inMax, char outMin, char outMax)
 {
     int output = 0;
-    if (input<inMin)input=inMin;
-    else if (input>inMax)input=inMax;
+    if (input<inMin)return outMin;
+    else if (input>inMax)return outMax;
 
     output = ((outMax - outMin)*256/(inMax-inMin)*(input-inMin)/256 + outMin);
+    return output;
+    
+}
+setRangeOpt(char input, char inMin, char inMax)
+{
+    int output = 0;
+    if (input<inMin)return 0;
+    else if (input>inMax)return 127;
+
+    output = (127*256/(inMax-inMin)*(input-inMin)/256);
     return output;
     
 }
@@ -280,6 +291,13 @@ char paddleXFromPot8(unsigned char potVal)
     unsigned char newPotVal = setRange(potVal,0b01000000,0b11000000,0,127);//changed for 8-bit
 
     return ClampPaddleX(((newPotVal<<1)/3 + paddleX/3));//fast and smooth
+}
+char paddleXFromPot8opt(unsigned char potVal)
+{
+    //need to make a cheaper setrange function
+    unsigned char newPotVal = setRangeOpt(potVal,0b01000000,0b11000000);//changed for 8-bit
+
+    return ClampPaddleX(newPotVal);//(((newPotVal<<1)/3 + paddleX/3));//no smoothing
 }
 char ClampLeft(int x){
     if (x<1){return 1;}
@@ -318,18 +336,18 @@ char paddleXFromClosestBox(){
 void inputButtonsDraw()
 {
     //input testing
-    if (player1_buttons & PMASK0){queue_draw_box(1,7,8,2,182);}
-    if (player1_buttons & PMASK1){queue_draw_box(11,7,8,2,182);}
-    if (player1_buttons & PMASK2){queue_draw_box(21,7,8,2,182);}
-    if (player1_buttons & PMASK3){queue_draw_box(31,7,8,2,182);}
-    if (player1_buttons & PMASK4){queue_draw_box(41,7,8,2,182);}
-    if (player1_buttons & PMASK5){queue_draw_box(51,7,8,2,182);}
-    if (player1_buttons & PMASK6){queue_draw_box(61,7,8,2,182);}
-    if (player1_buttons & PMASK7){queue_draw_box(71,7,8,2,182);}
-    if (player1_buttons & INPUT_MASK_X){queue_draw_box(81,7,8,2,199);}//mode
-    if (player1_buttons & INPUT_MASK_Y){queue_draw_box(91,7,8,2,199);}//x
-    if (player1_buttons & INPUT_MASK_Z){queue_draw_box(101,7,8,2,199);}//Z
-    if (player1_buttons & INPUT_MASK_MODE){queue_draw_box(111,7,8,2,199);}//Z
+    if (player1_buttons & INPUT_MASK_UP){queue_draw_box(1,7,8,2,182);}
+    if (player1_buttons & INPUT_MASK_DOWN){queue_draw_box(11,7,8,2,182);}
+    if (player1_buttons & INPUT_MASK_LEFT){queue_draw_box(21,7,8,2,182);}
+    if (player1_buttons & INPUT_MASK_RIGHT){queue_draw_box(31,7,8,2,182);}
+    if (player1_buttons & INPUT_MASK_A){queue_draw_box(41,7,8,2,182);}
+    if (player1_buttons & INPUT_MASK_B){queue_draw_box(51,7,8,2,182);}
+    if (player1_buttons & INPUT_MASK_C){queue_draw_box(61,7,8,2,182);}
+    if (player1_buttons & INPUT_MASK_START){queue_draw_box(71,7,8,2,182);}
+    if (player1_buttons & INPUT_MASK_X){queue_draw_box(81,7,8,2,199);}//x
+    if (player1_buttons & INPUT_MASK_Y){queue_draw_box(91,7,8,2,199);}//y
+    if (player1_buttons & INPUT_MASK_Z){queue_draw_box(101,7,8,2,199);}//z
+    if (player1_buttons & INPUT_MASK_MODE){queue_draw_box(111,7,8,2,199);}//mode
 
 }
 void inputBinaryDraw()
@@ -339,20 +357,20 @@ void inputBinaryDraw()
     //128 possibilities, should map cleanly to pixels from left to right
     queue_draw_box(0,BINARYTESTPOSY,button_byte>>1,1,182);
 }
-bool previousStart = false;
+//bool previousStart = false;
 
 void ToggleDemoMode()
 {
-    if (player1_buttons & INPUT_MASK_START)
+    if (player1_buttons & INPUT_MASK_START && ~player1_old_buttons & INPUT_MASK_START)
     {
-        if (!previousStart){
+        //if (!previousStart){
             demoMode = !demoMode;
-        }
-        previousStart = true;
+        //}
+        //previousStart = true;
     }
-    else {
-        previousStart = false;
-    }
+    // else {
+    //     previousStart = false;
+    // }
 }
 
 void randomizeBox(){
@@ -371,6 +389,7 @@ void init_game()
 {
     randomizeBox();
     randomizeBoxA();
+    scoring_init();
 }
 // Define the structure to hold Color properties
 unsigned char hue;        // 3 bits (0-7)
@@ -453,14 +472,13 @@ void Intro_sequence(){
     bool skipSequence=false;
     while (spiralY<112 && !skipSequence){ //intro color test sequence
         ColorSpiral(false);
-        if (player1_buttons & INPUT_MASK_START) skipSequence=true;
+        if (player1_buttons & INPUT_MASK_START && ~player1_old_buttons & INPUT_MASK_START) skipSequence=true;
     }
 
     spiralY=112;
     for (i=0;i<64;i++)
         {
             ColorSpiral(true);
-            //if (player1_buttons & INPUT_MASK_START) i=16;
         }
     queue_clear_border(1);
 }
@@ -470,8 +488,8 @@ void DrawBricks(){
     for (y=0;y<4;y++)
     {
         unsigned char yIndexOffset = y*12;
-        unsigned char posy = brickRowYPos[y];
-        unsigned char rowColor = brickRowColors[y];
+        unsigned char posy = brickRow[y].posy;//brickRowYPos[y];
+        unsigned char rowColor = brickRow[y].color;//brickRowColors[y];
         unsigned char x;
         for (x=0;x<12;x++)
         {
@@ -482,15 +500,20 @@ void DrawBricks(){
     }
 }
 void BreakoutGame(){
+    char * num = "   ";
     queue_clear_screen(256);//256 black
     //ColorTest();//expensive calculation
 
     button_byte = buttons_to_byte_xyzm(player1_buttons);//gets paddle input
-
+    if (player1_buttons & INPUT_MASK_A && ~player1_old_buttons & INPUT_MASK_A) 
+    {
+        debugMode = !debugMode;
+    }
     if (debugMode){
         inputButtonsDraw();//debug display
         inputBinaryDraw();//debug line
     }
+
     DrawBricks();
     boxMotion();
     boxAMotion();
@@ -499,11 +522,13 @@ void BreakoutGame(){
     if (demoMode){
         paddleX = paddleXFromClosestBox();
     } else {
-        paddleX = paddleXFromPot8(button_byte);
+        paddleX = paddleXFromPot8opt(button_byte);
     }
     queue_draw_box(box_x, box_y, BALLSIZE, BALLSIZE, BOXCOLOR);
     queue_draw_box(boxA_x, boxA_y, BALLSIZE, BALLSIZE, BOXCOLORA);
     queue_draw_box(paddleX,PADDLEY,PADDLEWIDTH,PADDLEHEIGHT,PADDLECOLOR);//draw paddle
+    print_scores(numCollisions);
+    
 }
 
 void main () {
