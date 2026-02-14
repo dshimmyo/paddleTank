@@ -71,7 +71,7 @@ void text_print_string(char* str) {
                 }
                 vram[VX] = text_cursor_x;
                 vram[GX] = ((text_tmp & 0x0F) << 3) | font_offset_x;
-                vram[GY] = (text_tmp & 0x70) | font_offset_y;
+                vram[GY] = ((text_tmp & 0x70) >> 1) + font_offset_y;
                 vram[START] = 1;
                 text_cursor_x += TEXT_CHAR_WIDTH;
                 wait();
