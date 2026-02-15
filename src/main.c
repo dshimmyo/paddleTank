@@ -263,10 +263,20 @@ int ClampPaddleX(int paddlex){
 int setRange(char input, char inMin, char inMax, char outMin, char outMax)
 {
     int output = 0;
-    if (input<inMin)input=inMin;
-    else if (input>inMax)input=inMax;
+    if (input<inMin)return outMin;
+    else if (input>inMax)return outMax;
 
     output = ((outMax - outMin)*256/(inMax-inMin)*(input-inMin)/256 + outMin);
+    return output;
+    
+}
+setRangeOpt(char input, char inMin, char inMax)
+{
+    int output = 0;
+    if (input<inMin)return 0;
+    else if (input>inMax)return 127;
+
+    output = (127*256/(inMax-inMin)*(input-inMin)/256);
     return output;
     
 }
@@ -281,6 +291,13 @@ char paddleXFromPot8(unsigned char potVal)
     unsigned char newPotVal = setRange(potVal,0b01000000,0b11000000,0,127);//changed for 8-bit
 
     return ClampPaddleX(((newPotVal<<1)/3 + paddleX/3));//fast and smooth
+}
+char paddleXFromPot8opt(unsigned char potVal)
+{
+    //need to make a cheaper setrange function
+    unsigned char newPotVal = setRangeOpt(potVal,0b01000000,0b11000000);//changed for 8-bit
+
+    return ClampPaddleX(newPotVal);//(((newPotVal<<1)/3 + paddleX/3));//no smoothing
 }
 char ClampLeft(int x){
     if (x<1){return 1;}
@@ -505,7 +522,7 @@ void BreakoutGame(){
     if (demoMode){
         paddleX = paddleXFromClosestBox();
     } else {
-        paddleX = paddleXFromPot8(button_byte);
+        paddleX = paddleXFromPot8opt(button_byte);
     }
     queue_draw_box(box_x, box_y, BALLSIZE, BALLSIZE, BOXCOLOR);
     queue_draw_box(boxA_x, boxA_y, BALLSIZE, BALLSIZE, BOXCOLORA);
