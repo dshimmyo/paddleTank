@@ -118,7 +118,7 @@ char boxASkipCount = 0;
 
 char paddleX = 64;
 unsigned char button_byte=0;
-
+int numCollisions = 0;
 char ClampLeft(int x);
 
 
@@ -127,6 +127,7 @@ void soundTest(){
 }
 void soundTestA(){
     play_sound_effect(ASSET__audio__chirp_sfx_ID,(char)1);
+    numCollisions++;
 }
 void soundCol(){
     play_sound_effect(ASSET__audio__bik_sfx_ID,(char)1);
@@ -509,7 +510,7 @@ void BreakoutGame(){
     queue_draw_box(box_x, box_y, BALLSIZE, BALLSIZE, BOXCOLOR);
     queue_draw_box(boxA_x, boxA_y, BALLSIZE, BALLSIZE, BOXCOLORA);
     queue_draw_box(paddleX,PADDLEY,PADDLEWIDTH,PADDLEHEIGHT,PADDLECOLOR);//draw paddle
-    print_scores(10);
+    print_scores(numCollisions);
     
 }
 
