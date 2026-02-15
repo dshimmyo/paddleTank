@@ -1,3 +1,4 @@
+#include "scoring.h"
 #include "gt/feature/text/text.h"
 #include <stdio.h>
 #include <stdint.h>
