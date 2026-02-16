@@ -19,88 +19,101 @@
 #define BRICKHEIGHT 4
 #define BINARYTESTPOSY 10
 
+#define NUMBRICKSH 16 
+#define NUMBRICKSV 5
+#define BRICKSYSTART 25
 typedef struct {
-    //char posx;
-    bool visible;
-    // char sizex;
-    // char sizey;
-} Entity1;
+    bool visible[NUMBRICKSH];
+    char color;
+} EntityRow;
+EntityRow testRow = {{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},0b11111111};
+EntityRow brickRows[NUMBRICKSV] = {
+{{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},0b01011011},
+{{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},0b00111101},
+{{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},0b00011111},
+{{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},0b11111101},
+{{1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1},0b10111100}
+};//should initialize this in an init function
 
-Entity1 bricks[48] = {
-    {true},
-    {true},
-    {true},
-    {true},
-    {true},
-    {true},
-    {true},
-    {true},
-    {true},
-    {true},
-    {true},
-    {true},
-    {true},
-    {true},
-    {true},
-    {true},
-    {true},
-    {true},
-    {true},
-    {true},
-    {true},
-    {true},
-    {true},
-    {true},
-    {true},
-    {true},
-    {true},
-    {true},
-    {false},
-    {true},
-    {true},
-    {true},
-    {true},
-    {true},
-    {true},
-    {true},
-    {true},
-    {true},
-    {true},
-    {true},
-    {true},
-    {true},
-    {false},
-    {true},
-    {true},
-    {true},
-    {true},
-    {true},
-};
-typedef struct {
-    unsigned char posy;
-    unsigned char color;
-    // char sizex;
-    // char sizey;
-} ROW;
+// typedef struct {
+//     bool visible;
+// } Entity1;
 
-ROW brickRow[4] = {
-    {25,0b01011011},
-    {30,0b00011111},
-    {35,0b10111011},
-    {40,0b01111011}
-};
-unsigned char brickColumnPos[12] = {
-    5,15,25,35,45,55,65,75,85,95,105,115
-};
-unsigned char brickRowColors[4] = {
-    0b01011011,//2
-    0b00011111,//0
-    0b10111011,//4 , 5
-    0b01111011//3
-};
-unsigned char brickRowYPos[4] = {
-    25,30,35,40
-};
+// Entity1 bricks[48] = {
+//     {true},
+//     {true},
+//     {true},
+//     {true},
+//     {true},
+//     {true},
+//     {true},
+//     {true},
+//     {true},
+//     {true},
+//     {true},
+//     {true},
+//     {true},
+//     {true},
+//     {true},
+//     {true},
+//     {true},
+//     {true},
+//     {true},
+//     {true},
+//     {true},
+//     {true},
+//     {true},
+//     {true},
+//     {true},
+//     {true},
+//     {true},
+//     {true},
+//     {false},
+//     {true},
+//     {true},
+//     {true},
+//     {true},
+//     {true},
+//     {true},
+//     {true},
+//     {true},
+//     {true},
+//     {true},
+//     {true},
+//     {true},
+//     {true},
+//     {false},
+//     {true},
+//     {true},
+//     {true},
+//     {true},
+//     {true},
+// };
+// typedef struct {
+//     unsigned char posy;
+//     unsigned char color;
+//     // char sizex;
+//     // char sizey;
+// } ROW;
+
+// ROW brickRow[4] = {
+//     {25,0b01011011},
+//     {30,0b00011111},
+//     {35,0b10111011},
+//     {40,0b01111011}
+// };
+// unsigned char brickColumnPos[12] = {
+//     5,15,25,35,45,55,65,75,85,95,105,115
+// };
+// unsigned char brickRowColors[4] = {
+//     0b01011011,//2
+//     0b00011111,//0
+//     0b10111011,//4 , 5
+//     0b01111011//3
+// };
+// unsigned char brickRowYPos[4] = {
+//     25,30,35,40
+// };
 bool demoMode = true;
 bool debugMode = false;
 char box_x = 30, box_y = 20;
@@ -485,16 +498,18 @@ void Intro_sequence(){
 //int gamestate = 0;
 void DrawBricks(){
     unsigned char y;
-    for (y=0;y<4;y++)
+    for (y=0;y<NUMBRICKSV;y++)  
     {
-        unsigned char yIndexOffset = y*12;
-        unsigned char posy = brickRow[y].posy;//brickRowYPos[y];
-        unsigned char rowColor = brickRow[y].color;//brickRowColors[y];
+        //unsigned char yIndexOffset = y*NUMBRICKSH;
+        unsigned char posy = BRICKSYSTART + BRICKHEIGHT * y;//brickRow[y].posy;//brickRowYPos[y];
+        unsigned char rowColor = brickRows[y].color;//brickRowColors[y];
         unsigned char x;
-        for (x=0;x<12;x++)
+        for (x=0;x<NUMBRICKSH;x++)
         {
-            if (bricks[yIndexOffset + x].visible){
-                queue_draw_box(brickColumnPos[x], posy, BRICKWIDTH, BRICKHEIGHT, rowColor);
+            //if (bricks[yIndexOffset + x].visible){
+            if (brickRows[y].visible[x]){
+                //queue_draw_box(brickColumnPos[x], posy, BRICKWIDTH, BRICKHEIGHT, rowColor);
+                queue_draw_box(x * BRICKWIDTH,posy,BRICKWIDTH,BRICKHEIGHT,rowColor);
             }
         }
     }
