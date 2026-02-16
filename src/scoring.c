@@ -36,7 +36,7 @@ void print_scores(int num)
 {
     char buffer = "";
     text_init();
-    text_color = 0;
+    text_color = TEXT_COLOR_WHITE;
     text_cursor_y = 10;
     text_cursor_x = 5;
     if (num > 9999) text_print_string("9999");
