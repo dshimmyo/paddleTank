@@ -123,8 +123,7 @@ void boxMotion(){
     } else if(box_y >= 120-BALLSIZE){//112) {
         randomizeBox();
         soundTest();
-    }
-    if (detectPaddleCollision(box_x,box_x+BALLSIZE,box_y, box_y+BALLSIZE,px1,px2,py1,py2))
+    } else if (detectPaddleCollision(box_x,box_x+BALLSIZE,box_y, box_y+BALLSIZE,px1,px2,py1,py2))
     {
         dy = (dy>0) ? -dy : dy;
         box_y = PADDLEY-BALLSIZE;//height correction, maybe redundant
@@ -157,8 +156,7 @@ void boxAMotion()
         } else if(boxA_y >= 120-BALLSIZE/*112*/) {
             randomizeBoxA();
             soundTest();
-        }
-        if (detectPaddleCollision(boxA_x,boxA_x+BALLSIZE,boxA_y, boxA_y+BALLSIZE,px1,px2,py1,py2)){
+        } else if (detectPaddleCollision(boxA_x,boxA_x+BALLSIZE,boxA_y, boxA_y+BALLSIZE,px1,px2,py1,py2)){
             dyA = (dyA>0) ? -dyA : dyA;
             boxA_y = PADDLEY-BALLSIZE;//height correction, maybe redundant
             soundCol();
