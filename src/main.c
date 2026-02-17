@@ -42,8 +42,8 @@ char boxA_x = 20, boxA_y = 30;
 
 char bgColor = 0;
 
-char dx = 1, dy = 1;
-char dxA = 2, dyA = 2;//2,2
+int dx = 256, dy = 256;//change from char to int, try 256 multiplier
+int dxA = 512, dyA = 512;//2,2
 char boxSkipFrames = 1;//subframe
 char boxASkipFrames = 0;//subframe
 
@@ -88,6 +88,7 @@ bool detectPaddleCollision(char sourceXLow,char sourceXHi,char sourceYLow,char s
 
 }
 
+
 bool boxColPrev = false;
 void randomizeBox();
 void randomizeBoxA();
@@ -106,22 +107,18 @@ void boxMotion(){
     if (boxSkipCount >= boxSkipFrames)
     {
         boxSkipCount=0;
-        box_x += dx;
-        box_y += dy;
+        box_x += dx/256;
+        box_y += dy/256;
     }
     if(box_x == 1) {
-        // int temp = (unsigned char) dx;
-        // if (temp > 127) temp = 1;
-        dx = 1;// (unsigned char) dx;//1//works but lingers for a few frames
+        dx = (dx<0) ? -dx : dx;
         soundTestA();
     } else if(box_x >= 127-BALLSIZE /*119*/) {
-        dx = -((unsigned char) dx);////-1;
+        dx = (dx>0) ? -dx : dx;
         soundTestA();
     }
     if(box_y <= 7) {
-        int temp = (unsigned char) dy;
-        if (temp > 127) temp = 1;
-        dy = temp;//(unsigned char) dy;//1;//always fails to flip from negative to positive
+        dy = (dy<0) ? -dy : dy;
         soundTestA();
     } else if(box_y >= 120-BALLSIZE){//112) {
         randomizeBox();
@@ -129,7 +126,7 @@ void boxMotion(){
     }
     if (detectPaddleCollision(box_x,box_x+BALLSIZE,box_y, box_y+BALLSIZE,px1,px2,py1,py2))
     {
-        dy = -((unsigned char) dy);//-1;
+        dy = (dy>0) ? -dy : dy;
         box_y = PADDLEY-BALLSIZE;//height correction, maybe redundant
         soundCol();
     }
@@ -145,24 +142,24 @@ void boxAMotion()
     if (boxSkipCount >= boxSkipFrames)
     {
         boxSkipCount=0;
-        boxA_x += dxA;
-        boxA_y += dyA;
+        boxA_x += dxA/256;
+        boxA_y += dyA/256;
         if (boxA_x <= 1) {
-            dxA = 2;
+            dxA = (dxA<0) ? -dxA : dxA;
             soundTestA();
         } else if(boxA_x >= 127-BALLSIZE/*119*/) {
-            dxA = -2;
+            dxA = (dxA>0) ? -dxA : dxA;
             soundTestA();
         }
         if(boxA_y <= 7) {
-            dyA = 2;
+            dyA = (dyA<0) ? -dyA : dyA;
             soundTestA();
         } else if(boxA_y >= 120-BALLSIZE/*112*/) {
             randomizeBoxA();
             soundTest();
         }
         if (detectPaddleCollision(boxA_x,boxA_x+BALLSIZE,boxA_y, boxA_y+BALLSIZE,px1,px2,py1,py2)){
-            dyA = -2;
+            dyA = (dyA>0) ? -dyA : dyA;
             boxA_y = PADDLEY-BALLSIZE;//height correction, maybe redundant
             soundCol();
         }
