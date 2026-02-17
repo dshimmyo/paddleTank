@@ -43,7 +43,6 @@ char boxA_x = 20, boxA_y = 30;
 char bgColor = 0;
 
 //256 is 1 pixel per frame
-//change to 32 and allow up to 128
 int dx = 192, dy = 128;//change from char to int, try 256 multiplier
 int dxA = 512, dyA = 512;//2,2
 
@@ -103,11 +102,10 @@ void boxMotion()
     //boxes draw left-right top-down 0->127, 7->120
     int dxTot = dx + dxRem;
     int dyTot = dy + dyRem;
-
     if ((unsigned int) dxTot >= 255 || (unsigned int) dyTot >= 255)
     {
-        box_x += dxTot/256;
-        box_y += dyTot/256;
+        box_x += dxTot>>8;
+        box_y += dyTot>>8;
         if(box_x <= 1) {
             dx = (dx<0) ? -dx : dx;
             soundTestA();
@@ -127,8 +125,8 @@ void boxMotion()
             soundCol();
         }
     }
-    dxRem = dxTot % 256;//update the remainder for sub-frame movement
-    dyRem = dyTot % 256;//update the remainder for sub-frame movement
+    dxRem = dxTot & 255;// % 256;//update the remainder for sub-frame movement
+    dyRem = dyTot & 255;//% 256;//update the remainder for sub-frame movement
 }
 
 int dxARem=0;//remainder
@@ -142,11 +140,10 @@ void boxAMotion()
 
     int dxATot = dxA + dxARem;
     int dyATot = dyA + dyARem;
-
     if ((unsigned int) dxATot >= 255 || (unsigned int) dyATot >= 255)
     {
-        boxA_x += dxATot/256;
-        boxA_y += dyATot/256;
+        boxA_x += dxATot>>8;
+        boxA_y += dyATot>>8;
         if (boxA_x <= 1) {
             dxA = (dxA<0) ? -dxA : dxA;
             soundTestA();
@@ -166,8 +163,8 @@ void boxAMotion()
             soundCol();
         }
     }
-    dxARem = dxATot % 256;//update the remainder for sub-frame movement
-    dyARem = dyATot % 256;//update the remainder for sub-frame movement
+    dxARem = dxATot & 255;//% 256;//update the remainder for sub-frame movement
+    dyARem = dyATot & 255;//% 256;//update the remainder for sub-frame movement
 }
 
 // Convert individual button states to a 8-bit byte
