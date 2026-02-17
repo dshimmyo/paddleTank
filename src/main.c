@@ -42,13 +42,8 @@ char boxA_x = 20, boxA_y = 30;
 
 char bgColor = 0;
 
-int dx = 256, dy = 256;//change from char to int, try 256 multiplier
+int dx = 192, dy = 128;//change from char to int, try 256 multiplier
 int dxA = 512, dyA = 512;//2,2
-char boxSkipFrames = 1;//subframe
-char boxASkipFrames = 0;//subframe
-
-char boxSkipCount = 0;
-char boxASkipCount = 0;
 
 char paddleX = 64;
 unsigned char button_byte=0;
@@ -93,24 +88,30 @@ bool boxColPrev = false;
 void randomizeBox();
 void randomizeBoxA();
 
-void boxMotion(){
+int dxRem=0;//remainder
+int dyRem=0;
+void boxMotion()
+{
     char px1 = paddleX;//leftmost
     char px2 = paddleX + PADDLEWIDTH;//rightmost bound
     char py1 = PADDLEY;//110 //bottom bount higher number
     char py2 = PADDLEY + PADDLEHEIGHT; //top bound, lower number
-    if (boxSkipFrames) boxSkipCount++;
 
     //check collision for every frame
     //frameskipping/subframe should only limit incrementing movement
     //boxes draw left-right top-down 0->127, 7->120
+    int dxTot = dx + dxRem;
+    int dyTot = dy + dyRem;
 
-    if (boxSkipCount >= boxSkipFrames)
+    if ((unsigned int) dxTot >= 255 || (unsigned int) dyTot >= 255)
     {
-        boxSkipCount=0;
-        box_x += dx/256;
-        box_y += dy/256;
+        box_x += (dxTot)/256;
+        box_y += (dyTot)/256;
     }
-    if(box_x == 1) {
+    dxRem = dxTot % 256;//update the remainder for sub-frame movement
+    dyRem = dyTot % 256;//update the remainder for sub-frame movement
+
+    if(box_x <= 1) {
         dx = (dx<0) ? -dx : dx;
         soundTestA();
     } else if(box_x >= 127-BALLSIZE /*119*/) {
@@ -123,44 +124,50 @@ void boxMotion(){
     } else if(box_y >= 120-BALLSIZE){//112) {
         randomizeBox();
         soundTest();
-    } else if (detectPaddleCollision(box_x,box_x+BALLSIZE,box_y, box_y+BALLSIZE,px1,px2,py1,py2))
-    {
+    } else if (detectPaddleCollision(box_x,box_x+BALLSIZE,box_y, box_y+BALLSIZE,px1,px2,py1,py2)){
         dy = (dy>0) ? -dy : dy;
         box_y = PADDLEY-BALLSIZE;//height correction, maybe redundant
         soundCol();
     }
 }
 
+int dxARem=0;//remainder
+int dyARem=0;
 void boxAMotion()
 {
     char px1 = paddleX;//leftmost
     char px2 = paddleX + PADDLEWIDTH;//rightmost bound
     char py1 = PADDLEY;//110 //bottom bount higher number
     char py2 = PADDLEY + PADDLEHEIGHT; //top bound, lower number
-    if (boxSkipFrames) boxSkipCount++;
-    if (boxSkipCount >= boxSkipFrames)
+
+    int dxATot = dxA + dxARem;
+    int dyATot = dyA + dyARem;
+
+    if ((unsigned int) dxATot >= 255 || (unsigned int) dyATot >= 255)
     {
-        boxSkipCount=0;
-        boxA_x += dxA/256;
-        boxA_y += dyA/256;
-        if (boxA_x <= 1) {
-            dxA = (dxA<0) ? -dxA : dxA;
-            soundTestA();
-        } else if(boxA_x >= 127-BALLSIZE/*119*/) {
-            dxA = (dxA>0) ? -dxA : dxA;
-            soundTestA();
-        }
-        if(boxA_y <= 7) {
-            dyA = (dyA<0) ? -dyA : dyA;
-            soundTestA();
-        } else if(boxA_y >= 120-BALLSIZE/*112*/) {
-            randomizeBoxA();
-            soundTest();
-        } else if (detectPaddleCollision(boxA_x,boxA_x+BALLSIZE,boxA_y, boxA_y+BALLSIZE,px1,px2,py1,py2)){
-            dyA = (dyA>0) ? -dyA : dyA;
-            boxA_y = PADDLEY-BALLSIZE;//height correction, maybe redundant
-            soundCol();
-        }
+        boxA_x += dxATot/256;
+        boxA_y += dyATot/256;
+    }
+    dxARem = dxATot % 256;//update the remainder for sub-frame movement
+    dyARem = dyATot % 256;//update the remainder for sub-frame movement
+    
+    if (boxA_x <= 1) {
+        dxA = (dxA<0) ? -dxA : dxA;
+        soundTestA();
+    } else if(boxA_x >= 127-BALLSIZE/*119*/) {
+        dxA = (dxA>0) ? -dxA : dxA;
+        soundTestA();
+    }
+    if(boxA_y <= 7) {
+        dyA = (dyA<0) ? -dyA : dyA;
+        soundTestA();
+    } else if(boxA_y >= 120-BALLSIZE/*112*/) {
+        randomizeBoxA();
+        soundTest();
+    } else if (detectPaddleCollision(boxA_x,boxA_x+BALLSIZE,boxA_y, boxA_y+BALLSIZE,px1,px2,py1,py2)){
+        dyA = (dyA>0) ? -dyA : dyA;
+        boxA_y = PADDLEY-BALLSIZE;//height correction, maybe redundant
+        soundCol();
     }
 }
 
