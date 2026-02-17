@@ -42,6 +42,8 @@ char boxA_x = 20, boxA_y = 30;
 
 char bgColor = 0;
 
+//256 is 1 pixel per frame
+//change to 32 and allow up to 128
 int dx = 192, dy = 128;//change from char to int, try 256 multiplier
 int dxA = 512, dyA = 512;//2,2
 
@@ -83,7 +85,6 @@ bool detectPaddleCollision(char sourceXLow,char sourceXHi,char sourceYLow,char s
 
 }
 
-
 bool boxColPrev = false;
 void randomizeBox();
 void randomizeBoxA();
@@ -105,30 +106,29 @@ void boxMotion()
 
     if ((unsigned int) dxTot >= 255 || (unsigned int) dyTot >= 255)
     {
-        box_x += (dxTot)/256;
-        box_y += (dyTot)/256;
+        box_x += dxTot/256;
+        box_y += dyTot/256;
+        if(box_x <= 1) {
+            dx = (dx<0) ? -dx : dx;
+            soundTestA();
+        } else if(box_x >= 127-BALLSIZE /*119*/) {
+            dx = (dx>0) ? -dx : dx;
+            soundTestA();
+        }
+        if(box_y <= 7) {
+            dy = (dy<0) ? -dy : dy;
+            soundTestA();
+        } else if(box_y >= 120-BALLSIZE){//112) {
+            randomizeBox();
+            soundTest();
+        } else if (detectPaddleCollision(box_x,box_x+BALLSIZE,box_y, box_y+BALLSIZE,px1,px2,py1,py2)){
+            dy = (dy>0) ? -dy : dy;
+            box_y = PADDLEY-BALLSIZE;//height correction, maybe redundant
+            soundCol();
+        }
     }
     dxRem = dxTot % 256;//update the remainder for sub-frame movement
     dyRem = dyTot % 256;//update the remainder for sub-frame movement
-
-    if(box_x <= 1) {
-        dx = (dx<0) ? -dx : dx;
-        soundTestA();
-    } else if(box_x >= 127-BALLSIZE /*119*/) {
-        dx = (dx>0) ? -dx : dx;
-        soundTestA();
-    }
-    if(box_y <= 7) {
-        dy = (dy<0) ? -dy : dy;
-        soundTestA();
-    } else if(box_y >= 120-BALLSIZE){//112) {
-        randomizeBox();
-        soundTest();
-    } else if (detectPaddleCollision(box_x,box_x+BALLSIZE,box_y, box_y+BALLSIZE,px1,px2,py1,py2)){
-        dy = (dy>0) ? -dy : dy;
-        box_y = PADDLEY-BALLSIZE;//height correction, maybe redundant
-        soundCol();
-    }
 }
 
 int dxARem=0;//remainder
@@ -147,28 +147,27 @@ void boxAMotion()
     {
         boxA_x += dxATot/256;
         boxA_y += dyATot/256;
+        if (boxA_x <= 1) {
+            dxA = (dxA<0) ? -dxA : dxA;
+            soundTestA();
+        } else if(boxA_x >= 127-BALLSIZE/*119*/) {
+            dxA = (dxA>0) ? -dxA : dxA;
+            soundTestA();
+        }
+        if(boxA_y <= 7) {
+            dyA = (dyA<0) ? -dyA : dyA;
+            soundTestA();
+        } else if(boxA_y >= 120-BALLSIZE/*112*/) {
+            randomizeBoxA();
+            soundTest();
+        } else if (detectPaddleCollision(boxA_x,boxA_x+BALLSIZE,boxA_y, boxA_y+BALLSIZE,px1,px2,py1,py2)){
+            dyA = (dyA>0) ? -dyA : dyA;
+            boxA_y = PADDLEY-BALLSIZE;//height correction, maybe redundant
+            soundCol();
+        }
     }
     dxARem = dxATot % 256;//update the remainder for sub-frame movement
     dyARem = dyATot % 256;//update the remainder for sub-frame movement
-    
-    if (boxA_x <= 1) {
-        dxA = (dxA<0) ? -dxA : dxA;
-        soundTestA();
-    } else if(boxA_x >= 127-BALLSIZE/*119*/) {
-        dxA = (dxA>0) ? -dxA : dxA;
-        soundTestA();
-    }
-    if(boxA_y <= 7) {
-        dyA = (dyA<0) ? -dyA : dyA;
-        soundTestA();
-    } else if(boxA_y >= 120-BALLSIZE/*112*/) {
-        randomizeBoxA();
-        soundTest();
-    } else if (detectPaddleCollision(boxA_x,boxA_x+BALLSIZE,boxA_y, boxA_y+BALLSIZE,px1,px2,py1,py2)){
-        dyA = (dyA>0) ? -dyA : dyA;
-        boxA_y = PADDLEY-BALLSIZE;//height correction, maybe redundant
-        soundCol();
-    }
 }
 
 // Convert individual button states to a 8-bit byte
