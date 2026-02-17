@@ -14,8 +14,8 @@
 #define PADDLEHEIGHT 4
 #define PADDLEY 108
 #define BALLSIZE 2
-#define BRICKSROWSIZE 14
-#define BRICKWIDTH 9
+#define BRICKSROWSIZE 16
+#define BRICKWIDTH 8
 #define BRICKHEIGHT 4
 #define BINARYTESTPOSY 10
 
@@ -35,85 +35,6 @@ EntityRow brickRows[NUMBRICKSV] = {
 {{1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1},0b10111100}
 };//should initialize this in an init function
 
-// typedef struct {
-//     bool visible;
-// } Entity1;
-
-// Entity1 bricks[48] = {
-//     {true},
-//     {true},
-//     {true},
-//     {true},
-//     {true},
-//     {true},
-//     {true},
-//     {true},
-//     {true},
-//     {true},
-//     {true},
-//     {true},
-//     {true},
-//     {true},
-//     {true},
-//     {true},
-//     {true},
-//     {true},
-//     {true},
-//     {true},
-//     {true},
-//     {true},
-//     {true},
-//     {true},
-//     {true},
-//     {true},
-//     {true},
-//     {true},
-//     {false},
-//     {true},
-//     {true},
-//     {true},
-//     {true},
-//     {true},
-//     {true},
-//     {true},
-//     {true},
-//     {true},
-//     {true},
-//     {true},
-//     {true},
-//     {true},
-//     {false},
-//     {true},
-//     {true},
-//     {true},
-//     {true},
-//     {true},
-// };
-// typedef struct {
-//     unsigned char posy;
-//     unsigned char color;
-//     // char sizex;
-//     // char sizey;
-// } ROW;
-
-// ROW brickRow[4] = {
-//     {25,0b01011011},
-//     {30,0b00011111},
-//     {35,0b10111011},
-//     {40,0b01111011}
-// };
-// unsigned char brickColumnPos[12] = {
-//     5,15,25,35,45,55,65,75,85,95,105,115
-// };
-// unsigned char brickRowColors[4] = {
-//     0b01011011,//2
-//     0b00011111,//0
-//     0b10111011,//4 , 5
-//     0b01111011//3
-// };
-// unsigned char brickRowYPos[4] = {
-//     25,30,35,40
-// };
 bool demoMode = true;
 bool debugMode = false;
 char box_x = 30, box_y = 20;
@@ -409,41 +330,41 @@ unsigned char hue;        // 3 bits (0-7)
 //unsigned char saturation; // 2 bits (0-3)
 //unsigned char luminosity; // 3 bits (0-7)
 
-char colorTestHueOffset = 0;
-char hueTimer = 0;
-unsigned char simplePack(unsigned char h)
-{
-    return (h & 0x07) << 5 | 0b00011111;
-}
-void ColorTest(){
-    if (++hueTimer > 8) {
-        colorTestHueOffset++;
-        hueTimer = 0;
-    }
-    if (colorTestHueOffset > 7) colorTestHueOffset = 0;
-    hue = colorTestHueOffset;//colorTestHueOffset % 7;
-    //saturation = 3;
-    //luminosity = 7;
-    //boxes draw left-right top-down 0->127, 0->120
-    queue_draw_box(0, 118, 8, 2, simplePack(hue));//packColor(hue,3,7));//0b00011111);
-    queue_draw_box(8, 118, 8, 2, simplePack(hue+1));//packColor(hue+1,3,7));//0b00111111);
-    queue_draw_box(16, 118, 8, 2, simplePack(hue+2));//packColor(hue+2,3,7));//0b01011111);
-    queue_draw_box(24, 118, 8, 2, simplePack(hue+3));//packColor(hue+3,3,7));//0b01111111);
-    queue_draw_box(32, 118, 8, 2, simplePack(hue+4));//packColor(hue+4,3,7));//0b10011111);
-    queue_draw_box(40, 118, 8, 2, simplePack(hue+5));//packColor(hue+5,3,7));//0b10111111);
-    queue_draw_box(48, 118, 8, 2, simplePack(hue+6));//packColor(hue+6,3,7));//0b11011111);
-    queue_draw_box(56, 118, 8, 2, simplePack(hue+7));//packColor(hue+7,3,7));//0b11111111);
+// char colorTestHueOffset = 0;
+// char hueTimer = 0;
+// unsigned char simplePack(unsigned char h)
+// {
+//     return (h & 0x07) << 5 | 0b00011111;
+// }
+// void ColorTest(){
+//     if (++hueTimer > 8) {
+//         colorTestHueOffset++;
+//         hueTimer = 0;
+//     }
+//     if (colorTestHueOffset > 7) colorTestHueOffset = 0;
+//     hue = colorTestHueOffset;//colorTestHueOffset % 7;
+//     //saturation = 3;
+//     //luminosity = 7;
+//     //boxes draw left-right top-down 0->127, 0->120
+//     queue_draw_box(0, 118, 8, 2, simplePack(hue));//packColor(hue,3,7));//0b00011111);
+//     queue_draw_box(8, 118, 8, 2, simplePack(hue+1));//packColor(hue+1,3,7));//0b00111111);
+//     queue_draw_box(16, 118, 8, 2, simplePack(hue+2));//packColor(hue+2,3,7));//0b01011111);
+//     queue_draw_box(24, 118, 8, 2, simplePack(hue+3));//packColor(hue+3,3,7));//0b01111111);
+//     queue_draw_box(32, 118, 8, 2, simplePack(hue+4));//packColor(hue+4,3,7));//0b10011111);
+//     queue_draw_box(40, 118, 8, 2, simplePack(hue+5));//packColor(hue+5,3,7));//0b10111111);
+//     queue_draw_box(48, 118, 8, 2, simplePack(hue+6));//packColor(hue+6,3,7));//0b11011111);
+//     queue_draw_box(56, 118, 8, 2, simplePack(hue+7));//packColor(hue+7,3,7));//0b11111111);
 
-    queue_draw_box(64, 118, 8, 2, simplePack(hue+4));//packColor(hue+4,3,7));//0b00011100);
-    queue_draw_box(72, 118, 8, 2, simplePack(hue+3));//packColor(hue+3,3,7));//0b00111100);
-    queue_draw_box(80, 118, 8, 2, simplePack(hue+2));//packColor(hue+2,3,7));//0b01011100);
-    queue_draw_box(88, 118, 8, 2, simplePack(hue+1));//packColor(hue+1,3,7));//0b01111100);
-    queue_draw_box(96, 118, 8, 2, simplePack(hue));//packColor(hue,3,7));//0b10011100);
-    queue_draw_box(104, 118, 8, 2, simplePack(hue+7));//packColor(hue+7,3,7));//0b10111100);
-    queue_draw_box(112, 118, 8, 2, simplePack(hue+6));//packColor(hue+6,3,7));//0b11011100);
-    queue_draw_box(120, 118, 8, 2, simplePack(hue+5));//packColor(hue+5,3,7));//0b11111100);
+//     queue_draw_box(64, 118, 8, 2, simplePack(hue+4));//packColor(hue+4,3,7));//0b00011100);
+//     queue_draw_box(72, 118, 8, 2, simplePack(hue+3));//packColor(hue+3,3,7));//0b00111100);
+//     queue_draw_box(80, 118, 8, 2, simplePack(hue+2));//packColor(hue+2,3,7));//0b01011100);
+//     queue_draw_box(88, 118, 8, 2, simplePack(hue+1));//packColor(hue+1,3,7));//0b01111100);
+//     queue_draw_box(96, 118, 8, 2, simplePack(hue));//packColor(hue,3,7));//0b10011100);
+//     queue_draw_box(104, 118, 8, 2, simplePack(hue+7));//packColor(hue+7,3,7));//0b10111100);
+//     queue_draw_box(112, 118, 8, 2, simplePack(hue+6));//packColor(hue+6,3,7));//0b11011100);
+//     queue_draw_box(120, 118, 8, 2, simplePack(hue+5));//packColor(hue+5,3,7));//0b11111100);
 
-}
+// }
 char spiralX=0;
 char spiralY=7;
 unsigned char spiralEndTimer=0;
@@ -496,6 +417,14 @@ void Intro_sequence(){
     queue_clear_border(1);
 }
 //int gamestate = 0;
+
+unsigned char ClampX(unsigned char num)
+{
+    unsigned char result;
+    result = (num < 0) ? 0 : num;
+    result = (result > 127) ? 127 : result;
+    return result;
+}
 void DrawBricks(){
     unsigned char y;
     for (y=0;y<NUMBRICKSV;y++)  
@@ -507,9 +436,36 @@ void DrawBricks(){
         for (x=0;x<NUMBRICKSH;x++)
         {
             //if (bricks[yIndexOffset + x].visible){
-            if (brickRows[y].visible[x]){
+            if (brickRows[y].visible[x])
+            {//if current brick is visible, draw the box
+                unsigned char numBricksWidth = 1;
+                unsigned char newX = x;
+                unsigned char xDrawStart;
+                unsigned char brickDrawWidth;
+                if (x<NUMBRICKSH-1){//if it isn't the last box check the next brick in the sequence
+                    bool done = false;
+                    while (!done){
+                        if (newX>=NUMBRICKSH-1){//end
+                            done = true;
+                        } else if (!brickRows[y].visible[newX+1]){
+                            done = true;
+                        }
+                        else {
+                            numBricksWidth++;
+                            newX++;
+                        }              
+                    }
+                }//if it is NUMBRICKSH-1 brick it will draw it
+                //if (numBricksWidth>NUMBRICKSH) numBricksWidth=NUMBRICKSH;//total hack
                 //queue_draw_box(brickColumnPos[x], posy, BRICKWIDTH, BRICKHEIGHT, rowColor);
-                queue_draw_box(x * BRICKWIDTH,posy,BRICKWIDTH,BRICKHEIGHT,rowColor);
+
+
+                xDrawStart = x * BRICKWIDTH;
+                brickDrawWidth = BRICKWIDTH * numBricksWidth;
+                if (xDrawStart + brickDrawWidth > 127) brickDrawWidth-=1;//last brick index is one pixel short?
+
+                queue_draw_box(xDrawStart,posy,brickDrawWidth,BRICKHEIGHT,rowColor);
+                x=newX;
             }
         }
     }
