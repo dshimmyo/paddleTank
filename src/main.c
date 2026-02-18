@@ -198,17 +198,17 @@ int setRange(char input, char inMin, char inMax, char outMin, char outMax)
     if (input<inMin)return outMin;
     else if (input>inMax)return outMax;
 
-    output = ((outMax - outMin)*256/(inMax-inMin)*(input-inMin)/256 + outMin);
+    output = ((outMax - outMin)<<8/(inMax-inMin)*(input-inMin))>>8 + outMin;
     return output;
     
 }
-setRangeOpt(char input, char inMin, char inMax)
+int setRangeOpt(char input, char inMin, char inMax)
 {
     int output = 0;
     if (input<inMin)return 0;
     else if (input>inMax)return 127;
 
-    output = (127*256/(inMax-inMin)*(input-inMin)/256);
+    output = ((127<<8)/(inMax-inMin)*(input-inMin)>>8);
     return output;
     
 }
@@ -324,7 +324,7 @@ void init_game()
     scoring_init();
 }
 // Define the structure to hold Color properties
-unsigned char hue;        // 3 bits (0-7)
+//unsigned char hue;        // 3 bits (0-7)
 //unsigned char saturation; // 2 bits (0-3)
 //unsigned char luminosity; // 3 bits (0-7)
 
