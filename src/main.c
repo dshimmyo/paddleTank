@@ -26,13 +26,17 @@ typedef struct {
     bool visible[NUMBRICKSH];
     char color;
 } EntityRow;
-EntityRow testRow = {{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},0b11111111};
-EntityRow brickRows[NUMBRICKSV] = {
-{{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},0b01011011},
-{{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},0b00111101},
-{{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},0b00011111},
-{{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},0b11111101},
-{{1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1},0b10111100}
+typedef struct {
+    unsigned long visibleByte16;
+    char color;
+} EntityRow16;
+EntityRow16 testRow = {0b1111111111111111,0b11111111};
+EntityRow16 brickRows[NUMBRICKSV] = {
+{0b1111111111111111,0b01011011},
+{0b1111111111111111,0b00111101},
+{0b1111111111111111,0b00011111},
+{0b1111111111111111,0b11111101},
+{0b0111111110110111,0b10111100}
 };//should initialize this in an init function
 
 bool demoMode = true;
@@ -431,10 +435,12 @@ void DrawBricks(){
         unsigned char posy = BRICKSYSTART + BRICKHEIGHT * y;//brickRow[y].posy;//brickRowYPos[y];
         unsigned char rowColor = brickRows[y].color;//brickRowColors[y];
         unsigned char x;
+        unsigned long rowByte = brickRows[y].visibleByte16;
         for (x=0;x<NUMBRICKSH;x++)
         {
             //if (bricks[yIndexOffset + x].visible){
-            if (brickRows[y].visible[x])
+            if (rowByte & (1 << x))
+            //if ((rowByte << x) & 1)
             {//if current brick is visible, draw the box
                 unsigned char numBricksWidth = 1;
                 unsigned char newX = x;
@@ -445,7 +451,7 @@ void DrawBricks(){
                     while (!done){
                         if (newX>=NUMBRICKSH-1){//end
                             done = true;
-                        } else if (!brickRows[y].visible[newX+1]){
+                        } else if (!(rowByte & (1 << (newX+1)))){//next brick is invisible
                             done = true;
                         }
                         else {
