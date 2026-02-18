@@ -21,18 +21,25 @@
 
 #define NUMBRICKSH 16 
 #define NUMBRICKSV 5
-#define BRICKSYSTART 25
+
+// These compile to immediate values in assembly
+#define BRICK_TOP    25
+#define BRICK_BOTTOM 44
+#define BRICK_LEFT   0
+#define BRICK_RIGHT  127
+
+void check_brick_collision(unsigned char,unsigned char, int *);
+
 typedef struct {
     bool visible[NUMBRICKSH];
     char color;
 } EntityRow;
-EntityRow testRow = {{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},0b11111111};
 EntityRow brickRows[NUMBRICKSV] = {
 {{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},0b01011011},
 {{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},0b00111101},
-{{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},0b00011111},
-{{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},0b11111101},
-{{1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1},0b10111100}
+{{1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1},0b00011111},
+{{1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1},0b11111101},
+{{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},0b10111100}
 };//should initialize this in an init function
 
 bool demoMode = true;
@@ -43,12 +50,14 @@ char boxA_x = 20, boxA_y = 30;
 char bgColor = 0;
 
 //256 is 1 pixel per frame
-int dx = 192, dy = 128;//change from char to int, try 256 multiplier
+int dx = 256, dy = 256;//change from char to int, try 256 multiplier
 int dxA = 512, dyA = 512;//2,2
 
 char paddleX = 64;
 unsigned char button_byte=0;
-int numCollisions = 0;
+//int numCollisions = 0;
+unsigned int score = 0;
+
 char ClampLeft(int x);
 
 
@@ -57,7 +66,7 @@ void soundTest(){
 }
 void soundTestA(){
     play_sound_effect(ASSET__audio__chirp_sfx_ID,(char)1);
-    numCollisions++;
+    //numCollisions++;
 }
 void soundCol(){
     play_sound_effect(ASSET__audio__bik_sfx_ID,(char)1);
@@ -123,6 +132,8 @@ void boxMotion()
             dy = (dy>0) ? -dy : dy;
             box_y = PADDLEY-BALLSIZE;//height correction, maybe redundant
             soundCol();
+        } else {
+            check_brick_collision(box_x,box_y,&dy);
         }
     }
     dxRem = dxTot & 255;// % 256;//update the remainder for sub-frame movement
@@ -161,6 +172,8 @@ void boxAMotion()
             dyA = (dyA>0) ? -dyA : dyA;
             boxA_y = PADDLEY-BALLSIZE;//height correction, maybe redundant
             soundCol();
+        } else {
+            check_brick_collision(boxA_x,boxA_y,&dyA);
         }
     }
     dxARem = dxATot & 255;//% 256;//update the remainder for sub-frame movement
@@ -317,11 +330,21 @@ void randomizeBoxA(){
     if (rnd_range(0,10) > 5) dxA = -dxA;
     if (rnd_range(0,10) > 5) dyA = -dyA;
 }
+
+unsigned char numBricks = 0;
+
 void init_game()
 {
+    unsigned char x;
+    unsigned char y;
+    numBricks = NUMBRICKSH * NUMBRICKSV;
+    for (y = 0; y<NUMBRICKSV; y++){
+        for (x=0; x<NUMBRICKSH; x++){
+            brickRows[y].visible[x]=1;
+        }
+    }
     randomizeBox();
     randomizeBoxA();
-    scoring_init();
 }
 // Define the structure to hold Color properties
 //unsigned char hue;        // 3 bits (0-7)
@@ -432,7 +455,7 @@ void DrawBricks(){
     for (y=0;y<NUMBRICKSV;y++)  
     {
         //unsigned char yIndexOffset = y*NUMBRICKSH;
-        unsigned char posy = BRICKSYSTART + BRICKHEIGHT * y;//brickRow[y].posy;//brickRowYPos[y];
+        unsigned char posy = BRICK_TOP + BRICKHEIGHT * y;//brickRow[y].posy;//brickRowYPos[y];
         unsigned char rowColor = brickRows[y].color;//brickRowColors[y];
         unsigned char x;
         for (x=0;x<NUMBRICKSH;x++)
@@ -472,11 +495,40 @@ void DrawBricks(){
         }
     }
 }
+
+// brick_visible[5][16] - 1 = visible, 0 = destroyed
+//uint8_t brick_visible[5][16];
+
+void check_brick_collision(unsigned char ball_x, unsigned char ball_y, int *ball_dy) {
+    unsigned char col;
+    unsigned char row;
+    // Quick reject if ball not in brick zone
+    if (ball_y < BRICK_TOP || ball_y > BRICK_BOTTOM) return;
+    //if (ball_x < 0 || ball_x > 127) return;
+    
+    // Convert to brick coordinates
+    col = ball_x >> 3;        // 0-15
+    row = (ball_y - 25) >> 2;  // 0-4
+    
+    //if (brick_visible[row][col]) {
+    if (brickRows[row].visible[col]){
+        // Destroy brick
+        brickRows[row].visible[col] = 0;
+        
+        // *ball_dy = (*ball_dy<0) ? -(*ball_dy) : *ball_dy;
+        //*ball_dy = (*ball_dy<0) ? -(*ball_dy) : (unsigned int) *ball_dy;
+        *ball_dy = -(*ball_dy);
+        soundTestA();
+        score++;
+        numBricks--;
+    }
+}
+
 void BreakoutGame(){
     char * num = "   ";
     queue_clear_screen(256);//256 black
     //ColorTest();//expensive calculation
-
+    if (!numBricks) init_game();
     button_byte = buttons_to_byte_xyzm(player1_buttons);//gets paddle input
     if (player1_buttons & INPUT_MASK_A && ~player1_old_buttons & INPUT_MASK_A) 
     {
@@ -500,16 +552,17 @@ void BreakoutGame(){
     queue_draw_box(box_x, box_y, BALLSIZE, BALLSIZE, BOXCOLOR);
     queue_draw_box(boxA_x, boxA_y, BALLSIZE, BALLSIZE, BOXCOLORA);
     queue_draw_box(paddleX,PADDLEY,PADDLEWIDTH,PADDLEHEIGHT,PADDLECOLOR);//draw paddle
-    print_scores(numCollisions);
+    print_scores(score);
     
 }
-
 void main () {
     //init_paddle();
     init_music();
     init_game();
+    scoring_init();
     queue_clear_screen(256);//256 black
     Intro_sequence();
+
     while (1) 
     {                                     //  Run forever
         BreakoutGame();
