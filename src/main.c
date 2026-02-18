@@ -364,14 +364,18 @@ void init_game()
 
 // }
 char spiralX=0;
-char spiralY=7;
+char spiralY=8;
 unsigned char spiralEndTimer=0;
 unsigned char GetSpiralColor(unsigned char y)
 {
-        unsigned char colorIndex = ((y)>>3) & 0b00000111;
-        unsigned char hueShift = colorIndex<<6;
-        unsigned char color = 0b000111111 | hueShift;
-        return color;
+        // unsigned char colorIndex = ((y)>>3) & 0b00000111;
+        // unsigned char hueShift = colorIndex<<6;
+        // unsigned char color = 0b000111111 | hueShift;
+        //return color;
+
+        //using brick row colors
+        return brickRows[y % 5].color;
+
 }
 void ColorSpiral(bool last)
 {
@@ -379,12 +383,12 @@ void ColorSpiral(bool last)
     unsigned char y=0;
     queue_clear_screen(256);//256 black
 
-    for (y=8; y<=spiralY;y+=8){//fill in previous rows
-        queue_draw_box(1,y,120,8,GetSpiralColor(y-8));
+    for (y=8; y<spiralY;y+=8){//fill in previous rows
+        queue_draw_box(1,y,120,8,GetSpiralColor((y>>3)-1));
     }
     if (!last) //draws dynamic row and increments values for the next frame
     {
-        queue_draw_box(1,spiralY,spiralX+8,8,GetSpiralColor(spiralY));//this row draws the last row dynamically
+        queue_draw_box(1,spiralY,spiralX+8,8,GetSpiralColor((spiralY>>3)-1));//this row draws the last row dynamically
 
         spiralX+=8;
         if (spiralX == 120) 
@@ -418,8 +422,8 @@ void Intro_sequence(){
 
 unsigned char ClampX(unsigned char num)
 {
-    unsigned char result;
-    result = (num < 0) ? 0 : num;
+    unsigned char result = num;
+    //result = (num < 0) ? 0 : num; //unsigned
     result = (result > 127) ? 127 : result;
     return result;
 }
