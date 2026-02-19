@@ -6,6 +6,7 @@
 #include "gt/feature/random/random.h"
 #include "paddleUtils.h"
 #include "scoring.h"
+#include "gt/gfx/draw_direct.h"
 
 #define BOXCOLOR WHITE//92
 #define BOXCOLORA WHITE
@@ -450,8 +451,10 @@ unsigned char ClampX(unsigned char num)
     result = (result > 127) ? 127 : result;
     return result;
 }
+
 void DrawBricks(){
     unsigned char y;
+    direct_prepare_box_mode();
     for (y=0;y<NUMBRICKSV;y++)  
     {
         //unsigned char yIndexOffset = y*NUMBRICKSH;
@@ -481,19 +484,19 @@ void DrawBricks(){
                         }              
                     }
                 }//if it is NUMBRICKSH-1 brick it will draw it
-                //if (numBricksWidth>NUMBRICKSH) numBricksWidth=NUMBRICKSH;//total hack
-                //queue_draw_box(brickColumnPos[x], posy, BRICKWIDTH, BRICKHEIGHT, rowColor);
-
-
                 xDrawStart = x * BRICKWIDTH;
                 brickDrawWidth = BRICKWIDTH * numBricksWidth;
                 if (xDrawStart + brickDrawWidth > 127) brickDrawWidth-=1;//last brick index is one pixel short?
-
-                queue_draw_box(xDrawStart,posy,brickDrawWidth,BRICKHEIGHT,rowColor);
+                //queue_draw_box(xDrawStart,posy,brickDrawWidth,BRICKHEIGHT,rowColor);
+                //draw_brick_box(xDrawStart,posy,brickDrawWidth,rowColor);
+                DIRECT_DRAW_COLOR(xDrawStart, posy, brickDrawWidth, BRICKHEIGHT, rowColor);
                 x=newX;
+                //draw_brick_box(y,x, rowColor);
+
             }
         }
     }
+
 }
 
 // brick_visible[5][16] - 1 = visible, 0 = destroyed
