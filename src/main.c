@@ -94,8 +94,7 @@ bool detectPaddleCollision(char sourceXLow,char sourceXHi,char sourceYLow,char s
 }
 
 bool boxColPrev = false;
-void randomizeBox();
-void randomizeBoxA();
+void randomizeBox(char *_box_x, char *_box_y, int *_dx, int *_dy);
 
 int dxRem=0;//remainder
 int dyRem=0;
@@ -126,7 +125,7 @@ void boxMotion()
             dy = (dy<0) ? -dy : dy;
             soundTestA();
         } else if(box_y >= 120-BALLSIZE){//112) {
-            randomizeBox();
+            randomizeBox(&box_x, &box_y, &dx, &dy);
             soundTest();
         } else if (detectPaddleCollision(box_x,box_x+BALLSIZE,box_y, box_y+BALLSIZE,px1,px2,py1,py2)){
             dy = (dy>0) ? -dy : dy;
@@ -166,7 +165,7 @@ void boxAMotion()
             dyA = (dyA<0) ? -dyA : dyA;
             soundTestA();
         } else if(boxA_y >= 120-BALLSIZE/*112*/) {
-            randomizeBoxA();
+            randomizeBox(&boxA_x, &boxA_y, &dxA, &dyA);
             soundTest();
         } else if (detectPaddleCollision(boxA_x,boxA_x+BALLSIZE,boxA_y, boxA_y+BALLSIZE,px1,px2,py1,py2)){
             dyA = (dyA>0) ? -dyA : dyA;
@@ -318,18 +317,19 @@ void ToggleDemoMode()
     // }
 }
 
-void randomizeBox(){
-    box_x = rnd_range(5,114);
-    box_y = rnd_range(64,68);
-    if (rnd_range(0,10) > 5) dx = -dx;
-    if (rnd_range(0,10) > 5) dy = -dy;
+void randomizeBox(char *_box_x, char *_box_y, int *_dx, int *_dy){
+    *_box_x = rnd_range(5,114);
+    *_box_y = rnd_range(64,68);
+    if (rnd_range(0,10) > 5) *_dx = -*_dx;
+    *_dy = (unsigned int) *_dy;//always down
+    //if (rnd_range(0,10) > 5) *_dy = -*_dy;
 }
-void randomizeBoxA(){
-    boxA_x = rnd_range(5,114);
-    boxA_y = rnd_range(64,68);
-    if (rnd_range(0,10) > 5) dxA = -dxA;
-    if (rnd_range(0,10) > 5) dyA = -dyA;
-}
+// void randomizeBoxA(){
+//     boxA_x = rnd_range(5,114);
+//     boxA_y = rnd_range(64,68);
+//     if (rnd_range(0,10) > 5) dxA = -dxA;
+//     if (rnd_range(0,10) > 5) dyA = -dyA;
+// }
 
 unsigned char numBricks = 0;
 
@@ -343,8 +343,10 @@ void init_game()
             brickRows[y].visible[x]=1;
         }
     }
-    randomizeBox();
-    randomizeBoxA();
+    randomizeBox(&box_x, &box_y, &dx, &dy);
+    randomizeBox(&boxA_x, &boxA_y, &dxA, &dyA);
+
+    // randomizeBoxA();
 }
 // Define the structure to hold Color properties
 //unsigned char hue;        // 3 bits (0-7)
