@@ -4,8 +4,9 @@
 #include "gt/audio/music.h"
 #include "gt/input.h"
 #include "gt/feature/random/random.h"
-#include "paddleUtils.h"
+#include "paddleUtils.h" 
 #include "scoring.h"
+#include "gen/assets/gfx.h"
 
 #define BOXCOLOR WHITE//92
 #define BOXCOLORA WHITE
@@ -345,8 +346,6 @@ void init_game()
     }
     randomizeBox(&box_x, &box_y, &dx, &dy);
     randomizeBox(&boxA_x, &boxA_y, &dxA, &dyA);
-
-    // randomizeBoxA();
 }
 // Define the structure to hold Color properties
 //unsigned char hue;        // 3 bits (0-7)
@@ -486,12 +485,13 @@ void DrawBricks(){
                 //if (numBricksWidth>NUMBRICKSH) numBricksWidth=NUMBRICKSH;//total hack
                 //queue_draw_box(brickColumnPos[x], posy, BRICKWIDTH, BRICKHEIGHT, rowColor);
 
-
                 xDrawStart = x * BRICKWIDTH;
                 brickDrawWidth = BRICKWIDTH * numBricksWidth;
                 if (xDrawStart + brickDrawWidth > 127) brickDrawWidth-=1;//last brick index is one pixel short?
 
-                queue_draw_box(xDrawStart,posy,brickDrawWidth,BRICKHEIGHT,rowColor);
+                //queue_draw_box(xDrawStart,posy,brickDrawWidth,BRICKHEIGHT,rowColor);
+                queue_draw_sprite(xDrawStart,posy,brickDrawWidth,BRICKHEIGHT,0,y*BRICKHEIGHT,0);
+
                 x=newX;
             }
         }
@@ -609,7 +609,7 @@ void main () {
     scoring_init();
     queue_clear_screen(256);//256 black
     Intro_sequence();
-
+    load_spritesheet(&ASSET__gfx__brickWide_bmp,0);
     while (1) 
     {                                     //  Run forever
         BreakoutGame();
