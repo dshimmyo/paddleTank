@@ -490,7 +490,7 @@ void DrawBricks(){
                 if (xDrawStart + brickDrawWidth > 127) brickDrawWidth-=1;//last brick index is one pixel short?
 
                 //queue_draw_box(xDrawStart,posy,brickDrawWidth,BRICKHEIGHT,rowColor);
-                queue_draw_sprite(xDrawStart,posy,brickDrawWidth,BRICKHEIGHT,0,y*BRICKHEIGHT,0);
+                queue_draw_sprite(xDrawStart,posy,brickDrawWidth,BRICKHEIGHT,xDrawStart,y*BRICKHEIGHT,0);
 
                 x=newX;
             }
