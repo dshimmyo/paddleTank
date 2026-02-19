@@ -28,7 +28,7 @@
 #define BRICK_LEFT   0
 #define BRICK_RIGHT  127
 
-void check_brick_collision(unsigned char,unsigned char, int *);
+void check_brick_collision(unsigned char *,unsigned char *, int *, int *);
 
 typedef struct {
     bool visible[NUMBRICKSH];
@@ -133,7 +133,7 @@ void boxMotion()
             box_y = PADDLEY-BALLSIZE;//height correction, maybe redundant
             soundCol();
         } else {
-            check_brick_collision(box_x,box_y,&dy);
+            check_brick_collision(&box_x,&box_y,&dx,&dy);
         }
     }
     dxRem = dxTot & 255;// % 256;//update the remainder for sub-frame movement
@@ -173,7 +173,7 @@ void boxAMotion()
             boxA_y = PADDLEY-BALLSIZE;//height correction, maybe redundant
             soundCol();
         } else {
-            check_brick_collision(boxA_x,boxA_y,&dyA);
+            check_brick_collision(&boxA_x,&boxA_y,&dxA,&dyA);
         }
     }
     dxARem = dxATot & 255;//% 256;//update the remainder for sub-frame movement
@@ -499,28 +499,73 @@ void DrawBricks(){
 // brick_visible[5][16] - 1 = visible, 0 = destroyed
 //uint8_t brick_visible[5][16];
 
-void check_brick_collision(unsigned char ball_x, unsigned char ball_y, int *ball_dy) {
+void check_brick_collision(unsigned char *_ball_x, unsigned char *_ball_y, int *_ball_dx, int *_ball_dy) {
     unsigned char col;
     unsigned char row;
+
     // Quick reject if ball not in brick zone
-    if (ball_y < BRICK_TOP || ball_y > BRICK_BOTTOM) return;
+    if (*_ball_y < BRICK_TOP || *_ball_y > BRICK_BOTTOM) return;
     //if (ball_x < 0 || ball_x > 127) return;
     
     // Convert to brick coordinates
-    col = ball_x >> 3;        // 0-15
-    row = (ball_y - 25) >> 2;  // 0-4
+    col = *_ball_x >> 3;        // 0-15
+    row = (*_ball_y - 25) >> 2;  // 0-4
     
     //if (brick_visible[row][col]) {
     if (brickRows[row].visible[col]){
+        unsigned char brick_top;
+        unsigned char brick_bottom;
+        unsigned char brick_left;
+        unsigned char brick_right;
+        unsigned char dist_left;
+        unsigned char dist_right;
+        unsigned char dist_top;
+        unsigned char dist_bottom;
+        unsigned char min_dist;
+        unsigned char side;  // 0=left,1=right,2=top,3=bottom
+
         // Destroy brick
         brickRows[row].visible[col] = 0;
         
-        // *ball_dy = (*ball_dy<0) ? -(*ball_dy) : *ball_dy;
-        //*ball_dy = (*ball_dy<0) ? -(*ball_dy) : (unsigned int) *ball_dy;
-        *ball_dy = -(*ball_dy);
+        // Calculate brick boundaries
+        brick_top = 25 + (row << 2);
+        brick_bottom = brick_top + 3;
+        brick_left = col << 3;
+        brick_right = brick_left + 7;
+        
+        // Calculate distances to each edge
+        dist_left = *_ball_x - brick_left;
+        dist_right = brick_right - *_ball_x;
+        dist_top = *_ball_y - brick_top;
+        dist_bottom = brick_bottom - *_ball_y;
+
+        // Find closest edge
+        min_dist = dist_left;
+        side = 0;  // 0=left,1=right,2=top,3=bottom
+        if (dist_right < min_dist) { min_dist = dist_right; side = 1; }
+        if (dist_top < min_dist) { min_dist = dist_top; side = 2; }
+        if (dist_bottom < min_dist) { side = 3; }
+
+        // Position ball JUST outside the brick
+        switch(side) 
+        {
+            case 0: *_ball_x = brick_left - 1; 
+                *_ball_dx = -(*_ball_dx);   
+                break;  // Left
+            case 1: *_ball_x = brick_right + 1; 
+                *_ball_dx = -(*_ball_dx);
+                break;  // Right
+            case 2: *_ball_y = brick_top - 1; 
+                break;    // Top
+            case 3: *_ball_y = brick_bottom + 1; 
+                break; // Bottom
+        }
+
+        *_ball_dy = -(*_ball_dy);
         soundTestA();
         score++;
         numBricks--;
+
     }
 }
 
