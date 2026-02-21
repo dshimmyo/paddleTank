@@ -51,8 +51,7 @@ char boxA_x = 20, boxA_y = 30;
 
 char bgColor = 0;
 
-int ballSpeedShift = -1;
-int ballSpeedShiftA = 1;//left shift 1
+int ballSpeedShift = -1;//-1 start, 0 after first hit, 1 top row
 
 //256 is 1 pixel per frame
 int dx = 256, dy = 256;//change from char to int, try 256 multiplier
@@ -87,6 +86,7 @@ bool detectPaddleCollision(char sourceXLow,char sourceXHi,char sourceYLow,char s
     else if (sourceXHi < targetXLow) return false;
     else if (sourceXLow > targetXHi) return false;
 
+    ballSpeedShift = (ballSpeedShift<0) ? 0: ballSpeedShift;
     return true;
 }
 
@@ -158,8 +158,8 @@ void boxAMotion()
     char py1 = PADDLEY;//110 //bottom bount higher number
     char py2 = PADDLEY + PADDLEHEIGHT; //top bound, lower number
 
-    int scaledDx = (ballSpeedShiftA<0) ? (dxA>>(-ballSpeedShiftA)) : (dxA<<ballSpeedShiftA);
-    int scaledDy = (ballSpeedShiftA<0) ? (dyA>>(-ballSpeedShiftA)) : (dyA<<ballSpeedShiftA);
+    int scaledDx = (ballSpeedShift<0) ? (dxA>>(-ballSpeedShift)) : (dxA<<ballSpeedShift);
+    int scaledDy = (ballSpeedShift<0) ? (dyA>>(-ballSpeedShift)) : (dyA<<ballSpeedShift);
     int dxATot = scaledDx + dxARem;
     int dyATot = scaledDy + dyARem;
     if ((unsigned int) dxATot >= 255 || (unsigned int) dyATot >= 255 && !cooldownA)
@@ -358,6 +358,7 @@ void init_game()
     unsigned char x;
     unsigned char y;
     numBricks = NUMBRICKSH * NUMBRICKSV;
+    ballSpeedShift = -1; //slow start
     for (y = 0; y<NUMBRICKSV; y++){
         for (x=0; x<NUMBRICKSH; x++){
             brickRows[y].visible[x]=1;
@@ -586,6 +587,7 @@ bool check_brick_collision(char *_ball_x, char *_ball_y, int *_ball_dx, int *_ba
         soundTestA();
         score+= brickRows[row].points;//(7-row)>>1;
         numBricks--;
+        if (row==0) ballSpeedShift = 1;//double speed
         return true;
     }
     return false;
