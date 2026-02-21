@@ -75,7 +75,7 @@ void soundCol(){
 }
 
 bool detectPaddleCollision(char sourceXLow,char sourceXHi,char sourceYLow,char sourceYHi,
-    char targetXLow,char targetXHi,char targetYLow, char targetYHi, int *_dx)
+    char targetXLow,char targetXHi,char targetYLow, char targetYHi)
 {
     //boxes draw left-right top-down 0->127, 7->120
     char px1 = targetXLow;//paddleX;//leftmost
@@ -91,7 +91,7 @@ bool detectPaddleCollision(char sourceXLow,char sourceXHi,char sourceYLow,char s
     //if ((sourceXLow >= px1-1 && sourceXLow <= px2+1) || (sourceXHi >= px1-1 && sourceXHi <= px2+1)){//check box inside paddle horizontally
         //if (sourceYHi >= py1 && sourceYLow < py2){//bottom of box is at or below the top of the paddle
         //attempt to reflect the ball back when at the edge of the paddle
-            if (sourceXLow <= targetXHi-(PADDLEWIDTH>>1)) *_dx = (*_dx<0) ? *_dx : -*_dx;//not sure if it works
+            //if (sourceXLow <= targetXHi-(PADDLEWIDTH>>1)) *_dx = (*_dx<0) ? *_dx : -*_dx;//not sure if it works
             return true;
         //}
         //else return false;
@@ -122,27 +122,31 @@ void boxMotion()
     {
         box_x += dxTot>>8;
         box_y += dyTot>>8;
-        if(box_x <= 1) {
-            dx = (dx<0) ? -dx : dx;
-            soundTestA();
-        } else if(box_x >= 127-BALLSIZE /*119*/) {
-            dx = (dx>0) ? -dx : dx;
-            soundTestA();
-        }
+
         if(box_y <= 7) {
             dy = (dy<0) ? -dy : dy;
             soundTestA();
         } else if(box_y >= 120-BALLSIZE){//112) {
             randomizeBox(&box_x, &box_y, &dx, &dy);
             soundTest();
-        } //else 
-        if (detectPaddleCollision(box_x,box_x+BALLSIZE,box_y, box_y+BALLSIZE,px1,px2,py1,py2,&dx)){
+        }
+
+        if(box_x <= 1) {
+            dx = (dx<0) ? -dx : dx;
+            soundTestA();
+        } else if(box_x >= 127-BALLSIZE /*119*/) {
+            dx = (dx>0) ? -dx : dx;
+            soundTestA();
+        } else if (detectPaddleCollision(box_x,box_x+BALLSIZE,box_y, box_y+BALLSIZE,px1,px2,py1,py2)){
             dy = (dy>0) ? -dy : dy;
             box_y = PADDLEY-BALLSIZE;//height correction, maybe redundant
             soundCol();
-        }// else {
-            check_brick_collision(&box_x,&box_y,&dx,&dy);
-        //}
+            if (box_x <= px2-(PADDLEWIDTH>>1)) dx = (dx<0) ? dx : -dx;//not sure if it works
+            else dx = (dx<0) ? -dx : dx;
+
+        }
+
+        check_brick_collision(&box_x,&box_y,&dx,&dy);
     }
     dxRem = dxTot & 255;// % 256;//update the remainder for sub-frame movement
     dyRem = dyTot & 255;//% 256;//update the remainder for sub-frame movement
@@ -163,27 +167,30 @@ void boxAMotion()
     {
         boxA_x += dxATot>>8;
         boxA_y += dyATot>>8;
-        if (boxA_x <= 1) {
-            dxA = (dxA<0) ? -dxA : dxA;
-            soundTestA();
-        } else if(boxA_x >= 127-BALLSIZE/*119*/) {
-            dxA = (dxA>0) ? -dxA : dxA;
-            soundTestA();
-        }
+
         if(boxA_y <= 7) {
             dyA = (dyA<0) ? -dyA : dyA;
             soundTestA();
         } else if(boxA_y >= 120-BALLSIZE/*112*/) {
             randomizeBox(&boxA_x, &boxA_y, &dxA, &dyA);
             soundTest();
-        } //else 
-        if (detectPaddleCollision(boxA_x,boxA_x+BALLSIZE,boxA_y, boxA_y+BALLSIZE,px1,px2,py1,py2,&dxA)){
+        }
+
+        if (boxA_x <= 1) {
+            dxA = (dxA<0) ? -dxA : dxA;
+            soundTestA();
+        } else if(boxA_x >= 127-BALLSIZE/*119*/) {
+            dxA = (dxA>0) ? -dxA : dxA;
+            soundTestA();
+        } else if (detectPaddleCollision(boxA_x,boxA_x+BALLSIZE,boxA_y, boxA_y+BALLSIZE,px1,px2,py1,py2)){
             dyA = (dyA>0) ? -dyA : dyA;
             boxA_y = PADDLEY-BALLSIZE;//height correction, maybe redundant
             soundCol();
-       }// else {
-            check_brick_collision(&boxA_x,&boxA_y,&dxA,&dyA);
-        //}
+            if (boxA_x <= px2-(PADDLEWIDTH>>1)) dxA = (dxA<0) ? dxA : -dxA;//not sure if it works
+            else dxA = (dxA<0) ? -dxA : dxA;
+        }
+
+        check_brick_collision(&boxA_x,&boxA_y,&dxA,&dyA);
     }
     dxARem = dxATot & 255;//% 256;//update the remainder for sub-frame movement
     dyARem = dyATot & 255;//% 256;//update the remainder for sub-frame movement
