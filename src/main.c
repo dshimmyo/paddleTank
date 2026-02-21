@@ -29,7 +29,7 @@
 #define BRICK_LEFT   0
 #define BRICK_RIGHT  127
 
-void check_brick_collision(char *,char *, int *, int *);
+bool check_brick_collision(char *,char *, int *, int *);
 
 typedef struct {
     bool visible[NUMBRICKSH];
@@ -95,6 +95,7 @@ void randomizeBox(char *_box_x, char *_box_y, int *_dx, int *_dy);
 
 int dxRem=0;//remainder
 int dyRem=0;
+bool cooldown;
 void boxMotion()
 {
     char px1 = paddleX;//leftmost
@@ -109,7 +110,7 @@ void boxMotion()
     int scaledDy = (ballSpeedShift<0) ? (dy>>(-ballSpeedShift)) : (dy<<ballSpeedShift);
     int dxTot = scaledDx + dxRem;
     int dyTot = scaledDy + dyRem;
-    if ((unsigned int) dxTot >= 255 || (unsigned int) dyTot >= 255)
+    if ((unsigned int) dxTot >= 255 || (unsigned int) dyTot >= 255 && !cooldown)
     {
         box_x += dxTot>>8;
         box_y += dyTot>>8;
@@ -137,7 +138,11 @@ void boxMotion()
 
         }
 
-        check_brick_collision(&box_x,&box_y,&dx,&dy);
+        cooldown = check_brick_collision(&box_x,&box_y,&dx,&dy);
+    }
+    else
+    {
+        cooldown = false;
     }
     dxRem = dxTot & 255;// % 256;//update the remainder for sub-frame movement
     dyRem = dyTot & 255;//% 256;//update the remainder for sub-frame movement
@@ -145,6 +150,7 @@ void boxMotion()
 
 int dxARem=0;//remainder
 int dyARem=0;
+bool cooldownA = false;
 void boxAMotion()
 {
     char px1 = paddleX;//leftmost
@@ -156,7 +162,7 @@ void boxAMotion()
     int scaledDy = (ballSpeedShiftA<0) ? (dyA>>(-ballSpeedShiftA)) : (dyA<<ballSpeedShiftA);
     int dxATot = scaledDx + dxARem;
     int dyATot = scaledDy + dyARem;
-    if ((unsigned int) dxATot >= 255 || (unsigned int) dyATot >= 255)
+    if ((unsigned int) dxATot >= 255 || (unsigned int) dyATot >= 255 && !cooldownA)
     {
         boxA_x += dxATot>>8;
         boxA_y += dyATot>>8;
@@ -183,7 +189,11 @@ void boxAMotion()
             else if (boxA_x >= px2-(PADDLEWIDTH>>2))dxA = (dxA<0) ? -dxA : dxA;//right quarter
         }
 
-        check_brick_collision(&boxA_x,&boxA_y,&dxA,&dyA);
+        cooldownA = check_brick_collision(&boxA_x,&boxA_y,&dxA,&dyA);
+    }
+    else
+    {
+        cooldownA = false;
     }
     dxARem = dxATot & 255;//% 256;//update the remainder for sub-frame movement
     dyARem = dyATot & 255;//% 256;//update the remainder for sub-frame movement
@@ -510,13 +520,13 @@ void DrawBricks(){
 // brick_visible[5][16] - 1 = visible, 0 = destroyed
 //uint8_t brick_visible[5][16];
 
-void check_brick_collision(char *_ball_x, char *_ball_y, int *_ball_dx, int *_ball_dy) {
+bool check_brick_collision(char *_ball_x, char *_ball_y, int *_ball_dx, int *_ball_dy) {
     unsigned char col;
     unsigned char row;
 
     // Quick reject if ball not in brick zone
-    if (*_ball_y < BRICK_TOP || *_ball_y > BRICK_BOTTOM) return;
-    if (*_ball_x < 0 || *_ball_x > 127) return;
+    if (*_ball_y < BRICK_TOP || *_ball_y > BRICK_BOTTOM) return false;
+    if (*_ball_x < 0 || *_ball_x > 127) return false;
     
     // Convert to brick coordinates
     col = *_ball_x >> 3;        // 0-15
@@ -576,8 +586,9 @@ void check_brick_collision(char *_ball_x, char *_ball_y, int *_ball_dx, int *_ba
         soundTestA();
         score+= brickRows[row].points;//(7-row)>>1;
         numBricks--;
-
+        return true;
     }
+    return false;
 }
 
 void BreakoutGame(){
