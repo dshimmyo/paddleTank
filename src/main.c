@@ -29,18 +29,19 @@
 #define BRICK_LEFT   0
 #define BRICK_RIGHT  127
 
-void check_brick_collision(unsigned char *,unsigned char *, int *, int *);
+void check_brick_collision(char *,char *, int *, int *);
 
 typedef struct {
     bool visible[NUMBRICKSH];
     char color;
+    unsigned char points;
 } EntityRow;
-EntityRow brickRows[NUMBRICKSV] = {
-{{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},0b01011011},
-{{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},0b00111101},
-{{1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1},0b00011111},
-{{1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1},0b11111101},
-{{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},0b10111100}
+EntityRow brickRows[NUMBRICKSV] = {//top to bottom
+{{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},0b01011011,3},
+{{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},0b00111101,2},
+{{1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1},0b00011111,2},
+{{1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1},0b11111101,1},
+{{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},0b10111100,1}
 };//should initialize this in an init function
 
 bool demoMode = true;
@@ -74,23 +75,29 @@ void soundCol(){
 }
 
 bool detectPaddleCollision(char sourceXLow,char sourceXHi,char sourceYLow,char sourceYHi,
-    char targetXLow,char targetXHi,char targetYLow, char targetYHi)
+    char targetXLow,char targetXHi,char targetYLow, char targetYHi, int *_dx)
 {
     //boxes draw left-right top-down 0->127, 7->120
-
     char px1 = targetXLow;//paddleX;//leftmost
     char px2 = targetXHi;//paddleX + PADDLEWIDTH;//rightmost bound
     char py1 = targetYLow;//PADDLEY - PADDLEHEIGHT; //top bound, lower number
     char py2 = targetYHi;//PADDLEY;//110 //bottom bount higher number
 
-    if ((sourceXLow >= px1-1 && sourceXLow <= px2+1) || (sourceXHi >= px1-1 && sourceXHi <= px2+1)){//check box inside paddle horizontally
-        if (sourceYHi >= py1 && sourceYLow < py2){//bottom of box is at or below the top of the paddle
+    if (sourceYHi < PADDLEY) return false;
+    else if (sourceYLow > PADDLEY + PADDLEHEIGHT) return false;
+    else if (sourceXHi < targetXLow) return false;
+    else if (sourceXLow > targetXHi) return false;
+
+    //if ((sourceXLow >= px1-1 && sourceXLow <= px2+1) || (sourceXHi >= px1-1 && sourceXHi <= px2+1)){//check box inside paddle horizontally
+        //if (sourceYHi >= py1 && sourceYLow < py2){//bottom of box is at or below the top of the paddle
+        //attempt to reflect the ball back when at the edge of the paddle
+            if (sourceXLow <= targetXHi-(PADDLEWIDTH>>1)) *_dx = (*_dx<0) ? *_dx : -*_dx;//not sure if it works
             return true;
-        }
-        else return false;
-    } else {
-        return false;
-    }
+        //}
+        //else return false;
+    //} else {
+     //   return false;
+    //}
 
 }
 
@@ -129,7 +136,7 @@ void boxMotion()
             randomizeBox(&box_x, &box_y, &dx, &dy);
             soundTest();
         } //else 
-        if (detectPaddleCollision(box_x,box_x+BALLSIZE,box_y, box_y+BALLSIZE,px1,px2,py1,py2)){
+        if (detectPaddleCollision(box_x,box_x+BALLSIZE,box_y, box_y+BALLSIZE,px1,px2,py1,py2,&dx)){
             dy = (dy>0) ? -dy : dy;
             box_y = PADDLEY-BALLSIZE;//height correction, maybe redundant
             soundCol();
@@ -170,7 +177,7 @@ void boxAMotion()
             randomizeBox(&boxA_x, &boxA_y, &dxA, &dyA);
             soundTest();
         } //else 
-        if (detectPaddleCollision(boxA_x,boxA_x+BALLSIZE,boxA_y, boxA_y+BALLSIZE,px1,px2,py1,py2)){
+        if (detectPaddleCollision(boxA_x,boxA_x+BALLSIZE,boxA_y, boxA_y+BALLSIZE,px1,px2,py1,py2,&dxA)){
             dyA = (dyA>0) ? -dyA : dyA;
             boxA_y = PADDLEY-BALLSIZE;//height correction, maybe redundant
             soundCol();
@@ -503,13 +510,13 @@ void DrawBricks(){
 // brick_visible[5][16] - 1 = visible, 0 = destroyed
 //uint8_t brick_visible[5][16];
 
-void check_brick_collision(unsigned char *_ball_x, unsigned char *_ball_y, int *_ball_dx, int *_ball_dy) {
+void check_brick_collision(char *_ball_x, char *_ball_y, int *_ball_dx, int *_ball_dy) {
     unsigned char col;
     unsigned char row;
 
     // Quick reject if ball not in brick zone
     if (*_ball_y < BRICK_TOP || *_ball_y > BRICK_BOTTOM) return;
-    //if (ball_x < 0 || ball_x > 127) return;
+    if (*_ball_x < 0 || *_ball_x > 127) return;
     
     // Convert to brick coordinates
     col = *_ball_x >> 3;        // 0-15
@@ -567,7 +574,7 @@ void check_brick_collision(unsigned char *_ball_x, unsigned char *_ball_y, int *
 
         *_ball_dy = -(*_ball_dy);
         soundTestA();
-        score++;
+        score+= brickRows[row].points;//(7-row)>>1;
         numBricks--;
 
     }
