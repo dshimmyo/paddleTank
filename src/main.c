@@ -618,7 +618,7 @@ void main () {
     scoring_init();
     queue_clear_screen(256);//256 black
     Intro_sequence();
-    load_spritesheet(&ASSET__gfx__brickWide_bmp,0);
+    load_spritesheet(ASSET__gfx__brickWide_bmp,0);
     while (1) 
     {                                     //  Run forever
         BreakoutGame();
