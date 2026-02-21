@@ -78,27 +78,13 @@ bool detectPaddleCollision(char sourceXLow,char sourceXHi,char sourceYLow,char s
     char targetXLow,char targetXHi,char targetYLow, char targetYHi)
 {
     //boxes draw left-right top-down 0->127, 7->120
-    char px1 = targetXLow;//paddleX;//leftmost
-    char px2 = targetXHi;//paddleX + PADDLEWIDTH;//rightmost bound
-    char py1 = targetYLow;//PADDLEY - PADDLEHEIGHT; //top bound, lower number
-    char py2 = targetYHi;//PADDLEY;//110 //bottom bount higher number
 
     if (sourceYHi < PADDLEY) return false;
     else if (sourceYLow > PADDLEY + PADDLEHEIGHT) return false;
     else if (sourceXHi < targetXLow) return false;
     else if (sourceXLow > targetXHi) return false;
 
-    //if ((sourceXLow >= px1-1 && sourceXLow <= px2+1) || (sourceXHi >= px1-1 && sourceXHi <= px2+1)){//check box inside paddle horizontally
-        //if (sourceYHi >= py1 && sourceYLow < py2){//bottom of box is at or below the top of the paddle
-        //attempt to reflect the ball back when at the edge of the paddle
-            //if (sourceXLow <= targetXHi-(PADDLEWIDTH>>1)) *_dx = (*_dx<0) ? *_dx : -*_dx;//not sure if it works
-            return true;
-        //}
-        //else return false;
-    //} else {
-     //   return false;
-    //}
-
+    return true;
 }
 
 bool boxColPrev = false;
@@ -141,8 +127,8 @@ void boxMotion()
             dy = (dy>0) ? -dy : dy;
             box_y = PADDLEY-BALLSIZE;//height correction, maybe redundant
             soundCol();
-            if (box_x <= px2-(PADDLEWIDTH>>1)) dx = (dx<0) ? dx : -dx;//not sure if it works
-            else dx = (dx<0) ? -dx : dx;
+            if (box_x <= px1+(PADDLEWIDTH>>2)) dx = (dx<0) ? dx : -dx;//left quarter
+            else if (box_x >= px2-(PADDLEWIDTH>>2))dx = (dx<0) ? -dx : dx;//right quarter
 
         }
 
@@ -186,8 +172,8 @@ void boxAMotion()
             dyA = (dyA>0) ? -dyA : dyA;
             boxA_y = PADDLEY-BALLSIZE;//height correction, maybe redundant
             soundCol();
-            if (boxA_x <= px2-(PADDLEWIDTH>>1)) dxA = (dxA<0) ? dxA : -dxA;//not sure if it works
-            else dxA = (dxA<0) ? -dxA : dxA;
+            if (boxA_x <= px1+(PADDLEWIDTH>>2)) dxA = (dxA<0) ? dxA : -dxA;//left quarter
+            else if (boxA_x >= px2-(PADDLEWIDTH>>2))dxA = (dxA<0) ? -dxA : dxA;//right quarter
         }
 
         check_brick_collision(&boxA_x,&boxA_y,&dxA,&dyA);
