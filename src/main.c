@@ -51,9 +51,12 @@ char boxA_x = 20, boxA_y = 30;
 
 char bgColor = 0;
 
+int ballSpeedShift = -1;
+int ballSpeedShiftA = 1;//left shift 1
+
 //256 is 1 pixel per frame
 int dx = 256, dy = 256;//change from char to int, try 256 multiplier
-int dxA = 512, dyA = 512;//2,2
+int dxA = 256, dyA = 256;//2,2
 
 char paddleX = 64;
 unsigned char button_byte=0;
@@ -102,8 +105,10 @@ void boxMotion()
     //check collision for every frame
     //frameskipping/subframe should only limit incrementing movement
     //boxes draw left-right top-down 0->127, 7->120
-    int dxTot = dx + dxRem;
-    int dyTot = dy + dyRem;
+    int scaledDx = (ballSpeedShift<0) ? (dx>>(-ballSpeedShift)) : (dx<<ballSpeedShift);
+    int scaledDy = (ballSpeedShift<0) ? (dy>>(-ballSpeedShift)) : (dy<<ballSpeedShift);
+    int dxTot = scaledDx + dxRem;
+    int dyTot = scaledDy + dyRem;
     if ((unsigned int) dxTot >= 255 || (unsigned int) dyTot >= 255)
     {
         box_x += dxTot>>8;
@@ -147,8 +152,10 @@ void boxAMotion()
     char py1 = PADDLEY;//110 //bottom bount higher number
     char py2 = PADDLEY + PADDLEHEIGHT; //top bound, lower number
 
-    int dxATot = dxA + dxARem;
-    int dyATot = dyA + dyARem;
+    int scaledDx = (ballSpeedShiftA<0) ? (dxA>>(-ballSpeedShiftA)) : (dxA<<ballSpeedShiftA);
+    int scaledDy = (ballSpeedShiftA<0) ? (dyA>>(-ballSpeedShiftA)) : (dyA<<ballSpeedShiftA);
+    int dxATot = scaledDx + dxARem;
+    int dyATot = scaledDy + dyARem;
     if ((unsigned int) dxATot >= 255 || (unsigned int) dyATot >= 255)
     {
         boxA_x += dxATot>>8;
