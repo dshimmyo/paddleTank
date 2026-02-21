@@ -29,7 +29,7 @@
 #define BRICK_LEFT   0
 #define BRICK_RIGHT  127
 
-bool check_brick_collision(char *,char *, int *, int *);
+bool check_brick_collision(char *,char *, int *, int *, int *);
 
 typedef struct {
     bool visible[NUMBRICKSH];
@@ -52,6 +52,7 @@ char boxA_x = 20, boxA_y = 30;
 char bgColor = 0;
 
 int ballSpeedShift = -1;//-1 start, 0 after first hit, 1 top row
+int ballSpeedShiftA = -1;//-1 start, 0 after first hit, 1 top row
 
 //256 is 1 pixel per frame
 int dx = 256, dy = 256;//change from char to int, try 256 multiplier
@@ -77,21 +78,27 @@ void soundCol(){
 }
 
 bool detectPaddleCollision(char sourceXLow,char sourceXHi,char sourceYLow,char sourceYHi,
-    char targetXLow,char targetXHi,char targetYLow, char targetYHi)
+    char targetXLow,char targetXHi,char targetYLow, char targetYHi, int *_dx, int *_dy)
 {
     //boxes draw left-right top-down 0->127, 7->120
-
+    //source is ball, target is paddle
     if (sourceYHi < PADDLEY) return false;
     else if (sourceYLow > PADDLEY + PADDLEHEIGHT) return false;
     else if (sourceXHi < targetXLow) return false;
     else if (sourceXLow > targetXHi) return false;
 
     ballSpeedShift = (ballSpeedShift<0) ? 0: ballSpeedShift;
+    ballSpeedShiftA = (ballSpeedShiftA<0) ? 0: ballSpeedShiftA;
+
+    if (sourceXLow <= targetXLow+(PADDLEWIDTH>>2)) {*_dx = -256;*_dy=-256;}//(dx<0) ? dx : -dx;//left quarter
+    else if (sourceXLow <= targetXLow+(PADDLEWIDTH>>1)) {*_dx = -128;*_dy=-384;}//(dx<0) ? -128 : 128;//left of mid
+    else if (sourceXLow <= targetXHi-(PADDLEWIDTH>>2)) {*_dx = 128;*_dy=-384;}//(dx<0) ? -dx : dx;//left of right quarter
+    else {*_dx = 256;*_dy=-256;}//right quarter
     return true;
 }
 
 bool boxColPrev = false;
-void randomizeBox(char *_box_x, char *_box_y, int *_dx, int *_dy);
+void randomizeBox(char *_box_x, char *_box_y, int *_dx, int *_dy, int *_ballSpeedShift);
 
 int dxRem=0;//remainder
 int dyRem=0;
@@ -119,7 +126,7 @@ void boxMotion()
             dy = (dy<0) ? -dy : dy;
             soundTestA();
         } else if(box_y >= 120-BALLSIZE){//112) {
-            randomizeBox(&box_x, &box_y, &dx, &dy);
+            randomizeBox(&box_x, &box_y, &dx, &dy, &ballSpeedShift);
             soundTest();
         }
 
@@ -129,16 +136,13 @@ void boxMotion()
         } else if(box_x >= 127-BALLSIZE /*119*/) {
             dx = (dx>0) ? -dx : dx;
             soundTestA();
-        } else if (detectPaddleCollision(box_x,box_x+BALLSIZE,box_y, box_y+BALLSIZE,px1,px2,py1,py2)){
-            dy = (dy>0) ? -dy : dy;
+        } else if (detectPaddleCollision(box_x,box_x+BALLSIZE,box_y, box_y+BALLSIZE,px1,px2,py1,py2,&dx,&dy)){
+            //dy = (dy>0) ? -dy : dy;
             box_y = PADDLEY-BALLSIZE;//height correction, maybe redundant
             soundCol();
-            if (box_x <= px1+(PADDLEWIDTH>>2)) dx = (dx<0) ? dx : -dx;//left quarter
-            else if (box_x >= px2-(PADDLEWIDTH>>2))dx = (dx<0) ? -dx : dx;//right quarter
-
         }
 
-        cooldown = check_brick_collision(&box_x,&box_y,&dx,&dy);
+        cooldown = check_brick_collision(&box_x,&box_y,&dx,&dy,&ballSpeedShift);
     }
     else
     {
@@ -158,8 +162,8 @@ void boxAMotion()
     char py1 = PADDLEY;//110 //bottom bount higher number
     char py2 = PADDLEY + PADDLEHEIGHT; //top bound, lower number
 
-    int scaledDx = (ballSpeedShift<0) ? (dxA>>(-ballSpeedShift)) : (dxA<<ballSpeedShift);
-    int scaledDy = (ballSpeedShift<0) ? (dyA>>(-ballSpeedShift)) : (dyA<<ballSpeedShift);
+    int scaledDx = (ballSpeedShiftA<0) ? (dxA>>(-ballSpeedShiftA)) : (dxA<<ballSpeedShiftA);
+    int scaledDy = (ballSpeedShiftA<0) ? (dyA>>(-ballSpeedShiftA)) : (dyA<<ballSpeedShiftA);
     int dxATot = scaledDx + dxARem;
     int dyATot = scaledDy + dyARem;
     if ((unsigned int) dxATot >= 255 || (unsigned int) dyATot >= 255 && !cooldownA)
@@ -171,7 +175,7 @@ void boxAMotion()
             dyA = (dyA<0) ? -dyA : dyA;
             soundTestA();
         } else if(boxA_y >= 120-BALLSIZE/*112*/) {
-            randomizeBox(&boxA_x, &boxA_y, &dxA, &dyA);
+            randomizeBox(&boxA_x, &boxA_y, &dxA, &dyA, &ballSpeedShiftA);
             soundTest();
         }
 
@@ -181,15 +185,13 @@ void boxAMotion()
         } else if(boxA_x >= 127-BALLSIZE/*119*/) {
             dxA = (dxA>0) ? -dxA : dxA;
             soundTestA();
-        } else if (detectPaddleCollision(boxA_x,boxA_x+BALLSIZE,boxA_y, boxA_y+BALLSIZE,px1,px2,py1,py2)){
-            dyA = (dyA>0) ? -dyA : dyA;
+        } else if (detectPaddleCollision(boxA_x,boxA_x+BALLSIZE,boxA_y, boxA_y+BALLSIZE,px1,px2,py1,py2,&dxA,&dyA)){
+            //dyA = (dyA>0) ? -dyA : dyA;
             boxA_y = PADDLEY-BALLSIZE;//height correction, maybe redundant
             soundCol();
-            if (boxA_x <= px1+(PADDLEWIDTH>>2)) dxA = (dxA<0) ? dxA : -dxA;//left quarter
-            else if (boxA_x >= px2-(PADDLEWIDTH>>2))dxA = (dxA<0) ? -dxA : dxA;//right quarter
         }
 
-        cooldownA = check_brick_collision(&boxA_x,&boxA_y,&dxA,&dyA);
+        cooldownA = check_brick_collision(&boxA_x,&boxA_y,&dxA,&dyA,&ballSpeedShiftA);
     }
     else
     {
@@ -321,35 +323,22 @@ void inputBinaryDraw()
     //128 possibilities, should map cleanly to pixels from left to right
     queue_draw_box(0,BINARYTESTPOSY,button_byte>>1,1,182);
 }
-//bool previousStart = false;
 
 void ToggleDemoMode()
 {
     if (player1_buttons & INPUT_MASK_START && ~player1_old_buttons & INPUT_MASK_START)
     {
-        //if (!previousStart){
-            demoMode = !demoMode;
-        //}
-        //previousStart = true;
+        demoMode = !demoMode;
     }
-    // else {
-    //     previousStart = false;
-    // }
 }
 
-void randomizeBox(char *_box_x, char *_box_y, int *_dx, int *_dy){
+void randomizeBox(char *_box_x, char *_box_y, int *_dx, int *_dy, int *_ballSpeedShift){
     *_box_x = rnd_range(5,114);
     *_box_y = rnd_range(64,68);
-    if (rnd_range(0,10) > 5) *_dx = -*_dx;
-    *_dy = (unsigned int) *_dy;//always down
-    //if (rnd_range(0,10) > 5) *_dy = -*_dy;
+    *_dx = (rnd_range(0,10) > 5) ? 256 : -256;
+    *_dy = 256;//always down
+    *_ballSpeedShift = -1;
 }
-// void randomizeBoxA(){
-//     boxA_x = rnd_range(5,114);
-//     boxA_y = rnd_range(64,68);
-//     if (rnd_range(0,10) > 5) dxA = -dxA;
-//     if (rnd_range(0,10) > 5) dyA = -dyA;
-// }
 
 unsigned char numBricks = 0;
 
@@ -364,8 +353,8 @@ void init_game()
             brickRows[y].visible[x]=1;
         }
     }
-    randomizeBox(&box_x, &box_y, &dx, &dy);
-    randomizeBox(&boxA_x, &boxA_y, &dxA, &dyA);
+    randomizeBox(&box_x, &box_y, &dx, &dy, &ballSpeedShift);
+    randomizeBox(&boxA_x, &boxA_y, &dxA, &dyA, &ballSpeedShiftA);
 }
 // Define the structure to hold Color properties
 //unsigned char hue;        // 3 bits (0-7)
@@ -521,7 +510,7 @@ void DrawBricks(){
 // brick_visible[5][16] - 1 = visible, 0 = destroyed
 //uint8_t brick_visible[5][16];
 
-bool check_brick_collision(char *_ball_x, char *_ball_y, int *_ball_dx, int *_ball_dy) {
+bool check_brick_collision(char *_ball_x, char *_ball_y, int *_ball_dx, int *_ball_dy, int *_ballSpeedShift) {
     unsigned char col;
     unsigned char row;
 
@@ -587,7 +576,7 @@ bool check_brick_collision(char *_ball_x, char *_ball_y, int *_ball_dx, int *_ba
         soundTestA();
         score+= brickRows[row].points;//(7-row)>>1;
         numBricks--;
-        if (row==0) ballSpeedShift = 1;//double speed
+        if (row==0) *_ballSpeedShift = 1;//double speed
         return true;
     }
     return false;
