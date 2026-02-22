@@ -607,9 +607,15 @@ void BreakoutGame(){
     } else {
         paddleX = paddleXFromPot8opt(button_byte);
     }
-    queue_draw_box(box_x, box_y, BALLSIZE, BALLSIZE, BOXCOLOR);
-    queue_draw_box(boxA_x, boxA_y, BALLSIZE, BALLSIZE, BOXCOLORA);
-    queue_draw_box(paddleX,PADDLEY,PADDLEWIDTH,PADDLEHEIGHT,PADDLECOLOR);//draw paddle
+    //queue_draw_box(box_x, box_y, BALLSIZE, BALLSIZE, BOXCOLOR);
+    queue_draw_sprite(box_x,box_y,BALLSIZE,BALLSIZE,0,0,2);
+
+    // queue_draw_box(boxA_x, boxA_y, BALLSIZE, BALLSIZE, BOXCOLORA);
+    queue_draw_sprite(boxA_x,boxA_y,BALLSIZE,BALLSIZE,0,0,2);
+
+    //queue_draw_box(paddleX,PADDLEY,PADDLEWIDTH,PADDLEHEIGHT,PADDLECOLOR);//draw paddle
+    queue_draw_sprite(paddleX,PADDLEY,PADDLEWIDTH,PADDLEHEIGHT,0,0,2);
+
     print_scores(score);
     
 }
@@ -621,6 +627,8 @@ void main () {
     queue_clear_screen(256);//256 black
     Intro_sequence();
     load_spritesheet(ASSET__gfx__brickWide_bmp,0);
+    load_spritesheet(ASSET__gfx__paddletank_ball_bmp,1);
+    load_spritesheet(ASSET__gfx__paddle_bmp,2);
     while (1) 
     {                                     //  Run forever
         BreakoutGame();
