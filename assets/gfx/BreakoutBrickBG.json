@@ -1,10 +1,10 @@
 { "frames": [
    {
-    "filename": "BreakoutBrickWide.aseprite",
-    "frame": { "x": 0, "y": 0, "w": 128, "h": 40 },
+    "filename": "BreakoutBrickBG.aseprite",
+    "frame": { "x": 0, "y": 0, "w": 128, "h": 128 },
     "rotated": false,
-    "trimmed": true,
-    "spriteSourceSize": { "x": 0, "y": 0, "w": 128, "h": 40 },
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 128, "h": 128 },
     "sourceSize": { "w": 128, "h": 128 },
     "duration": 100
    }
@@ -12,9 +12,9 @@
  "meta": {
   "app": "https://www.aseprite.org/",
   "version": "1.3.16.1-arm64",
-  "image": "brickWide.bmp",
+  "image": "BreakoutBrickBG.bmp",
   "format": "I8",
-  "size": { "w": 128, "h": 40 },
+  "size": { "w": 128, "h": 128 },
   "scale": "1",
   "frameTags": [
   ],

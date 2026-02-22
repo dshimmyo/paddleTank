@@ -101,9 +101,9 @@ bool detectPaddleCollision(char sourceXLow,char sourceXHi,char sourceYLow,char s
     ballSpeedShift = (ballSpeedShift<0) ? 0: ballSpeedShift;
     ballSpeedShiftA = (ballSpeedShiftA<0) ? 0: ballSpeedShiftA;
 
-    if (sourceXLow <= targetXLow+(PADDLEWIDTH>>2)) {*_dx = -256;*_dy=-256;}//(dx<0) ? dx : -dx;//left quarter
-    else if (sourceXLow <= targetXLow+(PADDLEWIDTH>>1)) {*_dx = -128;*_dy=-384;}//(dx<0) ? -128 : 128;//left of mid
-    else if (sourceXLow <= targetXHi-(PADDLEWIDTH>>2)) {*_dx = 128;*_dy=-384;}//(dx<0) ? -dx : dx;//left of right quarter
+    if (sourceXLow < targetXLow+(PADDLEWIDTH>>2)) {*_dx = -256;*_dy=-256;}//(dx<0) ? dx : -dx;//left quarter
+    else if (sourceXLow < targetXLow+(PADDLEWIDTH>>1)) {*_dx = -128;*_dy=-384;}//(dx<0) ? -128 : 128;//left of mid
+    else if (sourceXLow < targetXHi-(PADDLEWIDTH>>2)+1) {*_dx = 128;*_dy=-384;}//(dx<0) ? -dx : dx;//left of right quarter
     else {*_dx = 256;*_dy=-256;}//right quarter
     return true;
 }
@@ -624,9 +624,12 @@ bool BricksAllGone(){
 
 void BreakoutGame(){
     char * num = "   ";
-    queue_clear_screen(256);//256 black
+    //queue_clear_screen(256);//256 black
+    queue_draw_sprite(1,7,126,113,1,1,2);
+
     //ColorTest();//expensive calculation
     if (BricksAllGone()) init_game();
+
     button_byte = buttons_to_byte_xyzm(player1_buttons);//gets paddle input
     if (player1_buttons & INPUT_MASK_A && ~player1_old_buttons & INPUT_MASK_A) 
     {
@@ -636,7 +639,9 @@ void BreakoutGame(){
         inputButtonsDraw();//debug display
         inputBinaryDraw();//debug line
     }
+
     DrawBricks();
+
     boxMotion();
     boxAMotion();
     ToggleDemoMode();
@@ -664,6 +669,7 @@ void main () {
     //load_instrument(0, gtr); // Load guitar into channel 0
     load_spritesheet(ASSET__gfx__brickWide_bmp,0);
     load_spritesheet(ASSET__gfx__paddle_bmp,1);
+    load_spritesheet(ASSET__gfx__BreakoutBrickBG_bmp,2);
     while (1) 
     {                                     //  Run forever
         BreakoutGame();
