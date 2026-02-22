@@ -28,7 +28,12 @@
 #define BRICK_LEFT   4
 #define BRICK_RIGHT  123
 
+//prototypes
 bool check_brick_collision(char *,char *, int *, int *, int *);
+//void play_single_note();
+void randomizeBox(char *_box_x, char *_box_y, int *_dx, int *_dy, int *_ballSpeedShift);
+
+
 char brickColors[5]={
 0b01011011,
 0b00111101,
@@ -104,7 +109,6 @@ bool detectPaddleCollision(char sourceXLow,char sourceXHi,char sourceYLow,char s
 }
 
 bool boxColPrev = false;
-void randomizeBox(char *_box_x, char *_box_y, int *_dx, int *_dy, int *_ballSpeedShift);
 
 int dxRem=0;//remainder
 int dyRem=0;
@@ -445,6 +449,8 @@ void ColorSpiral(bool last)
 void Intro_sequence(){
     char i=0;
     bool skipSequence=false;
+    queue_clear_screen(256);//256 black
+
     while (spiralY<112 && !skipSequence){ //intro color test sequence
         ColorSpiral(false);
         if (player1_buttons & INPUT_MASK_START && ~player1_old_buttons & INPUT_MASK_START) skipSequence=true;
@@ -579,6 +585,7 @@ bool check_brick_collision(char *_ball_x, char *_ball_y, int *_ball_dx, int *_ba
 
         *_ball_dy = -(*_ball_dy);
         soundTestA();
+        //play_single_note();
         score+= brickRowPoints[row];//brickRows[row].points;//(7-row)>>1;
         //numBricks--;
         if (row==0) *_ballSpeedShift = 1;//double speed
@@ -597,6 +604,23 @@ bool BricksAllGone(){
     }
     return true;
 }
+// const Instrument* gtr;//
+// unsigned char note_duration = 0; // Tracks the duration to play the note
+
+// void play_single_note() {
+//     // Load the guitar instrument only once at the start
+//     if (!gtr) {
+//         gtr = get_instrument_ptr(INSTR_IDX_PIANO);
+//         load_instrument(0, gtr); // Load guitar into channel 0
+//     }
+
+//     set_note(0, 60); // Set note 60 (C) on channel 0
+//     audio_amplitudes[0] = 255; // Set max amplitude for channel 0
+//     set_audio_param(AMPLITUDE + 0, audio_amplitudes[0] + sine_offset); // Update audio amplitudes
+//     flush_audio_params(); // Apply audio parameters
+
+//     note_duration = 500; // Duration to keep the note active
+// }
 
 void BreakoutGame(){
     char * num = "   ";
@@ -612,11 +636,9 @@ void BreakoutGame(){
         inputButtonsDraw();//debug display
         inputBinaryDraw();//debug line
     }
-
     DrawBricks();
     boxMotion();
     boxAMotion();
-
     ToggleDemoMode();
     if (demoMode){
         paddleX = paddleXFromClosestBox();
@@ -625,25 +647,22 @@ void BreakoutGame(){
     }
     //queue_draw_box(box_x, box_y, BALLSIZE, BALLSIZE, BOXCOLOR);
     queue_draw_sprite(box_x,box_y,BALLSIZE,BALLSIZE,0,0,1);
-
     // queue_draw_box(boxA_x, boxA_y, BALLSIZE, BALLSIZE, BOXCOLORA);
     queue_draw_sprite(boxA_x,boxA_y,BALLSIZE,BALLSIZE,0,0,1);
-
     //queue_draw_box(paddleX,PADDLEY,PADDLEWIDTH,PADDLEHEIGHT,PADDLECOLOR);//draw paddle
     queue_draw_sprite(paddleX,PADDLEY,PADDLEWIDTH,PADDLEHEIGHT,0,0,1);
-
     print_scores(score);
     
 }
 void main () {
     //init_paddle();
-    init_music();
     init_game();
     scoring_init();
-    queue_clear_screen(256);//256 black
     Intro_sequence();
+    init_music();
+   //gtr = get_instrument_ptr(INSTR_IDX_PIANO);
+    //load_instrument(0, gtr); // Load guitar into channel 0
     load_spritesheet(ASSET__gfx__brickWide_bmp,0);
-    //load_spritesheet(ASSET__gfx__paddletank_ball_bmp,1);
     load_spritesheet(ASSET__gfx__paddle_bmp,1);
     while (1) 
     {                                     //  Run forever
