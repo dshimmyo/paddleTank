@@ -15,33 +15,38 @@
 #define PADDLEHEIGHT 4
 #define PADDLEY 108
 #define BALLSIZE 2
-#define BRICKSROWSIZE 16
-#define BRICKWIDTH 8
+#define BRICKWIDTH 12
 #define BRICKHEIGHT 4
 #define BINARYTESTPOSY 10
 
-#define NUMBRICKSH 16 
+#define NUMBRICKSH 10 
 #define NUMBRICKSV 5
 
 // These compile to immediate values in assembly
 #define BRICK_TOP    25
 #define BRICK_BOTTOM 44
-#define BRICK_LEFT   0
-#define BRICK_RIGHT  127
+#define BRICK_LEFT   4
+#define BRICK_RIGHT  123
 
 bool check_brick_collision(char *,char *, int *, int *, int *);
-
+char brickColors[5]={
+0b01011011,
+0b00111101,
+0b00011111,
+0b11111101,
+0b10111100
+};
 typedef struct {
     bool visible[NUMBRICKSH];
-    char color;
+    //char color;
     unsigned char points;
 } EntityRow;
 EntityRow brickRows[NUMBRICKSV] = {//top to bottom
-{{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},0b01011011,3},
-{{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},0b00111101,2},
-{{1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1},0b00011111,2},
-{{1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1},0b11111101,1},
-{{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},0b10111100,1}
+{{1,1,1,1,1,1,1,1,1,1},3},
+{{1,1,1,1,1,1,1,1,1,1},2},
+{{1,1,1,1,1,1,1,1,1,1},2},
+{{1,1,1,1,1,1,1,1,1,1},1},
+{{1,1,1,1,1,1,1,1,1,1},1}
 };//should initialize this in an init function
 
 bool demoMode = true;
@@ -130,10 +135,10 @@ void boxMotion()
             soundTest();
         }
 
-        if(box_x <= 1) {
+        if(box_x <= BRICK_LEFT) {
             dx = (dx<0) ? -dx : dx;
             soundTestA();
-        } else if(box_x >= 127-BALLSIZE /*119*/) {
+        } else if(box_x >= BRICK_RIGHT-BALLSIZE /*119*/) {
             dx = (dx>0) ? -dx : dx;
             soundTestA();
         } else if (detectPaddleCollision(box_x,box_x+BALLSIZE,box_y, box_y+BALLSIZE,px1,px2,py1,py2,&dx,&dy)){
@@ -179,10 +184,10 @@ void boxAMotion()
             soundTest();
         }
 
-        if (boxA_x <= 1) {
+        if (boxA_x <= BRICK_LEFT) {
             dxA = (dxA<0) ? -dxA : dxA;
             soundTestA();
-        } else if(boxA_x >= 127-BALLSIZE/*119*/) {
+        } else if(boxA_x >= BRICK_RIGHT-BALLSIZE/*119*/) {
             dxA = (dxA>0) ? -dxA : dxA;
             soundTestA();
         } else if (detectPaddleCollision(boxA_x,boxA_x+BALLSIZE,boxA_y, boxA_y+BALLSIZE,px1,px2,py1,py2,&dxA,&dyA)){
@@ -219,8 +224,8 @@ unsigned char buttons_to_byte_xyzm(int player1_buttons) {
 }
 
 int ClampPaddleX(int paddlex){
-    if (paddlex < 1){
-        paddlex = 1;
+    if (paddlex < BRICK_LEFT){
+        paddlex = BRICK_LEFT;
     } else if (paddlex>127-PADDLEWIDTH){
         paddlex = 127 - PADDLEWIDTH;
     }
@@ -293,9 +298,9 @@ int ConstVelocity(char source, char target, char vel){
 char paddleXFromClosestBox(){
     int paddlex=0;
     if (box_y > boxA_y){
-        paddlex=ConstVelocity(paddleX,box_x - (PADDLEWIDTH>>1),4);//SlowLerp(paddleX,box_x - (PADDLEWIDTH>>1));
+        paddlex=ConstVelocity(paddleX,box_x - (PADDLEWIDTH>>1),4);//
     } else {
-        paddlex=ConstVelocity(paddleX,boxA_x - (PADDLEWIDTH>>1),4);//SlowLerp(paddleX,boxA_x - (PADDLEWIDTH>>1));
+        paddlex=ConstVelocity(paddleX,boxA_x - (PADDLEWIDTH>>1),4);//
     }
     return ClampPaddleX(paddlex);
 }
@@ -407,7 +412,7 @@ unsigned char GetSpiralColor(unsigned char y)
         //return color;
 
         //using brick row colors
-        return brickRows[y % 5].color;
+        return brickColors[y % 5];
 
 }
 void ColorSpiral(bool last)
@@ -461,28 +466,27 @@ unsigned char ClampX(unsigned char num)
     return result;
 }
 void DrawBricks(){
-    unsigned char y;
-    for (y=0;y<NUMBRICKSV;y++)  
+    unsigned char row;
+    for (row=0;row<NUMBRICKSV;row++)  
     {
         //unsigned char yIndexOffset = y*NUMBRICKSH;
-        unsigned char posy = BRICK_TOP + BRICKHEIGHT * y;//brickRow[y].posy;//brickRowYPos[y];
-        unsigned char rowColor = brickRows[y].color;//brickRowColors[y];
-        unsigned char x;
-        for (x=0;x<NUMBRICKSH;x++)
+        unsigned char posy = BRICK_TOP + BRICKHEIGHT * row;//brickRow[y].posy;//brickRowYPos[y];
+        unsigned char col;
+        for (col=0;col<NUMBRICKSH;col++)
         {
-            //if (bricks[yIndexOffset + x].visible){
-            if (brickRows[y].visible[x])
+            //if (bricks[yIndexOffset + col].visible){
+            if (brickRows[row].visible[col])
             {//if current brick is visible, draw the box
                 unsigned char numBricksWidth = 1;
-                unsigned char newX = x;
-                unsigned char xDrawStart;
+                unsigned char newX = col;
+                unsigned char xDrawStart=BRICK_LEFT;
                 unsigned char brickDrawWidth;
-                if (x<NUMBRICKSH-1){//if it isn't the last box check the next brick in the sequence
+                if (col<NUMBRICKSH-1){//if it isn't the last box check the next brick in the sequence
                     bool done = false;
                     while (!done){
                         if (newX>=NUMBRICKSH-1){//end
                             done = true;
-                        } else if (!brickRows[y].visible[newX+1]){
+                        } else if (!brickRows[row].visible[newX+1]){
                             done = true;
                         }
                         else {
@@ -492,16 +496,16 @@ void DrawBricks(){
                     }
                 }//if it is NUMBRICKSH-1 brick it will draw it
                 //if (numBricksWidth>NUMBRICKSH) numBricksWidth=NUMBRICKSH;//total hack
-                //queue_draw_box(brickColumnPos[x], posy, BRICKWIDTH, BRICKHEIGHT, rowColor);
+                //queue_draw_box(brickColumnPos[col], posy, BRICKWIDTH, BRICKHEIGHT, rowColor);
 
-                xDrawStart = x * BRICKWIDTH;
+                xDrawStart = BRICK_LEFT + col * BRICKWIDTH;
                 brickDrawWidth = BRICKWIDTH * numBricksWidth;
                 if (xDrawStart + brickDrawWidth > 127) brickDrawWidth-=1;//last brick index is one pixel short?
 
                 //queue_draw_box(xDrawStart,posy,brickDrawWidth,BRICKHEIGHT,rowColor);
-                queue_draw_sprite(xDrawStart,posy,brickDrawWidth,BRICKHEIGHT,xDrawStart,y*BRICKHEIGHT,0);
+                queue_draw_sprite(xDrawStart,posy,brickDrawWidth,BRICKHEIGHT,xDrawStart,row*BRICKHEIGHT,0);
 
-                x=newX;
+                col=newX;
             }
         }
     }
@@ -516,11 +520,11 @@ bool check_brick_collision(char *_ball_x, char *_ball_y, int *_ball_dx, int *_ba
 
     // Quick reject if ball not in brick zone
     if (*_ball_y < BRICK_TOP || *_ball_y > BRICK_BOTTOM) return false;
-    if (*_ball_x < 0 || *_ball_x > 127) return false;
+    if (*_ball_x < BRICK_LEFT || *_ball_x > BRICK_RIGHT) return false;
     
     // Convert to brick coordinates
-    col = *_ball_x >> 3;        // 0-15
-    row = (*_ball_y - 25) >> 2;  // 0-4
+    col = *_ball_x / BRICKWIDTH;//>> 3;        // 0-15
+    row = (*_ball_y - BRICK_TOP) >> 2;  // 0-4 //assume bricks are 4-high
     
     //if (brick_visible[row][col]) {
     if (brickRows[row].visible[col]){
@@ -539,10 +543,10 @@ bool check_brick_collision(char *_ball_x, char *_ball_y, int *_ball_dx, int *_ba
         brickRows[row].visible[col] = 0;
         
         // Calculate brick boundaries
-        brick_top = 25 + (row << 2);
-        brick_bottom = brick_top + 3;
-        brick_left = col << 3;
-        brick_right = brick_left + 7;
+        brick_top = BRICK_TOP + (row << 2);//assume row height of 4
+        brick_bottom = brick_top + BRICKHEIGHT;//was + 3  assume row height of 4
+        brick_left = BRICK_LEFT + col * BRICKWIDTH;
+        brick_right = brick_left + (BRICKWIDTH);
         
         // Calculate distances to each edge
         dist_left = *_ball_x - brick_left;
@@ -575,18 +579,29 @@ bool check_brick_collision(char *_ball_x, char *_ball_y, int *_ball_dx, int *_ba
         *_ball_dy = -(*_ball_dy);
         soundTestA();
         score+= brickRows[row].points;//(7-row)>>1;
-        numBricks--;
+        //numBricks--;
         if (row==0) *_ballSpeedShift = 1;//double speed
         return true;
     }
     return false;
 }
 
+bool BricksAllGone(){
+    unsigned char row;
+    unsigned char col;
+    for (row=0;row<NUMBRICKSV;row++){
+        for(col=0;col<NUMBRICKSH;col++){
+            if (brickRows[row].visible[col]) return false;
+        }
+    }
+    return true;
+}
+
 void BreakoutGame(){
     char * num = "   ";
     queue_clear_screen(256);//256 black
     //ColorTest();//expensive calculation
-    if (!numBricks) init_game();
+    if (BricksAllGone()) init_game();
     button_byte = buttons_to_byte_xyzm(player1_buttons);//gets paddle input
     if (player1_buttons & INPUT_MASK_A && ~player1_old_buttons & INPUT_MASK_A) 
     {
