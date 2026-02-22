@@ -520,11 +520,11 @@ bool check_brick_collision(char *_ball_x, char *_ball_y, int *_ball_dx, int *_ba
     unsigned char row;
 
     // Quick reject if ball not in brick zone
-    if (*_ball_y < BRICK_TOP || *_ball_y > BRICK_BOTTOM) return false;
+    if (*_ball_y < BRICK_TOP || (*_ball_y + BALLSIZE-1) > BRICK_BOTTOM) return false;
     if (*_ball_x < BRICK_LEFT || *_ball_x > BRICK_RIGHT) return false;
     
     // Convert to brick coordinates
-    col = *_ball_x / BRICKWIDTH;//>> 3;        // 0-15
+    col = (*_ball_x - BRICK_LEFT) / BRICKWIDTH;//>> 3;        // 0-15
     row = (*_ball_y - BRICK_TOP) >> 2;  // 0-4 //assume bricks are 4-high
     
     //if (brick_visible[row][col]) {
@@ -546,7 +546,7 @@ bool check_brick_collision(char *_ball_x, char *_ball_y, int *_ball_dx, int *_ba
         // Calculate brick boundaries
         brick_top = BRICK_TOP + (row << 2);//assume row height of 4
         brick_bottom = brick_top + BRICKHEIGHT;//was + 3  assume row height of 4
-        brick_left = BRICK_LEFT + col * BRICKWIDTH;
+        brick_left = BRICK_LEFT + (col * BRICKWIDTH);
         brick_right = brick_left + (BRICKWIDTH);
         
         // Calculate distances to each edge
