@@ -36,17 +36,17 @@ char brickColors[5]={
 0b11111101,
 0b10111100
 };
+unsigned char brickRowPoints[5]={3,2,2,1,1};
 typedef struct {
     bool visible[NUMBRICKSH];
-    //char color;
-    unsigned char points;
+    unsigned char placeholder;
 } EntityRow;
 EntityRow brickRows[NUMBRICKSV] = {//top to bottom
-{{1,1,1,1,1,1,1,1,1,1},3},
-{{1,1,1,1,1,1,1,1,1,1},2},
-{{1,1,1,1,1,1,1,1,1,1},2},
-{{1,1,1,1,1,1,1,1,1,1},1},
-{{1,1,1,1,1,1,1,1,1,1},1}
+{{1,1,1,1,1,1,1,1,1,1},0},
+{{1,1,1,1,1,1,1,1,1,1},0},
+{{1,1,1,1,1,1,1,1,1,1},0},
+{{1,1,1,1,1,1,1,1,1,1},0},
+{{1,1,1,1,1,1,1,1,1,1},0}
 };//should initialize this in an init function
 
 bool demoMode = true;
@@ -87,8 +87,9 @@ bool detectPaddleCollision(char sourceXLow,char sourceXHi,char sourceYLow,char s
 {
     //boxes draw left-right top-down 0->127, 7->120
     //source is ball, target is paddle
-    if (sourceYHi < PADDLEY) return false;
-    else if (sourceYLow > PADDLEY + PADDLEHEIGHT) return false;
+    //targetLow should be same as PADDLEY, redundant
+    if (sourceYHi < targetYLow) return false;
+    else if (sourceYLow > targetYHi/*targetYLow + PADDLEHEIGHT*/) return false;
     else if (sourceXHi < targetXLow) return false;
     else if (sourceXLow > targetXHi) return false;
 
@@ -226,8 +227,8 @@ unsigned char buttons_to_byte_xyzm(int player1_buttons) {
 int ClampPaddleX(int paddlex){
     if (paddlex < BRICK_LEFT){
         paddlex = BRICK_LEFT;
-    } else if (paddlex>127-PADDLEWIDTH){
-        paddlex = 127 - PADDLEWIDTH;
+    } else if (paddlex>BRICK_RIGHT-PADDLEWIDTH){
+        paddlex = BRICK_RIGHT - PADDLEWIDTH;
     }
     return paddlex;
 }
@@ -578,7 +579,7 @@ bool check_brick_collision(char *_ball_x, char *_ball_y, int *_ball_dx, int *_ba
 
         *_ball_dy = -(*_ball_dy);
         soundTestA();
-        score+= brickRows[row].points;//(7-row)>>1;
+        score+= brickRowPoints[row];//brickRows[row].points;//(7-row)>>1;
         //numBricks--;
         if (row==0) *_ballSpeedShift = 1;//double speed
         return true;
@@ -623,13 +624,13 @@ void BreakoutGame(){
         paddleX = paddleXFromPot8opt(button_byte);
     }
     //queue_draw_box(box_x, box_y, BALLSIZE, BALLSIZE, BOXCOLOR);
-    queue_draw_sprite(box_x,box_y,BALLSIZE,BALLSIZE,0,0,2);
+    queue_draw_sprite(box_x,box_y,BALLSIZE,BALLSIZE,0,0,1);
 
     // queue_draw_box(boxA_x, boxA_y, BALLSIZE, BALLSIZE, BOXCOLORA);
-    queue_draw_sprite(boxA_x,boxA_y,BALLSIZE,BALLSIZE,0,0,2);
+    queue_draw_sprite(boxA_x,boxA_y,BALLSIZE,BALLSIZE,0,0,1);
 
     //queue_draw_box(paddleX,PADDLEY,PADDLEWIDTH,PADDLEHEIGHT,PADDLECOLOR);//draw paddle
-    queue_draw_sprite(paddleX,PADDLEY,PADDLEWIDTH,PADDLEHEIGHT,0,0,2);
+    queue_draw_sprite(paddleX,PADDLEY,PADDLEWIDTH,PADDLEHEIGHT,0,0,1);
 
     print_scores(score);
     
@@ -642,8 +643,8 @@ void main () {
     queue_clear_screen(256);//256 black
     Intro_sequence();
     load_spritesheet(ASSET__gfx__brickWide_bmp,0);
-    load_spritesheet(ASSET__gfx__paddletank_ball_bmp,1);
-    load_spritesheet(ASSET__gfx__paddle_bmp,2);
+    //load_spritesheet(ASSET__gfx__paddletank_ball_bmp,1);
+    load_spritesheet(ASSET__gfx__paddle_bmp,1);
     while (1) 
     {                                     //  Run forever
         BreakoutGame();
