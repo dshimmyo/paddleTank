@@ -31,7 +31,7 @@
 //prototypes
 bool check_brick_collision(char *,char *, int *, int *, int *);
 //void play_single_note();
-void randomizeBox(char *_box_x, char *_box_y, int *_dx, int *_dy, int *_ballSpeedShift);
+void randomizeBox(char *_box_x, char *_box_y, int *_dx, int *_dy);
 
 
 char brickColors[5]={
@@ -61,8 +61,8 @@ char boxA_x = 20, boxA_y = 30;
 
 char bgColor = 0;
 
-int ballSpeedShift = -1;//-1 start, 0 after first hit, 1 top row
-int ballSpeedShiftA = -1;//-1 start, 0 after first hit, 1 top row
+int speedMultiplier = 128; //based around 256
+int speedMultiplierA = 128; //based around 256
 
 //256 is 1 pixel per frame
 int dx = 256, dy = 256;//change from char to int, try 256 multiplier
@@ -102,8 +102,10 @@ bool detectPaddleCollision(char sourceXLow,char sourceXHi,char sourceYLow,char s
     else if (sourceXLow > paddleX+PADDLEWIDTH) return false;
 
     //if the ball is in slow mode, turn it up
-    ballSpeedShift = (ballSpeedShift<0) ? 0: ballSpeedShift;
-    ballSpeedShiftA = (ballSpeedShiftA<0) ? 0: ballSpeedShiftA;
+    // ballSpeedShift = (ballSpeedShift<0) ? 0: ballSpeedShift;
+    // ballSpeedShiftA = (ballSpeedShiftA<0) ? 0: ballSpeedShiftA;
+    speedMultiplier = (speedMultiplier < 256) ? 256 : speedMultiplier;
+    speedMultiplierA = (speedMultiplierA < 256) ? 256 : speedMultiplierA;
 
     //standard reflection
     *_dy = -*_dy;
@@ -162,8 +164,10 @@ void boxMotion()
     //check collision for every frame
     //frameskipping/subframe should only limit incrementing movement
     //boxes draw left-right top-down 0->127, 7->120
-    int scaledDx = (ballSpeedShift<0) ? (dx>>(-ballSpeedShift)) : (dx<<ballSpeedShift);
-    int scaledDy = (ballSpeedShift<0) ? (dy>>(-ballSpeedShift)) : (dy<<ballSpeedShift);
+    // int scaledDx = (ballSpeedShift<0) ? (dx>>(-ballSpeedShift)) : (dx<<ballSpeedShift);
+    // int scaledDy = (ballSpeedShift<0) ? (dy>>(-ballSpeedShift)) : (dy<<ballSpeedShift);
+    int scaledDx = (dx * speedMultiplier) / 256;
+    int scaledDy = (dy * speedMultiplier) / 256;
     int dxTot = scaledDx + dxRem;
     int dyTot = scaledDy + dyRem;
     if ((unsigned int) dxTot >= 255 || (unsigned int) dyTot >= 255 && !cooldown)
@@ -175,7 +179,7 @@ void boxMotion()
             dy = (dy<0) ? -dy : dy;
             soundTestA();
         } else if(box_y >= 120-BALLSIZE){//112) {
-            randomizeBox(&box_x, &box_y, &dx, &dy, &ballSpeedShift);
+            randomizeBox(&box_x, &box_y, &dx, &dy);
             soundTest();
         }
 
@@ -191,7 +195,7 @@ void boxMotion()
             soundCol();
         }
 
-        cooldown = check_brick_collision(&box_x,&box_y,&dx,&dy,&ballSpeedShift);
+        cooldown = check_brick_collision(&box_x,&box_y,&dx,&dy,&speedMultiplier);
     }
     else
     {
@@ -211,8 +215,10 @@ void boxAMotion()
     char py1 = PADDLEY;//110 //bottom bount higher number
     char py2 = PADDLEY + PADDLEHEIGHT; //top bound, lower number
 
-    int scaledDx = (ballSpeedShiftA<0) ? (dxA>>(-ballSpeedShiftA)) : (dxA<<ballSpeedShiftA);
-    int scaledDy = (ballSpeedShiftA<0) ? (dyA>>(-ballSpeedShiftA)) : (dyA<<ballSpeedShiftA);
+    // int scaledDx = (ballSpeedShiftA<0) ? (dxA>>(-ballSpeedShiftA)) : (dxA<<ballSpeedShiftA);
+    // int scaledDy = (ballSpeedShiftA<0) ? (dyA>>(-ballSpeedShiftA)) : (dyA<<ballSpeedShiftA);
+    int scaledDx = (dxA*speedMultiplierA)/256;
+    int scaledDy = (dyA*speedMultiplierA)/256;
     int dxATot = scaledDx + dxARem;
     int dyATot = scaledDy + dyARem;
     if ((unsigned int) dxATot >= 255 || (unsigned int) dyATot >= 255 && !cooldownA)
@@ -224,7 +230,7 @@ void boxAMotion()
             dyA = (dyA<0) ? -dyA : dyA;
             soundTestA();
         } else if(boxA_y >= 120-BALLSIZE/*112*/) {
-            randomizeBox(&boxA_x, &boxA_y, &dxA, &dyA, &ballSpeedShiftA);
+            randomizeBox(&boxA_x, &boxA_y, &dxA, &dyA);
             soundTest();
         }
 
@@ -240,7 +246,7 @@ void boxAMotion()
             soundCol();
         }
 
-        cooldownA = check_brick_collision(&boxA_x,&boxA_y,&dxA,&dyA,&ballSpeedShiftA);
+        cooldownA = check_brick_collision(&boxA_x,&boxA_y,&dxA,&dyA,&speedMultiplierA);
     }
     else
     {
@@ -381,12 +387,11 @@ void ToggleDemoMode()
     }
 }
 
-void randomizeBox(char *_box_x, char *_box_y, int *_dx, int *_dy, int *_ballSpeedShift){
+void randomizeBox(char *_box_x, char *_box_y, int *_dx, int *_dy){
     *_box_x = rnd_range(5,114);
     *_box_y = rnd_range(64,68);
     *_dx = (rnd_range(0,10) > 5) ? 256 : -256;
     *_dy = 256;//always down
-    *_ballSpeedShift = -1;
 }
 
 unsigned char numBricks = 0;
@@ -396,14 +401,15 @@ void init_game()
     unsigned char x;
     unsigned char y;
     numBricks = NUMBRICKSH * NUMBRICKSV;
-    ballSpeedShift = -1; //slow start
+    speedMultiplier = 128; //slow start
+    speedMultiplierA = 128; //slow start
     for (y = 0; y<NUMBRICKSV; y++){
         for (x=0; x<NUMBRICKSH; x++){
             brickRows[y].visible[x]=1;
         }
     }
-    randomizeBox(&box_x, &box_y, &dx, &dy, &ballSpeedShift);
-    randomizeBox(&boxA_x, &boxA_y, &dxA, &dyA, &ballSpeedShiftA);
+    randomizeBox(&box_x, &box_y, &dx, &dy);
+    randomizeBox(&boxA_x, &boxA_y, &dxA, &dyA);
 }
 // Define the structure to hold Color properties
 //unsigned char hue;        // 3 bits (0-7)
@@ -560,7 +566,7 @@ void DrawBricks(){
 // brick_visible[5][16] - 1 = visible, 0 = destroyed
 //uint8_t brick_visible[5][16];
 
-bool check_brick_collision(char *_ball_x, char *_ball_y, int *_ball_dx, int *_ball_dy, int *_ballSpeedShift) {
+bool check_brick_collision(char *_ball_x, char *_ball_y, int *_ball_dx, int *_ball_dy, int *_speedMultiplier) {
     unsigned char col;
     unsigned char row;
 
@@ -627,7 +633,7 @@ bool check_brick_collision(char *_ball_x, char *_ball_y, int *_ball_dx, int *_ba
         //play_single_note();
         score+= brickRowPoints[row];//brickRows[row].points;//(7-row)>>1;
         //numBricks--;
-        if (row==0) *_ballSpeedShift = 1;//double speed
+        if (row==0) *_speedMultiplier = 384;//double speed
         return true;
     }
     return false;
