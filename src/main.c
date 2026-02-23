@@ -73,8 +73,7 @@ unsigned char button_byte=0;
 //int numCollisions = 0;
 unsigned int score = 0;
 
-char ClampLeft(int x);
-
+// char ClampLeft(int x);
 
 void soundTest(){
     play_sound_effect(ASSET__audio__flongNew_sfx_ID,(char)1);
@@ -88,23 +87,63 @@ void soundCol(){
 }
 
 bool detectPaddleCollision(char sourceXLow,char sourceXHi,char sourceYLow,char sourceYHi,
-    char targetXLow,char targetXHi,char targetYLow, char targetYHi, int *_dx, int *_dy)
+    int *_dx, int *_dy)
 {
+    const char paddleHitRegion = (sourceXLow - paddleX)/(PADDLEWIDTH / 8);
+    const char angleAdjust = 32;//64
+    const char minAngle = 96;//64
+    const char maxAngle = 512 - minAngle;
     //boxes draw left-right top-down 0->127, 7->120
     //source is ball, target is paddle
     //targetLow should be same as PADDLEY, redundant
-    if (sourceYHi < targetYLow) return false;
-    else if (sourceYLow > targetYHi/*targetYLow + PADDLEHEIGHT*/) return false;
-    else if (sourceXHi < targetXLow) return false;
-    else if (sourceXLow > targetXHi) return false;
+    if (sourceYHi < PADDLEY) return false;
+    else if (sourceYLow > PADDLEY+PADDLEHEIGHT/*targetYLow + PADDLEHEIGHT*/) return false;
+    else if (sourceXHi < paddleX) return false;
+    else if (sourceXLow > paddleX+PADDLEWIDTH) return false;
 
+    //if the ball is in slow mode, turn it up
     ballSpeedShift = (ballSpeedShift<0) ? 0: ballSpeedShift;
     ballSpeedShiftA = (ballSpeedShiftA<0) ? 0: ballSpeedShiftA;
 
-    if (sourceXLow < targetXLow+(PADDLEWIDTH>>2)) {*_dx = -256;*_dy=-256;}//(dx<0) ? dx : -dx;//left quarter
-    else if (sourceXLow < targetXLow+(PADDLEWIDTH>>1)) {*_dx = -128;*_dy=-384;}//(dx<0) ? -128 : 128;//left of mid
-    else if (sourceXLow < targetXHi-(PADDLEWIDTH>>2)+1) {*_dx = 128;*_dy=-384;}//(dx<0) ? -dx : dx;//left of right quarter
-    else {*_dx = 256;*_dy=-256;}//right quarter
+    //standard reflection
+    *_dy = -*_dy;
+    //not good "reflections"
+    // if (sourceXLow < paddleX+(PADDLEWIDTH>>2)) {*_dx = -256;*_dy=-256;}//(dx<0) ? dx : -dx;//left quarter
+    // else if (sourceXLow < paddleX+(PADDLEWIDTH>>1)) {*_dx = -128;*_dy=-384;}//(dx<0) ? -128 : 128;//left of mid
+    // else if (sourceXLow < (paddleX+PADDLEWIDTH)-(PADDLEWIDTH>>2)+1) {*_dx = 128;*_dy=-384;}//(dx<0) ? -dx : dx;//left of right quarter
+    // else {*_dx = 256;*_dy=-256;}//right quarter
+
+    //attempt to make sophisticated reflections:
+
+    switch (paddleHitRegion)
+    {
+        case 0: //A nudges the ball left 
+        if (*_dx<0) *_dy+=angleAdjust<<1; else *_dy -=angleAdjust<<1;
+        *_dx-=angleAdjust<<1; 
+        break;
+        case 1:
+        case 2: //BC budges the ball left 
+        if (*_dx<0) *_dy +=angleAdjust; else *_dy -=angleAdjust;
+        *_dx-=angleAdjust;
+        break;
+        case 3: //DE no additional nudging
+        case 4:
+        break;
+        case 5://FG nudges right 
+        case 6://nudges right
+        if (*_dx<0) *_dy-=angleAdjust; else *_dy+=angleAdjust;
+        *_dx+=angleAdjust;
+        break; 
+        case 7://H right right
+        if (*_dx<0) *_dy-=angleAdjust<<1; else *_dy+=angleAdjust<<1;
+        *_dx+=angleAdjust<<1;
+        break;
+    }
+    if (*_dy > -minAngle) *_dy=-minAngle; //closer to 0 horizontal
+    else if (*_dy<-maxAngle) *_dy=-maxAngle;//never go vertical -512
+    if (*_dx<-maxAngle) *_dx=-maxAngle; 
+    else if (*_dx>maxAngle) *_dx=maxAngle;
+
     return true;
 }
 
@@ -146,7 +185,7 @@ void boxMotion()
         } else if(box_x >= BRICK_RIGHT-BALLSIZE /*119*/) {
             dx = (dx>0) ? -dx : dx;
             soundTestA();
-        } else if (detectPaddleCollision(box_x,box_x+BALLSIZE,box_y, box_y+BALLSIZE,px1,px2,py1,py2,&dx,&dy)){
+        } else if (detectPaddleCollision(box_x,box_x+BALLSIZE,box_y, box_y+BALLSIZE,&dx,&dy)){
             //dy = (dy>0) ? -dy : dy;
             box_y = PADDLEY-BALLSIZE;//height correction, maybe redundant
             soundCol();
@@ -195,7 +234,7 @@ void boxAMotion()
         } else if(boxA_x >= BRICK_RIGHT-BALLSIZE/*119*/) {
             dxA = (dxA>0) ? -dxA : dxA;
             soundTestA();
-        } else if (detectPaddleCollision(boxA_x,boxA_x+BALLSIZE,boxA_y, boxA_y+BALLSIZE,px1,px2,py1,py2,&dxA,&dyA)){
+        } else if (detectPaddleCollision(boxA_x,boxA_x+BALLSIZE,boxA_y, boxA_y+BALLSIZE,&dxA,&dyA)){
             //dyA = (dyA>0) ? -dyA : dyA;
             boxA_y = PADDLEY-BALLSIZE;//height correction, maybe redundant
             soundCol();
@@ -236,16 +275,16 @@ int ClampPaddleX(int paddlex){
     }
     return paddlex;
 }
-int setRange(char input, char inMin, char inMax, char outMin, char outMax)
-{
-    int output = 0;
-    if (input<inMin)return outMin;
-    else if (input>inMax)return outMax;
+// int setRange(char input, char inMin, char inMax, char outMin, char outMax)
+// {
+//     int output = 0;
+//     if (input<inMin)return outMin;
+//     else if (input>inMax)return outMax;
 
-    output = ((outMax - outMin)<<8/(inMax-inMin)*(input-inMin))>>8 + outMin;
-    return output;
+//     output = ((outMax - outMin)<<8/(inMax-inMin)*(input-inMin))>>8 + outMin;
+//     return output;
     
-}
+// }
 int setRangeOpt(char input, char inMin, char inMax)
 {
     int output = 0;
@@ -256,18 +295,18 @@ int setRangeOpt(char input, char inMin, char inMax)
     return output;
     
 }
-char paddleXFromPot(unsigned char potVal)
-{
-    unsigned char newPotVal = setRange(potVal,32,96,0,127);//38,90 too fast,(32,96)maybe better
-    return ClampPaddleX(((newPotVal<<1)/3 + paddleX/3));//fast and smooth
-}
-char paddleXFromPot8(unsigned char potVal)
-{
-    //unsigned char newPotVal = setRange(potVal,0b00011111,0b11100000,0,127);//changed for 8-bit
-    unsigned char newPotVal = setRange(potVal,0b01000000,0b11000000,0,127);//changed for 8-bit
+// char paddleXFromPot(unsigned char potVal)
+// {
+//     unsigned char newPotVal = setRange(potVal,32,96,0,127);//38,90 too fast,(32,96)maybe better
+//     return ClampPaddleX(((newPotVal<<1)/3 + paddleX/3));//fast and smooth
+// }
+// char paddleXFromPot8(unsigned char potVal)
+// {
+//     //unsigned char newPotVal = setRange(potVal,0b00011111,0b11100000,0,127);//changed for 8-bit
+//     unsigned char newPotVal = setRange(potVal,0b01000000,0b11000000,0,127);//changed for 8-bit
 
-    return ClampPaddleX(((newPotVal<<1)/3 + paddleX/3));//fast and smooth
-}
+//     return ClampPaddleX(((newPotVal<<1)/3 + paddleX/3));//fast and smooth
+// }
 char paddleXFromPot8opt(unsigned char potVal)
 {
     //need to make a cheaper setrange function
@@ -275,19 +314,19 @@ char paddleXFromPot8opt(unsigned char potVal)
 
     return ClampPaddleX(newPotVal);//(((newPotVal<<1)/3 + paddleX/3));//no smoothing
 }
-char ClampLeft(int x){
-    if (x<1){return 1;}
-    return x;
-}
-int SlowLerp(int source, int target)
-{
-    //return target/3 + (source<<1)/3;//1/3 effort
-    //return (target>>2) + ((source*3)>>2);//1/4 effort
-    //return (target/5) + ((source<<2)/5);//1/5 effort
-    //return (target/6) + ((source*5)/6);//1/6 effort
-    //return (target/7) + ((source*6)/7);//1/7 effort
-    return (target>>3) + ((source*7)>>3);//1/8 effort
-}
+// char ClampLeft(int x){
+//     if (x<1){return 1;}
+//     return x;
+// }
+// int SlowLerp(int source, int target)
+// {
+//     //return target/3 + (source<<1)/3;//1/3 effort
+//     //return (target>>2) + ((source*3)>>2);//1/4 effort
+//     //return (target/5) + ((source<<2)/5);//1/5 effort
+//     //return (target/6) + ((source*5)/6);//1/6 effort
+//     //return (target/7) + ((source*6)/7);//1/7 effort
+//     return (target>>3) + ((source*7)>>3);//1/8 effort
+// }
 int ConstVelocity(char source, char target, char vel){
     int result = source;
     if (source < target){
