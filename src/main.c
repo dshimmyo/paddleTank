@@ -33,6 +33,8 @@ bool check_brick_collision(char *,char *, int *, int *, int *);
 //void play_single_note();
 void randomizeBox(char *_box_x, char *_box_y, int *_dx, int *_dy, int *_ballSpeedShift);
 
+const unsigned char reflectAngles[7]=
+{0,61,112,181,224,247,256};
 
 char brickColors[5]={
 0b01011011,
@@ -85,6 +87,21 @@ void soundTestA(){
 void soundCol(){
     play_sound_effect(ASSET__audio__bik_sfx_ID,(char)1);
 }
+char GetNearestReflectAngleIndex(unsigned int _unsignedDx)
+{
+    char index=0;
+    unsigned char diff = 255;
+    unsigned char newDiff;
+    char bestIndex=0;
+    for (index=0; index<7; index++){
+        newDiff = (unsigned char) reflectAngles[index] - _unsignedDx;
+        if (newDiff < diff){
+            diff = newDiff;
+            bestIndex = index;
+        }
+    }
+    return bestIndex;
+}
 
 bool detectPaddleCollision(char sourceXLow,char sourceXHi,char sourceYLow,char sourceYHi,
     int *_dx, int *_dy)
@@ -93,6 +110,8 @@ bool detectPaddleCollision(char sourceXLow,char sourceXHi,char sourceYLow,char s
     const char angleAdjust = 32;//64
     const char minAngle = 96;//64
     const char maxAngle = 512 - minAngle;
+    char nearestIndex=0;
+    unsigned char nearestAngle=0;
     //boxes draw left-right top-down 0->127, 7->120
     //source is ball, target is paddle
     //targetLow should be same as PADDLEY, redundant
@@ -114,35 +133,39 @@ bool detectPaddleCollision(char sourceXLow,char sourceXHi,char sourceYLow,char s
     // else {*_dx = 256;*_dy=-256;}//right quarter
 
     //attempt to make sophisticated reflections:
-
+    nearestIndex = GetNearestReflectAngleIndex(*_dx);
     switch (paddleHitRegion)
     {
-        case 0: //A nudges the ball left 
-        if (*_dx<0) *_dy+=angleAdjust<<1; else *_dy -=angleAdjust<<1;
-        *_dx-=angleAdjust<<1; 
+        case 0: //A nudges the ball left twice
+        //new reflect angles have no sign so left side increases dx, right side decreases dx
+        if (*_dx < 0) nearestIndex += 2;
+        else nearestIndex -=2;
         break;
         case 1:
         case 2: //BC budges the ball left 
-        if (*_dx<0) *_dy +=angleAdjust; else *_dy -=angleAdjust;
-        *_dx-=angleAdjust;
+        if (*_dx < 0) nearestIndex += 1;
+        else nearestIndex -=1;
         break;
         case 3: //DE no additional nudging
         case 4:
+        return true;
         break;
         case 5://FG nudges right 
         case 6://nudges right
-        if (*_dx<0) *_dy-=angleAdjust; else *_dy+=angleAdjust;
-        *_dx+=angleAdjust;
+        //no sign. left side reduces dx
+        if (*_dx < 0) nearestIndex -= 1;
+        else nearestIndex +=1;
         break; 
         case 7://H right right
-        if (*_dx<0) *_dy-=angleAdjust<<1; else *_dy+=angleAdjust<<1;
-        *_dx+=angleAdjust<<1;
+        if (*_dx < 0){ nearestIndex -= 2;}
+        else nearestIndex += 2;
         break;
     }
-    if (*_dy > -minAngle) *_dy=-minAngle; //closer to 0 horizontal
-    else if (*_dy<-maxAngle) *_dy=-maxAngle;//never go vertical -512
-    if (*_dx<-maxAngle) *_dx=-maxAngle; 
-    else if (*_dx>maxAngle) *_dx=maxAngle;
+    nearestIndex = (nearestIndex<1) ? 1 : nearestIndex;
+    nearestIndex = (nearestIndex>5) ? 5 : nearestIndex;
+    nearestAngle = reflectAngles[nearestIndex];
+    *_dx = (*_dx > 0) ? nearestAngle : -nearestAngle;
+    *_dy = -reflectAngles[6-nearestIndex];
 
     return true;
 }
@@ -445,63 +468,63 @@ void init_game()
 //     queue_draw_box(120, 118, 8, 2, simplePack(hue+5));//packColor(hue+5,3,7));//0b11111100);
 
 // }
-char spiralX=0;
-char spiralY=8;
-unsigned char spiralEndTimer=0;
-unsigned char GetSpiralColor(unsigned char y)
-{
-        // unsigned char colorIndex = ((y)>>3) & 0b00000111;
-        // unsigned char hueShift = colorIndex<<6;
-        // unsigned char color = 0b000111111 | hueShift;
-        //return color;
+// char spiralX=0;
+// char spiralY=8;
+// unsigned char spiralEndTimer=0;
+// unsigned char GetSpiralColor(unsigned char y)
+// {
+//         // unsigned char colorIndex = ((y)>>3) & 0b00000111;
+//         // unsigned char hueShift = colorIndex<<6;
+//         // unsigned char color = 0b000111111 | hueShift;
+//         //return color;
 
-        //using brick row colors
-        return brickColors[y % 5];
+//         //using brick row colors
+//         return brickColors[y % 5];
 
-}
-void ColorSpiral(bool last)
-{
-    unsigned char x=0;
-    unsigned char y=0;
-    queue_clear_screen(256);//256 black
+// }
+// void ColorSpiral(bool last)
+// {
+//     unsigned char x=0;
+//     unsigned char y=0;
+//     queue_clear_screen(256);//256 black
 
-    for (y=8; y<spiralY;y+=8){//fill in previous rows
-        queue_draw_box(1,y,120,8,GetSpiralColor((y>>3)-1));
-    }
-    if (!last) //draws dynamic row and increments values for the next frame
-    {
-        queue_draw_box(1,spiralY,spiralX+8,8,GetSpiralColor((spiralY>>3)-1));//this row draws the last row dynamically
+//     for (y=8; y<spiralY;y+=8){//fill in previous rows
+//         queue_draw_box(1,y,120,8,GetSpiralColor((y>>3)-1));
+//     }
+//     if (!last) //draws dynamic row and increments values for the next frame
+//     {
+//         queue_draw_box(1,spiralY,spiralX+8,8,GetSpiralColor((spiralY>>3)-1));//this row draws the last row dynamically
 
-        spiralX+=8;
-        if (spiralX == 120) 
-        {
-            spiralX = 0;
-            spiralY +=8;
-        }
-    }
-        await_draw_queue();
-        await_vsync(1);
-        flip_pages();
-        tick_music();//optional?
-        update_inputs();//optional?
-}
-void Intro_sequence(){
-    char i=0;
-    bool skipSequence=false;
-    queue_clear_screen(256);//256 black
+//         spiralX+=8;
+//         if (spiralX == 120) 
+//         {
+//             spiralX = 0;
+//             spiralY +=8;
+//         }
+//     }
+//         await_draw_queue();
+//         await_vsync(1);
+//         flip_pages();
+//         tick_music();//optional?
+//         update_inputs();//optional?
+// }
+// void Intro_sequence(){
+//     char i=0;
+//     bool skipSequence=false;
+//     queue_clear_screen(256);//256 black
 
-    while (spiralY<112 && !skipSequence){ //intro color test sequence
-        ColorSpiral(false);
-        if (player1_buttons & INPUT_MASK_START && ~player1_old_buttons & INPUT_MASK_START) skipSequence=true;
-    }
+//     while (spiralY<112 && !skipSequence){ //intro color test sequence
+//         ColorSpiral(false);
+//         if (player1_buttons & INPUT_MASK_START && ~player1_old_buttons & INPUT_MASK_START) skipSequence=true;
+//     }
 
-    spiralY=112;
-    for (i=0;i<64;i++)
-        {
-            ColorSpiral(true);
-        }
-    queue_clear_border(1);
-}
+//     spiralY=112;
+//     for (i=0;i<64;i++)
+//         {
+//             ColorSpiral(true);
+//         }
+//     queue_clear_border(1);
+// }
 //int gamestate = 0;
 
 unsigned char ClampX(unsigned char num)
@@ -702,7 +725,7 @@ void main () {
     //init_paddle();
     init_game();
     scoring_init();
-    Intro_sequence();
+    //Intro_sequence();
     init_music();
    //gtr = get_instrument_ptr(INSTR_IDX_PIANO);
     //load_instrument(0, gtr); // Load guitar into channel 0
