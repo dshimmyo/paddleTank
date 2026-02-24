@@ -33,9 +33,21 @@ bool check_brick_collision(char *,char *, int *, int *, int *);
 //void play_single_note();
 void randomizeBox(char *_box_x, char *_box_y, int *_dx, int *_dy, int *_ballSpeedShift);
 
-const unsigned char reflectAngles[7]=
-{0,61,112,181,224,247,256};
+typedef struct {
+    int dx;
+    int dy;
+} angle;
+// const angle reflectAngles[7]=
+// {{0,255},{61,247},{112,224},{181,181},{224,112},{247,61},{255,0}};
 
+//const unsigned char reflectAngles[7]=
+//{0,61,112,181,224,247,256};
+//{-256,-247,-224,-181,-112,-61,0,61,112,181,224,247,256};
+#define NUM_ANGLES 10
+const angle reflectAnglesNew[NUM_ANGLES]=
+{{-247,61},{-224,112},{-181,181},{-112,224},{-61,247},
+// {-10,255},{10,255},
+{61,247},{112,224},{181,181},{224,112},{247,61}};
 char brickColors[5]={
 0b01011011,
 0b00111101,
@@ -87,14 +99,14 @@ void soundTestA(){
 void soundCol(){
     play_sound_effect(ASSET__audio__bik_sfx_ID,(char)1);
 }
-char GetNearestReflectAngleIndex(unsigned int _unsignedDx)
+char GetNearestReflectAngleIndex( int _dx)
 {
     char index=0;
     unsigned char diff = 255;
     unsigned char newDiff;
     char bestIndex=0;
-    for (index=0; index<7; index++){
-        newDiff = (unsigned char) reflectAngles[index] - _unsignedDx;
+    for (index=0; index<NUM_ANGLES; index++){
+        newDiff = reflectAnglesNew[index].dx - _dx;
         if (newDiff < diff){
             diff = newDiff;
             bestIndex = index;
@@ -111,7 +123,7 @@ bool detectPaddleCollision(char sourceXLow,char sourceXHi,char sourceYLow,char s
     const char minAngle = 96;//64
     const char maxAngle = 512 - minAngle;
     char nearestIndex=0;
-    unsigned char nearestAngle=0;
+    angle nearestAngle;
     //boxes draw left-right top-down 0->127, 7->120
     //source is ball, target is paddle
     //targetLow should be same as PADDLEY, redundant
@@ -162,10 +174,13 @@ bool detectPaddleCollision(char sourceXLow,char sourceXHi,char sourceYLow,char s
         break;
     }
     nearestIndex = (nearestIndex<1) ? 1 : nearestIndex;
-    nearestIndex = (nearestIndex>5) ? 5 : nearestIndex;
-    nearestAngle = reflectAngles[nearestIndex];
-    *_dx = (*_dx > 0) ? nearestAngle : -nearestAngle;
-    *_dy = -reflectAngles[6-nearestIndex];
+    nearestIndex = (nearestIndex>NUM_ANGLES-1) ? NUM_ANGLES-1 : nearestIndex;
+    nearestAngle = reflectAnglesNew[nearestIndex];
+    //*_dx = (*_dx > 0) ? nearestAngle : -nearestAngle;
+    //*_dy = -reflectAngles[6-nearestIndex];
+    *_dx = nearestAngle.dx;
+    *_dy = nearestAngle.dy;
+    if (*_dy > 0) *_dy = -*_dy; 
 
     return true;
 }
@@ -210,7 +225,7 @@ void boxMotion()
             soundTestA();
         } else if (detectPaddleCollision(box_x,box_x+BALLSIZE,box_y, box_y+BALLSIZE,&dx,&dy)){
             //dy = (dy>0) ? -dy : dy;
-            box_y = PADDLEY-BALLSIZE;//height correction, maybe redundant
+            box_y = PADDLEY-BALLSIZE-1;//height correction, maybe redundant
             soundCol();
         }
 
@@ -259,7 +274,7 @@ void boxAMotion()
             soundTestA();
         } else if (detectPaddleCollision(boxA_x,boxA_x+BALLSIZE,boxA_y, boxA_y+BALLSIZE,&dxA,&dyA)){
             //dyA = (dyA>0) ? -dyA : dyA;
-            boxA_y = PADDLEY-BALLSIZE;//height correction, maybe redundant
+            boxA_y = PADDLEY-BALLSIZE-1;//height correction, maybe redundant
             soundCol();
         }
 
