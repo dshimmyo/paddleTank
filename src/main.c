@@ -45,9 +45,9 @@ typedef struct {
 //{-256,-247,-224,-181,-112,-61,0,61,112,181,224,247,256};
 #define NUM_ANGLES 10
 const angle reflectAnglesNew[NUM_ANGLES]=
-{{-247,61},{-224,112},{-181,181},{-112,224},{-61,247},
-// {-10,255},{10,255},
-{61,247},{112,224},{181,181},{224,112},{247,61}};
+{{-247<<1,-61<<1},{-224<<1,-112<<1},{-181<<1,-181<<1},{-112<<1,-224<<1},{-61<<1,-247<<1},
+// {-10<<1,-255<<1},{10<<1,-255<<1},
+{61<<1,-247<<1},{112<<1,-224<<1},{181<<1,-181<<1},{224<<1,-112<<1},{247<<1,-61<<1}};
 char brickColors[5]={
 0b01011011,
 0b00111101,
@@ -99,14 +99,16 @@ void soundTestA(){
 void soundCol(){
     play_sound_effect(ASSET__audio__bik_sfx_ID,(char)1);
 }
-char GetNearestReflectAngleIndex( int _dx)
+unsigned char GetNearestReflectAngleIndex( int _dx)
 {
-    char index=0;
+    unsigned char index=0;
     unsigned char diff = 255;
     unsigned char newDiff;
     char bestIndex=0;
     for (index=0; index<NUM_ANGLES; index++){
-        newDiff = reflectAnglesNew[index].dx - _dx;
+        if (reflectAnglesNew[index].dx == _dx) return index;
+        if (_dx > reflectAnglesNew[index].dx) newDiff = dx - reflectAnglesNew[index].dx;
+        else newDiff = reflectAnglesNew[index].dx - _dx;
         if (newDiff < diff){
             diff = newDiff;
             bestIndex = index;
@@ -118,12 +120,15 @@ char GetNearestReflectAngleIndex( int _dx)
 bool detectPaddleCollision(char sourceXLow,char sourceXHi,char sourceYLow,char sourceYHi,
     int *_dx, int *_dy)
 {
-    const char paddleHitRegion = (sourceXLow - paddleX)/(PADDLEWIDTH / 8);
     const char angleAdjust = 32;//64
     const char minAngle = 96;//64
     const char maxAngle = 512 - minAngle;
+    char paddleHitRegion = 0;
     char nearestIndex=0;
     angle nearestAngle;
+    if (sourceXLow > paddleX) paddleHitRegion = (sourceXLow - paddleX)/(PADDLEWIDTH / 8);
+    else paddleHitRegion = 0;
+    //paddleHitRegion = (paddleHitRegion < 0) ? 0 : paddleHitRegion;
     //boxes draw left-right top-down 0->127, 7->120
     //source is ball, target is paddle
     //targetLow should be same as PADDLEY, redundant
@@ -137,7 +142,7 @@ bool detectPaddleCollision(char sourceXLow,char sourceXHi,char sourceYLow,char s
     ballSpeedShiftA = (ballSpeedShiftA<0) ? 0: ballSpeedShiftA;
 
     //standard reflection
-    *_dy = -*_dy;
+    *_dy = - (unsigned int) *_dy;
     //not good "reflections"
     // if (sourceXLow < paddleX+(PADDLEWIDTH>>2)) {*_dx = -256;*_dy=-256;}//(dx<0) ? dx : -dx;//left quarter
     // else if (sourceXLow < paddleX+(PADDLEWIDTH>>1)) {*_dx = -128;*_dy=-384;}//(dx<0) ? -128 : 128;//left of mid
@@ -150,13 +155,11 @@ bool detectPaddleCollision(char sourceXLow,char sourceXHi,char sourceYLow,char s
     {
         case 0: //A nudges the ball left twice
         //new reflect angles have no sign so left side increases dx, right side decreases dx
-        if (*_dx < 0) nearestIndex += 2;
-        else nearestIndex -=2;
+        if (nearestIndex >=2) nearestIndex -= 2; else nearestIndex=0;
         break;
         case 1:
         case 2: //BC budges the ball left 
-        if (*_dx < 0) nearestIndex += 1;
-        else nearestIndex -=1;
+        if (nearestIndex >1) nearestIndex -= 1; else nearestIndex=0;
         break;
         case 3: //DE no additional nudging
         case 4:
@@ -164,28 +167,20 @@ bool detectPaddleCollision(char sourceXLow,char sourceXHi,char sourceYLow,char s
         break;
         case 5://FG nudges right 
         case 6://nudges right
-        //no sign. left side reduces dx
-        if (*_dx < 0) nearestIndex -= 1;
-        else nearestIndex +=1;
+        if (nearestIndex < NUM_ANGLES-1) nearestIndex +=1; else nearestIndex = NUM_ANGLES-1;
         break; 
         case 7://H right right
-        if (*_dx < 0){ nearestIndex -= 2;}
-        else nearestIndex += 2;
+        if (nearestIndex < NUM_ANGLES-2) nearestIndex +=2; else nearestIndex = NUM_ANGLES-1;
         break;
     }
-    nearestIndex = (nearestIndex<1) ? 1 : nearestIndex;
-    nearestIndex = (nearestIndex>NUM_ANGLES-1) ? NUM_ANGLES-1 : nearestIndex;
+    // nearestIndex = (nearestIndex<0) ? 0 : nearestIndex;
+    // nearestIndex = (nearestIndex>NUM_ANGLES-1) ? NUM_ANGLES-1 : nearestIndex;
     nearestAngle = reflectAnglesNew[nearestIndex];
-    //*_dx = (*_dx > 0) ? nearestAngle : -nearestAngle;
-    //*_dy = -reflectAngles[6-nearestIndex];
     *_dx = nearestAngle.dx;
     *_dy = nearestAngle.dy;
-    if (*_dy > 0) *_dy = -*_dy; 
 
     return true;
 }
-
-bool boxColPrev = false;
 
 int dxRem=0;//remainder
 int dyRem=0;
