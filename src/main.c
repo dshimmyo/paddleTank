@@ -697,7 +697,7 @@ bool BricksAllGone(){
 void BreakoutGame(){
     char * num = "   ";
     //queue_clear_screen(256);//256 black
-    queue_draw_sprite(1,7,126,113,1,1,2);
+    queue_draw_sprite(1,7,126,113,1,1,2);//bg in bank 2
 
     //ColorTest();//expensive calculation
     if (BricksAllGone()) init_game();
@@ -723,9 +723,9 @@ void BreakoutGame(){
         paddleX = paddleXFromPot8opt(button_byte);
     }
     //queue_draw_box(box_x, box_y, BALLSIZE, BALLSIZE, BOXCOLOR);
-    queue_draw_sprite(box_x,box_y,BALLSIZE,BALLSIZE,0,0,1);
+    queue_draw_sprite(box_x,box_y,BALLSIZE,BALLSIZE,0,4,1);
     // queue_draw_box(boxA_x, boxA_y, BALLSIZE, BALLSIZE, BOXCOLORA);
-    queue_draw_sprite(boxA_x,boxA_y,BALLSIZE,BALLSIZE,0,0,1);
+    queue_draw_sprite(boxA_x,boxA_y,BALLSIZE,BALLSIZE,0,4,1);
     //queue_draw_box(paddleX,PADDLEY,PADDLEWIDTH,PADDLEHEIGHT,PADDLECOLOR);//draw paddle
     queue_draw_sprite(paddleX,PADDLEY,PADDLEWIDTH,PADDLEHEIGHT,0,0,1);
     print_scores(score);
