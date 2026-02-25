@@ -199,7 +199,7 @@ void boxMotion()
     int scaledDy = (ballSpeedShift<0) ? (dy>>(-ballSpeedShift)) : (dy<<ballSpeedShift);
     int dxTot = scaledDx + dxRem;
     int dyTot = scaledDy + dyRem;
-    if ((unsigned int) dxTot >= 255 || (unsigned int) dyTot >= 255 && !cooldown)
+    if (((unsigned int) dxTot >= 255 || (unsigned int) dyTot >= 255) && !cooldown)
     {
         box_x += dxTot>>8;
         box_y += dyTot>>8;
@@ -248,7 +248,7 @@ void boxAMotion()
     int scaledDy = (ballSpeedShiftA<0) ? (dyA>>(-ballSpeedShiftA)) : (dyA<<ballSpeedShiftA);
     int dxATot = scaledDx + dxARem;
     int dyATot = scaledDy + dyARem;
-    if ((unsigned int) dxATot >= 255 || (unsigned int) dyATot >= 255 && !cooldownA)
+    if (((unsigned int) dxATot >= 255 || (unsigned int) dyATot >= 255) && !cooldownA)
     {
         boxA_x += dxATot>>8;
         boxA_y += dyATot>>8;
