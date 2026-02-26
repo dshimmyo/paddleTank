@@ -14,7 +14,8 @@
 #define PADDLEWIDTH 16
 #define PADDLEHEIGHT 4
 #define PADDLEY 108
-#define BALLSIZE 2
+#define BALLSIZE 3
+#define BALLCENTEROFFSET 1
 #define BRICKWIDTH 12
 #define BRICKHEIGHT 4
 #define BINARYTESTPOSY 10
@@ -220,7 +221,7 @@ void boxMotion()
             soundTestA();
         } else if (detectPaddleCollision(box_x,box_x+BALLSIZE,box_y, box_y+BALLSIZE,&dx,&dy)){
             //dy = (dy>0) ? -dy : dy;
-            box_y = PADDLEY-BALLSIZE-1;//height correction, maybe redundant
+            //box_y = PADDLEY-BALLSIZE-1;//height correction, maybe redundant
             soundCol();
         }
 
@@ -269,7 +270,7 @@ void boxAMotion()
             soundTestA();
         } else if (detectPaddleCollision(boxA_x,boxA_x+BALLSIZE,boxA_y, boxA_y+BALLSIZE,&dxA,&dyA)){
             //dyA = (dyA>0) ? -dyA : dyA;
-            boxA_y = PADDLEY-BALLSIZE-1;//height correction, maybe redundant
+            //boxA_y = PADDLEY-BALLSIZE-1;//height correction, maybe redundant
             soundCol();
         }
 
@@ -596,14 +597,15 @@ void DrawBricks(){
 bool check_brick_collision(char *_ball_x, char *_ball_y, int *_ball_dx, int *_ball_dy, int *_ballSpeedShift) {
     unsigned char col;
     unsigned char row;
-
+    unsigned char ballCenterX = *_ball_x + BALLCENTEROFFSET;
+    unsigned char ballCenterY = *_ball_y + BALLCENTEROFFSET;
     // Quick reject if ball not in brick zone
-    if (*_ball_y < BRICK_TOP || (*_ball_y + BALLSIZE-1) > BRICK_BOTTOM) return false;
-    if (*_ball_x < BRICK_LEFT || *_ball_x > BRICK_RIGHT) return false;
+    if (ballCenterY < BRICK_TOP || (ballCenterY) > BRICK_BOTTOM) return false;
+    if (ballCenterX < BRICK_LEFT || ballCenterX > BRICK_RIGHT) return false;
     
     // Convert to brick coordinates
-    col = (*_ball_x - BRICK_LEFT) / BRICKWIDTH;//>> 3;        // 0-15
-    row = (*_ball_y - BRICK_TOP) >> 2;  // 0-4 //assume bricks are 4-high
+    col = (ballCenterX - BRICK_LEFT) / BRICKWIDTH;//>> 3;        // 0-15
+    row = (ballCenterY - BRICK_TOP) >> 2;  // 0-4 //assume bricks are 4-high
     
     //if (brick_visible[row][col]) {
     if (brickRows[row].visible[col]){
@@ -643,15 +645,15 @@ bool check_brick_collision(char *_ball_x, char *_ball_y, int *_ball_dx, int *_ba
         // Position ball JUST outside the brick
         switch(side) 
         {
-            case 0: *_ball_x = brick_left - 1; 
+            case 0: //*_ball_x = brick_left - 1; 
                 *_ball_dx = -(*_ball_dx);   
                 break;  // Left
-            case 1: *_ball_x = brick_right + 1; 
+            case 1: //*_ball_x = brick_right + 1; 
                 *_ball_dx = -(*_ball_dx);
                 break;  // Right
-            case 2: *_ball_y = brick_top - 1; 
+            case 2: //*_ball_y = brick_top - 1; 
                 break;    // Top
-            case 3: *_ball_y = brick_bottom + 1; 
+            case 3: //*_ball_y = brick_bottom + 1; 
                 break; // Bottom
         }
 
@@ -723,9 +725,9 @@ void BreakoutGame(){
         paddleX = paddleXFromPot8opt(button_byte);
     }
     //queue_draw_box(box_x, box_y, BALLSIZE, BALLSIZE, BOXCOLOR);
-    queue_draw_sprite(box_x,box_y,BALLSIZE,BALLSIZE,0,4,1);
+    queue_draw_sprite(box_x,box_y,BALLSIZE,BALLSIZE,3,8,1);
     // queue_draw_box(boxA_x, boxA_y, BALLSIZE, BALLSIZE, BOXCOLORA);
-    queue_draw_sprite(boxA_x,boxA_y,BALLSIZE,BALLSIZE,0,4,1);
+    queue_draw_sprite(boxA_x,boxA_y,BALLSIZE,BALLSIZE,3,8,1);
     //queue_draw_box(paddleX,PADDLEY,PADDLEWIDTH,PADDLEHEIGHT,PADDLECOLOR);//draw paddle
     queue_draw_sprite(paddleX,PADDLEY,PADDLEWIDTH,PADDLEHEIGHT,0,0,1);
     print_scores(score);
