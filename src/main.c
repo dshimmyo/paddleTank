@@ -43,12 +43,19 @@ typedef struct {
 
 //const unsigned char reflectAngles[7]=
 //{0,61,112,181,224,247,256};
-//{-256,-247,-224,-181,-112,-61,0,61,112,181,224,247,256};
-#define NUM_ANGLES 10
+//{-255,-247,-224,-181,-112,-61,0,61,112,181,224,247,255};
+//{-255,-251,-247,-235,-224,-202,-181,-146,-112,-86,-61,-30,0,
+//30,61,86,112,146,181,202,224,235,247,251,255};
+#define NUM_ANGLES 22
 const angle reflectAnglesNew[NUM_ANGLES]=
-{{-247<<1,-61<<1},{-224<<1,-112<<1},{-181<<1,-181<<1},{-112<<1,-224<<1},{-61<<1,-247<<1},
-// {-10<<1,-255<<1},{10<<1,-255<<1},
-{61<<1,-247<<1},{112<<1,-224<<1},{181<<1,-181<<1},{224<<1,-112<<1},{247<<1,-61<<1}};
+// {{-247<<1,-61<<1},{-224<<1,-112<<1},{-181<<1,-181<<1},{-112<<1,-224<<1},{-61<<1,-247<<1},
+// {-20<<1,-255<<1},{20<<1,-255<<1},
+// {61<<1,-247<<1},{112<<1,-224<<1},{181<<1,-181<<1},{224<<1,-112<<1},{247<<1,-61<<1}};
+{{-251<<1,-30<<1},{-247<<1,-61<<1},{-235<<1,-86<<1},{-224<<1,-112<<1},{-202<<1,-146<<1},{-181<<1,-181<<1},{-146<<1,-202<<1},{-112<<1,-224<<1},{-86<<1,-235<<1},{-61<<1,-247<<1},{-30<<1,-251<<1},
+//{0,255},
+{30<<1,-251<<1},{61<<1,-247<<1},{86<<1,-235<<1},{112<<1,-224<<1},{146<<1,-202<<1},{181<<1,-181<<1},{202<<1,-146<<1},{224<<1,-112<<1},{235<<1,-86<<1},{247<<1,-61<<1},{251<<1,-30<<1}};
+
+
 char brickColors[5]={
 0b01011011,
 0b00111101,
@@ -127,6 +134,11 @@ bool detectPaddleCollision(char sourceXLow,char sourceXHi,char sourceYLow,char s
     char paddleHitRegion = 0;
     char nearestIndex=0;
     angle nearestAngle;
+    int tempDx = *_dx;//keep changes local until done
+    int tempDy = *_dy;//keep changes local until done
+
+    if (tempDy < 0) return false;//don't waste time on already bounced balls
+
     if (sourceXLow > paddleX) paddleHitRegion = (sourceXLow - paddleX)/(PADDLEWIDTH / 8);
     else paddleHitRegion = 0;
     //paddleHitRegion = (paddleHitRegion < 0) ? 0 : paddleHitRegion;
@@ -143,7 +155,9 @@ bool detectPaddleCollision(char sourceXLow,char sourceXHi,char sourceYLow,char s
     ballSpeedShiftA = (ballSpeedShiftA<0) ? 0: ballSpeedShiftA;
 
     //standard reflection
-    *_dy = - (unsigned int) *_dy;
+    tempDy = (tempDy<0) ? tempDy : - ((unsigned int) tempDy);
+    tempDx = tempDx;
+
     //not good "reflections"
     // if (sourceXLow < paddleX+(PADDLEWIDTH>>2)) {*_dx = -256;*_dy=-256;}//(dx<0) ? dx : -dx;//left quarter
     // else if (sourceXLow < paddleX+(PADDLEWIDTH>>1)) {*_dx = -128;*_dy=-384;}//(dx<0) ? -128 : 128;//left of mid
@@ -151,31 +165,32 @@ bool detectPaddleCollision(char sourceXLow,char sourceXHi,char sourceYLow,char s
     // else {*_dx = 256;*_dy=-256;}//right quarter
 
     //attempt to make sophisticated reflections:
-    nearestIndex = GetNearestReflectAngleIndex(*_dx);
+    nearestIndex = GetNearestReflectAngleIndex(tempDx);
     switch (paddleHitRegion)
     {
         case 0: //A nudges the ball left twice
         //new reflect angles have no sign so left side increases dx, right side decreases dx
-        if (nearestIndex >=2) nearestIndex -= 2; else nearestIndex=0;
+        nearestIndex -= 2;
         break;
         case 1:
         case 2: //BC budges the ball left 
-        if (nearestIndex >1) nearestIndex -= 1; else nearestIndex=0;
+        nearestIndex -= 1;
         break;
         case 3: //DE no additional nudging
         case 4:
+        *_dy=tempDy;//remember to reflect the ball
         return true;
         break;
         case 5://FG nudges right 
         case 6://nudges right
-        if (nearestIndex < NUM_ANGLES-1) nearestIndex +=1; else nearestIndex = NUM_ANGLES-1;
+        nearestIndex +=1;
         break; 
         case 7://H right right
-        if (nearestIndex < NUM_ANGLES-2) nearestIndex +=2; else nearestIndex = NUM_ANGLES-1;
+        nearestIndex +=2;
         break;
     }
-    // nearestIndex = (nearestIndex<0) ? 0 : nearestIndex;
-    // nearestIndex = (nearestIndex>NUM_ANGLES-1) ? NUM_ANGLES-1 : nearestIndex;
+    nearestIndex = (nearestIndex<0) ? 0 : nearestIndex;
+    nearestIndex = (nearestIndex>NUM_ANGLES-1) ? NUM_ANGLES-1 : nearestIndex;
     nearestAngle = reflectAnglesNew[nearestIndex];
     *_dx = nearestAngle.dx;
     *_dy = nearestAngle.dy;
@@ -200,7 +215,7 @@ void boxMotion()
     int scaledDy = (ballSpeedShift<0) ? (dy>>(-ballSpeedShift)) : (dy<<ballSpeedShift);
     int dxTot = scaledDx + dxRem;
     int dyTot = scaledDy + dyRem;
-    if (((unsigned int) dxTot >= 255 || (unsigned int) dyTot >= 255) && !cooldown)
+    if (((unsigned int) dxTot >= 255 || (unsigned int) dyTot >= 255))
     {
         box_x += dxTot>>8;
         box_y += dyTot>>8;
@@ -222,14 +237,12 @@ void boxMotion()
         } else if (detectPaddleCollision(box_x,box_x+BALLSIZE,box_y, box_y+BALLSIZE,&dx,&dy)){
             //dy = (dy>0) ? -dy : dy;
             //box_y = PADDLEY-BALLSIZE-1;//height correction, maybe redundant
+            dyTot=0;//neutralize accumulated y motion
+            dyRem=0;
             soundCol();
         }
-
-        cooldown = check_brick_collision(&box_x,&box_y,&dx,&dy,&ballSpeedShift);
-    }
-    else
-    {
-        cooldown = false;
+        if (!cooldown) cooldown = check_brick_collision(&box_x,&box_y,&dx,&dy,&ballSpeedShift);
+        else cooldown = false;
     }
     dxRem = dxTot & 255;// % 256;//update the remainder for sub-frame movement
     dyRem = dyTot & 255;//% 256;//update the remainder for sub-frame movement
@@ -249,7 +262,7 @@ void boxAMotion()
     int scaledDy = (ballSpeedShiftA<0) ? (dyA>>(-ballSpeedShiftA)) : (dyA<<ballSpeedShiftA);
     int dxATot = scaledDx + dxARem;
     int dyATot = scaledDy + dyARem;
-    if (((unsigned int) dxATot >= 255 || (unsigned int) dyATot >= 255) && !cooldownA)
+    if (((unsigned int) dxATot >= 255 || (unsigned int) dyATot >= 255))
     {
         boxA_x += dxATot>>8;
         boxA_y += dyATot>>8;
@@ -271,14 +284,13 @@ void boxAMotion()
         } else if (detectPaddleCollision(boxA_x,boxA_x+BALLSIZE,boxA_y, boxA_y+BALLSIZE,&dxA,&dyA)){
             //dyA = (dyA>0) ? -dyA : dyA;
             //boxA_y = PADDLEY-BALLSIZE-1;//height correction, maybe redundant
+            dyATot = 0; //neutralize accumulated y motion
+            dyARem =0;
             soundCol();
         }
 
-        cooldownA = check_brick_collision(&boxA_x,&boxA_y,&dxA,&dyA,&ballSpeedShiftA);
-    }
-    else
-    {
-        cooldownA = false;
+        if (!cooldownA) cooldownA = check_brick_collision(&boxA_x,&boxA_y,&dxA,&dyA,&ballSpeedShiftA);
+        else cooldownA = false;
     }
     dxARem = dxATot & 255;//% 256;//update the remainder for sub-frame movement
     dyARem = dyATot & 255;//% 256;//update the remainder for sub-frame movement
@@ -418,8 +430,8 @@ void ToggleDemoMode()
 void randomizeBox(char *_box_x, char *_box_y, int *_dx, int *_dy, int *_ballSpeedShift){
     *_box_x = rnd_range(5,114);
     *_box_y = rnd_range(64,68);
-    *_dx = (rnd_range(0,10) > 5) ? 256 : -256;
-    *_dy = 256;//always down
+    *_dx = (rnd_range(0,10) > 5) ? 255 : -255;
+    *_dy = 255;//always down
     *_ballSpeedShift = -1;
 }
 
