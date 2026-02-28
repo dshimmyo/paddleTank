@@ -4,7 +4,7 @@
 #include "gt/audio/music.h"
 #include "gt/input.h"
 #include "gt/feature/random/random.h"
-#include "paddleUtils.h" 
+#include "paddle.h" 
 #include "scoring.h"
 #include "gen/assets/gfx.h"
 
