@@ -10,6 +10,16 @@
 #ifdef ENABLE_MODULE_PADDLE
 
 //Input mask overrides
+#undef INPUT_MASK_UP 
+#undef INPUT_MASK_DOWN 
+#undef INPUT_MASK_LEFT 
+#undef INPUT_MASK_RIGHT 
+#undef INPUT_MASK_A 
+#undef INPUT_MASK_B 
+#undef INPUT_MASK_C 
+#undef INPUT_MASK_START 
+#undef INPUT_MASK_ALL_KEYS
+
 #define INPUT_MASK_UP		2048    //prioritizes high, was 2056
 #define INPUT_MASK_DOWN		1024    //prioritizes high, was 1028 
 #define INPUT_MASK_LEFT		512     //high
