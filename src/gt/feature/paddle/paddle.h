@@ -3,9 +3,9 @@
 
 #include "../../../gen/modules_enabled.h"
 
-// #ifndef ENABLE_MODULE_PADDLE
-// #error "Module PADDLE included but not enabled!"
-// #endif ENABLE_MODULE_PADDLE         
+#ifndef ENABLE_MODULE_PADDLE
+#error "Module PADDLE included but not enabled!"
+#endif
 
 #ifdef ENABLE_MODULE_PADDLE
 
@@ -18,10 +18,6 @@
 #undef INPUT_MASK_B 
 #undef INPUT_MASK_C 
 #undef INPUT_MASK_START 
-#undef INPUT_MASK_MODE
-#undef INPUT_MASK_X
-#undef INPUT_MASK_Y
-#undef INPUT_MASK_Z
 #undef INPUT_MASK_ALL_KEYS
 
 #define INPUT_MASK_UP		2048    //prioritizes high, was 2056
