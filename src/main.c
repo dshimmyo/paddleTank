@@ -595,7 +595,7 @@ void DrawBricks(){
                 if (xDrawStart + brickDrawWidth > 127) brickDrawWidth-=1;//last brick index is one pixel short?
 
                 //queue_draw_box(xDrawStart,posy,brickDrawWidth,BRICKHEIGHT,rowColor);
-                queue_draw_sprite(xDrawStart,posy,brickDrawWidth,BRICKHEIGHT,xDrawStart,(row*BRICKHEIGHT)+40,0);
+                queue_draw_sprite(xDrawStart,posy,brickDrawWidth,BRICKHEIGHT,xDrawStart,(row*BRICKHEIGHT)+60,0);
 
                 col=newX;
             }
@@ -737,9 +737,9 @@ void BreakoutGame(){
         paddleX = paddleXFromPot8opt(button_byte);
     }
     //queue_draw_box(box_x, box_y, BALLSIZE, BALLSIZE, BOXCOLOR);
-    queue_draw_sprite(box_x,box_y,BALLSIZE,BALLSIZE,6,8,1);
+    queue_draw_sprite(box_x,box_y,BALLSIZE,BALLSIZE,3,8,1);
     // queue_draw_box(boxA_x, boxA_y, BALLSIZE, BALLSIZE, BOXCOLORA);
-    queue_draw_sprite(boxA_x,boxA_y,BALLSIZE,BALLSIZE,6,8,1);
+    queue_draw_sprite(boxA_x,boxA_y,BALLSIZE,BALLSIZE,3,8,1);
     //queue_draw_box(paddleX,PADDLEY,PADDLEWIDTH,PADDLEHEIGHT,PADDLECOLOR);//draw paddle
     queue_draw_sprite(paddleX,PADDLEY,PADDLEWIDTH,PADDLEHEIGHT,0,0,1);
     print_scores(score);
