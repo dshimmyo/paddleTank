@@ -4,9 +4,10 @@
 #include "gt/audio/music.h"
 #include "gt/input.h"
 #include "gt/feature/random/random.h"
-#include "gt/feature/paddle/paddle.h" 
 #include "scoring.h"
 #include "gen/assets/gfx.h"
+#include "gt/feature/paddle/paddle.h" 
+
 
 #define BOXCOLOR WHITE//92
 #define BOXCOLORA WHITE

@@ -1,3 +1,5 @@
+#include "paddle.h"
+#include "../../../gen/modules_enabled.h"
 
 #ifdef ENABLE_MODULE_PADDLE
 
