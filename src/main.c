@@ -579,7 +579,7 @@ void DrawBricks(){
                 if (animFrame)
                 {
                     unsigned char xDrawStart = BRICK_LEFT + col * BRICKWIDTH;
-                    unsigned char gx = (8-animFrame)*BRICKWIDTH;//calculate the growing x offset based on the animation frame (0-7)
+                    unsigned char gx = (7-animFrame)*BRICKWIDTH;//calculate the growing x offset based on the animation frame (0-6)
                     queue_draw_sprite(BRICK_LEFT + col * BRICKWIDTH,posy,BRICKWIDTH,BRICKHEIGHT,gx,(row*BRICKHEIGHT)+80,3);
                     animatedBricks[row*NUMBRICKSH + col]--;
                 }
