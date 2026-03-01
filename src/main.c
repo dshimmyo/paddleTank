@@ -76,6 +76,7 @@ EntityRow brickRows[NUMBRICKSV] = {//top to bottom
 {{1,1,1,1,1,1,1,1,1,1},0},
 {{1,1,1,1,1,1,1,1,1,1},0}
 };//should initialize this in an init function
+char animatedBricks[NUMBRICKSH*NUMBRICKSV];
 
 bool demoMode = true;
 bool debugMode = false;
@@ -95,6 +96,7 @@ char paddleX = 64;
 unsigned char button_byte=0;
 //int numCollisions = 0;
 unsigned int score = 0;
+int resetTimer = 100;
 
 // char ClampLeft(int x);
 
@@ -442,15 +444,19 @@ void init_game()
 {
     unsigned char x;
     unsigned char y;
+    int count = 0;
     numBricks = NUMBRICKSH * NUMBRICKSV;
     ballSpeedShift = -1; //slow start
+
     for (y = 0; y<NUMBRICKSV; y++){
         for (x=0; x<NUMBRICKSH; x++){
             brickRows[y].visible[x]=1;
+            animatedBricks[count++]=0;//set all bricks to unanimated
         }
     }
     randomizeBox(&box_x, &box_y, &dx, &dy, &ballSpeedShift);
     randomizeBox(&boxA_x, &boxA_y, &dxA, &dyA, &ballSpeedShiftA);
+    resetTimer = 100;
 }
 // Define the structure to hold Color properties
 //unsigned char hue;        // 3 bits (0-7)
@@ -565,10 +571,20 @@ void DrawBricks(){
         //unsigned char yIndexOffset = y*NUMBRICKSH;
         unsigned char posy = BRICK_TOP + BRICKHEIGHT * row;//brickRow[y].posy;//brickRowYPos[y];
         unsigned char col;
+        unsigned char animFrame;
         for (col=0;col<NUMBRICKSH;col++)
         {
-            //if (bricks[yIndexOffset + col].visible){
-            if (brickRows[row].visible[col])
+            if (!brickRows[row].visible[col]){
+                animFrame = animatedBricks[row*NUMBRICKSH + col]>>1;
+                if (animFrame)
+                {
+                    unsigned char xDrawStart = BRICK_LEFT + col * BRICKWIDTH;
+                    unsigned char gx = (8-animFrame)*BRICKWIDTH;//calculate the growing x offset based on the animation frame (0-7)
+                    queue_draw_sprite(BRICK_LEFT + col * BRICKWIDTH,posy,BRICKWIDTH,BRICKHEIGHT,gx,(row*BRICKHEIGHT)+80,3);
+                    animatedBricks[row*NUMBRICKSH + col]--;
+                }
+            }
+            else
             {//if current brick is visible, draw the box
                 unsigned char numBricksWidth = 1;
                 unsigned char newX = col;
@@ -596,12 +612,30 @@ void DrawBricks(){
                 if (xDrawStart + brickDrawWidth > 127) brickDrawWidth-=1;//last brick index is one pixel short?
 
                 //queue_draw_box(xDrawStart,posy,brickDrawWidth,BRICKHEIGHT,rowColor);
-                queue_draw_sprite(xDrawStart,posy,brickDrawWidth,BRICKHEIGHT,xDrawStart,(row*BRICKHEIGHT)+60,0);
+                queue_draw_sprite(xDrawStart,posy,brickDrawWidth,BRICKHEIGHT,xDrawStart,(row*BRICKHEIGHT)+60,3);
 
                 col=newX;
             }
         }
     }
+    //draw animated bricks here
+    // for (row=0;row<NUMBRICKSV;row++)  
+    // {
+    //     unsigned char posy = BRICK_TOP + BRICKHEIGHT * row;//brickRow[y].posy;//brickRowYPos[y];
+    //     unsigned char col;
+    //     unsigned char animFrame;
+    //     for (col=0;col<NUMBRICKSH;col++)
+    //     {
+    //         animFrame = animatedBricks[row*NUMBRICKSH + col];
+    //         if (animFrame)
+    //         {
+    //             unsigned char xDrawStart = BRICK_LEFT + col * BRICKWIDTH;
+    //             unsigned char gx = (7-animFrame)*BRICKWIDTH;//calculate the growing x offset based on the animation frame (0-7)
+    //             queue_draw_sprite(xDrawStart,posy,BRICKWIDTH,BRICKHEIGHT,gx,(row*BRICKHEIGHT)+80,3);
+    //             animatedBricks[row*NUMBRICKSH + col]--;
+    //         }
+    //     }
+    // }
 }
 
 // brick_visible[5][16] - 1 = visible, 0 = destroyed
@@ -635,7 +669,8 @@ bool check_brick_collision(char *_ball_x, char *_ball_y, int *_ball_dx, int *_ba
 
         // Destroy brick
         brickRows[row].visible[col] = 0;
-        
+        animatedBricks[row*NUMBRICKSH + col] = 7<<1;//start animation for this brick
+
         // Calculate brick boundaries
         brick_top = BRICK_TOP + (row << 2);//assume row height of 4
         brick_bottom = brick_top + BRICKHEIGHT;//was + 3  assume row height of 4
@@ -672,9 +707,7 @@ bool check_brick_collision(char *_ball_x, char *_ball_y, int *_ball_dx, int *_ba
 
         *_ball_dy = -(*_ball_dy);
         soundTestA();
-        //play_single_note();
         score+= brickRowPoints[row];//brickRows[row].points;//(7-row)>>1;
-        //numBricks--;
         if (row==0) *_ballSpeedShift = 1;//double speed
         return true;
     }
@@ -708,14 +741,17 @@ bool BricksAllGone(){
 
 //     note_duration = 500; // Duration to keep the note active
 // }
-
 void BreakoutGame(){
     char * num = "   ";
     //queue_clear_screen(256);//256 black
     queue_draw_sprite(1,7,126,113,1,1,2);//bg in bank 2
 
     //ColorTest();//expensive calculation
-    if (BricksAllGone()) init_game();
+    if (BricksAllGone()) {
+        if (!resetTimer--) {
+            init_game();
+        }
+    }
 
     button_byte = buttons_to_byte_xyzm(player1_buttons);//gets paddle input
     if (player1_buttons & INPUT_MASK_A && ~player1_old_buttons & INPUT_MASK_A) 
@@ -754,7 +790,7 @@ void main () {
     init_music();
    //gtr = get_instrument_ptr(INSTR_IDX_PIANO);
     //load_instrument(0, gtr); // Load guitar into channel 0
-    load_spritesheet(ASSET__gfx__brickWide_bmp,0);
+    load_spritesheet(ASSET__gfx__BreakoutBrickWide_bmp,3);
     load_spritesheet(ASSET__gfx__paddle_bmp,1);
     load_spritesheet(ASSET__gfx__BreakoutBrickBG_bmp,2);
     while (1) 
