@@ -579,7 +579,7 @@ void DrawBricks(){
                 if (animFrame)
                 {
                     unsigned char xDrawStart = BRICK_LEFT + col * BRICKWIDTH;
-                    unsigned char gx = (7-animFrame)*BRICKWIDTH;//calculate the growing x offset based on the animation frame (0-6)
+                    unsigned char gx = (10-animFrame)*BRICKWIDTH;//calculate the growing x offset based on the animation frame (0-6)
                     queue_draw_sprite(BRICK_LEFT + col * BRICKWIDTH,posy,BRICKWIDTH,BRICKHEIGHT,gx,(row*BRICKHEIGHT)+80,3);
                     animatedBricks[row*NUMBRICKSH + col]--;
                 }
@@ -669,7 +669,7 @@ bool check_brick_collision(char *_ball_x, char *_ball_y, int *_ball_dx, int *_ba
 
         // Destroy brick
         brickRows[row].visible[col] = 0;
-        animatedBricks[row*NUMBRICKSH + col] = 7<<1;//start animation for this brick
+        animatedBricks[row*NUMBRICKSH + col] = 10<<1;//start animation for this brick
 
         // Calculate brick boundaries
         brick_top = BRICK_TOP + (row << 2);//assume row height of 4
