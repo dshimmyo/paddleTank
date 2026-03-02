@@ -103,6 +103,7 @@ const Instrument* gtr;
 
 void soundTest(){
     play_sound_effect(ASSET__audio__flongNew_sfx_ID,(char)1);
+    play_song(ASSET__audio__FirstRP_mid,REPEAT_NONE);
 }
 void soundTestA(){
     play_sound_effect(ASSET__audio__chirp_sfx_ID,(char)1);
@@ -715,7 +716,7 @@ bool check_brick_collision(char *_ball_x, char *_ball_y, int *_ball_dx, int *_ba
 
         *_ball_dy = -(*_ball_dy);
         soundTestA();
-        play_single_note();
+        //play_single_note();
         score+= brickRowPoints[row];//brickRows[row].points;//(7-row)>>1;
         if (row==0) *_ballSpeedShift = 1;//double speed
         return true;//cooldown for one frame
@@ -733,10 +734,11 @@ bool BricksAllGone(){
     }
     return true;
 }
-unsigned char note_duration = 0; // Tracks the duration to play the note
+//unsigned char note_duration = 0; // Tracks the duration to play the note
 
 void play_single_note() {
     // Load the guitar instrument only once at the start
+    init_audio_coprocessor();
     if (!gtr) {
         gtr = get_instrument_ptr(INSTR_IDX_PIANO);
         load_instrument(0, gtr); // Load guitar into channel 0
@@ -744,10 +746,12 @@ void play_single_note() {
 
     set_note(0, 60); // Set note 60 (C) on channel 0
     audio_amplitudes[0] = 255; // Set max amplitude for channel 0
-    set_audio_param(AMPLITUDE + 0, audio_amplitudes[0] + sine_offset); // Update audio amplitudes
+    //set_audio_param(AMPLITUDE + 0, audio_amplitudes[0] + sine_offset); // Update audio amplitudes
+    push_audio_param(AMPLITUDE + 0, audio_amplitudes[0] + sine_offset);    
+
     flush_audio_params(); // Apply audio parameters
 
-    note_duration = 500; // Duration to keep the note active
+    //note_duration = 500; // Duration to keep the note active
 }
 void BreakoutGame(){
     char * num = "   ";
@@ -796,7 +800,6 @@ void main () {
     init_game();
     scoring_init();
     //Intro_sequence();
-    init_audio_coprocessor();
     init_music();
     gtr = get_instrument_ptr(INSTR_IDX_PIANO);
     load_instrument(0, gtr); // Load guitar into channel 0
