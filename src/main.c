@@ -4,7 +4,7 @@
 #include "gt/audio/music.h"
 #include "gt/input.h"
 #include "gt/feature/random/random.h"
-//#include "scoring.h"
+#include "scoring.h"
 #include "gen/assets/gfx.h"
 #include "gt/feature/paddle/paddle.h" 
 
@@ -786,13 +786,13 @@ void BreakoutGame(){
     queue_draw_sprite(boxA_x,boxA_y,BALLSIZE,BALLSIZE,4,0,1);
     //queue_draw_box(paddleX,PADDLEY,PADDLEWIDTH,PADDLEHEIGHT,PADDLECOLOR);//draw paddle
     queue_draw_sprite(paddleX,PADDLEY,PADDLEWIDTH,PADDLEHEIGHT,0,0,1);
-    //print_scores(score);
+    print_scores(score);
     
 }
 void main () {
     //init_paddle();
     init_game();
-    //scoring_init();
+    scoring_init();
     //Intro_sequence();
     init_music();
    //gtr = get_instrument_ptr(INSTR_IDX_PIANO);
