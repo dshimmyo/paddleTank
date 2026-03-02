@@ -15,8 +15,8 @@
 #define PADDLEWIDTH 16
 #define PADDLEHEIGHT 4
 #define PADDLEY 108
-#define BALLSIZE 3
-#define BALLCENTEROFFSET 1
+#define BALLSIZE 2
+#define BALLCENTEROFFSET ((BALLSIZE>2) ? BALLSIZE>>1 : 0)
 #define BRICKWIDTH 12
 #define BRICKHEIGHT 4
 #define BINARYTESTPOSY 10
@@ -153,6 +153,8 @@ bool detectPaddleCollision(char sourceXLow,char sourceXHi,char sourceYLow,char s
     else if (sourceXHi < paddleX) return false;
     else if (sourceXLow > paddleX+PADDLEWIDTH) return false;
 
+    //if it gets to here the ball is colliding with the paddle, now determine reflection angle based on hit region
+
     //if the ball is in slow mode, turn it up
     ballSpeedShift = (ballSpeedShift<0) ? 0: ballSpeedShift;
     ballSpeedShiftA = (ballSpeedShiftA<0) ? 0: ballSpeedShiftA;
@@ -160,12 +162,6 @@ bool detectPaddleCollision(char sourceXLow,char sourceXHi,char sourceYLow,char s
     //standard reflection
     tempDy = (tempDy<0) ? tempDy : - ((unsigned int) tempDy);
     tempDx = tempDx;
-
-    //not good "reflections"
-    // if (sourceXLow < paddleX+(PADDLEWIDTH>>2)) {*_dx = -256;*_dy=-256;}//(dx<0) ? dx : -dx;//left quarter
-    // else if (sourceXLow < paddleX+(PADDLEWIDTH>>1)) {*_dx = -128;*_dy=-384;}//(dx<0) ? -128 : 128;//left of mid
-    // else if (sourceXLow < (paddleX+PADDLEWIDTH)-(PADDLEWIDTH>>2)+1) {*_dx = 128;*_dy=-384;}//(dx<0) ? -dx : dx;//left of right quarter
-    // else {*_dx = 256;*_dy=-256;}//right quarter
 
     //attempt to make sophisticated reflections:
     nearestIndex = GetNearestReflectAngleIndex(tempDx);
@@ -644,9 +640,18 @@ void DrawBricks(){
 bool check_brick_collision(char *_ball_x, char *_ball_y, int *_ball_dx, int *_ball_dy, int *_ballSpeedShift) {
     unsigned char col;
     unsigned char row;
-    unsigned char ballCenterX = *_ball_x + BALLCENTEROFFSET;
-    unsigned char ballCenterY = *_ball_y + BALLCENTEROFFSET;
-    // Quick reject if ball not in brick zone
+    unsigned char ballCenterX;
+    unsigned char ballCenterY;
+
+    //if (BALLSIZE==2) {//picks collision point based on direction for 2x2 ball
+        ballCenterX = (*_ball_dx>0) ? *_ball_x+1 : *_ball_x;
+        ballCenterY = (*_ball_dy>0) ? *_ball_y+1 : *_ball_y;
+    //} else { //assume ball will never be 1 pixel
+    //    ballCenterX = *_ball_x + BALLCENTEROFFSET;
+    //    ballCenterY = *_ball_y + BALLCENTEROFFSET;
+    //}
+
+        // Quick reject if ball not in brick zone
     if (ballCenterY < BRICK_TOP || (ballCenterY) > BRICK_BOTTOM) return false;
     if (ballCenterX < BRICK_LEFT || ballCenterX > BRICK_RIGHT) return false;
     
@@ -774,9 +779,9 @@ void BreakoutGame(){
         paddleX = paddleXFromPot8opt(button_byte);
     }
     //queue_draw_box(box_x, box_y, BALLSIZE, BALLSIZE, BOXCOLOR);
-    queue_draw_sprite(box_x,box_y,BALLSIZE,BALLSIZE,3,8,1);
+    queue_draw_sprite(box_x,box_y,BALLSIZE,BALLSIZE,4,0,1);//blurry 3x3 ball gx 3 gy 8, paddle at 0,0
     // queue_draw_box(boxA_x, boxA_y, BALLSIZE, BALLSIZE, BOXCOLORA);
-    queue_draw_sprite(boxA_x,boxA_y,BALLSIZE,BALLSIZE,3,8,1);
+    queue_draw_sprite(boxA_x,boxA_y,BALLSIZE,BALLSIZE,4,0,1);
     //queue_draw_box(paddleX,PADDLEY,PADDLEWIDTH,PADDLEHEIGHT,PADDLECOLOR);//draw paddle
     queue_draw_sprite(paddleX,PADDLEY,PADDLEWIDTH,PADDLEHEIGHT,0,0,1);
     print_scores(score);
