@@ -32,7 +32,7 @@
 
 //prototypes
 bool check_brick_collision(char *,char *, int *, int *, int *);
-//void play_single_note();
+void play_single_note();
 void randomizeBox(char *_box_x, char *_box_y, int *_dx, int *_dy, int *_ballSpeedShift);
 
 typedef struct {
@@ -97,6 +97,7 @@ unsigned char button_byte=0;
 //int numCollisions = 0;
 unsigned int score = 0;
 int resetTimer = 100;
+const Instrument* gtr;
 
 // char ClampLeft(int x);
 
@@ -714,6 +715,7 @@ bool check_brick_collision(char *_ball_x, char *_ball_y, int *_ball_dx, int *_ba
 
         *_ball_dy = -(*_ball_dy);
         soundTestA();
+        play_single_note();
         score+= brickRowPoints[row];//brickRows[row].points;//(7-row)>>1;
         if (row==0) *_ballSpeedShift = 1;//double speed
         return true;//cooldown for one frame
@@ -731,23 +733,22 @@ bool BricksAllGone(){
     }
     return true;
 }
-// const Instrument* gtr;//
-// unsigned char note_duration = 0; // Tracks the duration to play the note
+unsigned char note_duration = 0; // Tracks the duration to play the note
 
-// void play_single_note() {
-//     // Load the guitar instrument only once at the start
-//     if (!gtr) {
-//         gtr = get_instrument_ptr(INSTR_IDX_PIANO);
-//         load_instrument(0, gtr); // Load guitar into channel 0
-//     }
+void play_single_note() {
+    // Load the guitar instrument only once at the start
+    if (!gtr) {
+        gtr = get_instrument_ptr(INSTR_IDX_PIANO);
+        load_instrument(0, gtr); // Load guitar into channel 0
+    }
 
-//     set_note(0, 60); // Set note 60 (C) on channel 0
-//     audio_amplitudes[0] = 255; // Set max amplitude for channel 0
-//     set_audio_param(AMPLITUDE + 0, audio_amplitudes[0] + sine_offset); // Update audio amplitudes
-//     flush_audio_params(); // Apply audio parameters
+    set_note(0, 60); // Set note 60 (C) on channel 0
+    audio_amplitudes[0] = 255; // Set max amplitude for channel 0
+    set_audio_param(AMPLITUDE + 0, audio_amplitudes[0] + sine_offset); // Update audio amplitudes
+    flush_audio_params(); // Apply audio parameters
 
-//     note_duration = 500; // Duration to keep the note active
-// }
+    note_duration = 500; // Duration to keep the note active
+}
 void BreakoutGame(){
     char * num = "   ";
     //queue_clear_screen(256);//256 black
@@ -789,14 +790,16 @@ void BreakoutGame(){
     print_scores(score);
     
 }
+
 void main () {
     //init_paddle();
     init_game();
     scoring_init();
     //Intro_sequence();
+    init_audio_coprocessor();
     init_music();
-   //gtr = get_instrument_ptr(INSTR_IDX_PIANO);
-    //load_instrument(0, gtr); // Load guitar into channel 0
+    gtr = get_instrument_ptr(INSTR_IDX_PIANO);
+    load_instrument(0, gtr); // Load guitar into channel 0
     load_spritesheet(ASSET__gfx__BreakoutBrickWide_bmp,3);
     load_spritesheet(ASSET__gfx__paddle_bmp,1);
     load_spritesheet(ASSET__gfx__BreakoutBrickBG_bmp,2);
