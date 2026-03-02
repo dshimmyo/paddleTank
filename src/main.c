@@ -4,7 +4,7 @@
 #include "gt/audio/music.h"
 #include "gt/input.h"
 #include "gt/feature/random/random.h"
-#include "scoring.h"
+//#include "scoring.h"
 #include "gen/assets/gfx.h"
 #include "gt/feature/paddle/paddle.h" 
 
@@ -97,6 +97,7 @@ unsigned char button_byte=0;
 //int numCollisions = 0;
 unsigned int score = 0;
 int resetTimer = 100;
+SpriteSlot player_sprite=0;
 
 // char ClampLeft(int x);
 
@@ -770,7 +771,7 @@ void BreakoutGame(){
     }
 
     DrawBricks();
-    queue_draw_sprite_frame(4,64,64,0,SPRITE_FLIP_NONE);
+    queue_draw_sprite_frame(player_sprite,64,64,frame++ % 24,SPRITE_FLIP_NONE);//test sprite animation
     boxMotion();
     boxAMotion();
     ToggleDemoMode();
@@ -785,13 +786,13 @@ void BreakoutGame(){
     queue_draw_sprite(boxA_x,boxA_y,BALLSIZE,BALLSIZE,4,0,1);
     //queue_draw_box(paddleX,PADDLEY,PADDLEWIDTH,PADDLEHEIGHT,PADDLECOLOR);//draw paddle
     queue_draw_sprite(paddleX,PADDLEY,PADDLEWIDTH,PADDLEHEIGHT,0,0,1);
-    print_scores(score);
+    //print_scores(score);
     
 }
 void main () {
     //init_paddle();
     init_game();
-    scoring_init();
+    //scoring_init();
     //Intro_sequence();
     init_music();
    //gtr = get_instrument_ptr(INSTR_IDX_PIANO);
@@ -799,7 +800,9 @@ void main () {
     load_spritesheet(ASSET__gfx__BreakoutBrickWide_bmp,3);
     load_spritesheet(ASSET__gfx__paddle_bmp,1);
     load_spritesheet(ASSET__gfx__BreakoutBrickBG_bmp,2);
-    load_spritesheet(ASSET__gfx__testSprite_bmp,4);
+    player_sprite = allocate_sprite(&ASSET__gfx__testSprite_bmp_load_list);
+    set_sprite_frametable(player_sprite, &ASSET__gfx__testSprite_json);//test sprite animation setup
+
     while (1) 
     {                                     //  Run forever
         BreakoutGame();
