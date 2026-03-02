@@ -746,11 +746,12 @@ bool BricksAllGone(){
 
 //     note_duration = 500; // Duration to keep the note active
 // }
+
+int frame = 0;
 void BreakoutGame(){
     char * num = "   ";
     //queue_clear_screen(256);//256 black
     queue_draw_sprite(1,7,126,113,1,1,2);//bg in bank 2
-
     //ColorTest();//expensive calculation
     if (BricksAllGone()) {
         if (!resetTimer--) {
@@ -798,6 +799,7 @@ void main () {
     load_spritesheet(ASSET__gfx__BreakoutBrickWide_bmp,3);
     load_spritesheet(ASSET__gfx__paddle_bmp,1);
     load_spritesheet(ASSET__gfx__BreakoutBrickBG_bmp,2);
+    load_spritesheet(ASSET__gfx__testSprite_bmp,4);
     while (1) 
     {                                     //  Run forever
         BreakoutGame();
