@@ -770,7 +770,7 @@ void BreakoutGame(){
     }
 
     DrawBricks();
-
+    queue_draw_sprite_frame(4,64,64,0,SPRITE_FLIP_NONE);
     boxMotion();
     boxAMotion();
     ToggleDemoMode();
