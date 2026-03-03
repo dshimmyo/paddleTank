@@ -5,8 +5,9 @@ use Cwd qw(chdir);
 
 #chdir("../assets/audio/");
 my $framelength = @ARGV[0];#max 32 "20"in hex
+my $feedback = 2;
 my $frequency = @ARGV[1];# min 8 max 107 middleC C4 = 48
-#my $amplitude = @ARGV[2]; #min 0 max 8 currently set to 6 or 7, 
+#my $amplitude = @ARGV[2]; #min 0 max 8 amplitudes template 0007 0606
 
 my $outfile = @ARGV[2]; #"../assets/audio/perlTest.sfx";
 
@@ -33,10 +34,14 @@ else
     print ("framelength set to ". $framelength ."\n");
 };
 
+my $framelengthFeedback = 0;
+$framelengthFeedback = $framelength + (256 * $feedback);
 #binary test
 open(my $out, '>:raw', $outfile) or die "Unable to open: $!";
-my $hex = sprintf("0x%X", $framelength);
+
+my $hex = sprintf("0x%X", $framelengthFeedback);
 print $out pack('s<', hex($hex) );
+
 my $hexFreq = sprintf("0x%X", ($frequency * 257)); #mult 257 to turn two bytes into four bytes
 
 for ($i=0; $i<$framelength;$i++){
