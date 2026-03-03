@@ -105,23 +105,24 @@ void playBass(char row){
     switch (row){
         case 0:
         //play_song(ASSET__audio__BassC5_mid,REPEAT_NONE);
-        play_sound_effect(ASSET__audio__buzzA4_sfx_ID,(char)0);
+        play_sound_effect(ASSET__audio__row0_sfx_ID,(char)0);
         break;
         case 1:
         //play_song(ASSET__audio__BassC4_mid,REPEAT_NONE);
-        play_sound_effect(ASSET__audio__buzzE4_sfx_ID,(char)0);
+        play_sound_effect(ASSET__audio__row1_sfx_ID,(char)0);
         break;
         case 2:
         //play_song(ASSET__audio__BassC3_mid,REPEAT_NONE);
-        play_sound_effect(ASSET__audio__buzzB3_sfx_ID,(char)0);
+        play_sound_effect(ASSET__audio__row2_sfx_ID,(char)0);
         break;
         case 3:
         //play_song(ASSET__audio__BassC2_mid,REPEAT_NONE);
-        play_sound_effect(ASSET__audio__buzzF3_sfx_ID,(char)0);
+        play_sound_effect(ASSET__audio__row3_sfx_ID,(char)0);
         break;
         case 4:
         //play_song(ASSET__audio__BassC1_mid,REPEAT_NONE);
-        play_sound_effect(ASSET__audio__buzzC3_sfx_ID,(char)0);
+        //play_sound_effect(ASSET__audio__buzzC3_sfx_ID,(char)0);
+        play_sound_effect(ASSET__audio__row4_sfx_ID,0);
         break;
         default:
         break;
@@ -137,6 +138,13 @@ void soundTestA(){
 void soundCol(){
     play_sound_effect(ASSET__audio__bik_sfx_ID,(char)1);
 }
+void soundWall(){
+    play_sound_effect(ASSET__audio__wall_sfx_ID,(char)1);
+}
+void soundCeiling(){
+    play_sound_effect(ASSET__audio__ceiling_sfx_ID,(char)1);
+}
+
 unsigned char GetNearestReflectAngleIndex( int _dx)
 {
     unsigned char index=0;
@@ -205,6 +213,7 @@ bool detectPaddleCollision(char sourceXLow,char sourceXHi,char sourceYLow,char s
         case 3: //DE no additional nudging
         case 4:
         *_dy=tempDy;//remember to reflect the ball
+        play_sound_effect(ASSET__audio__paddle_sfx_ID,(char)0);
         return true;
         break;
         case 5://FG nudges right 
@@ -220,6 +229,7 @@ bool detectPaddleCollision(char sourceXLow,char sourceXHi,char sourceYLow,char s
     nearestAngle = reflectAnglesNew[nearestIndex];
     *_dx = nearestAngle.dx;
     *_dy = nearestAngle.dy;
+    play_sound_effect(ASSET__audio__paddle_sfx_ID,(char)0);
 
     return true;
 }
@@ -248,7 +258,7 @@ void boxMotion()
 
         if(box_y <= 7) {
             dy = (dy<0) ? -dy : dy;
-            soundTestA();
+            soundCeiling();
         } else if(box_y >= 120-BALLSIZE){//112) {
             randomizeBox(&box_x, &box_y, &dx, &dy, &ballSpeedShift);
             soundTest();
@@ -256,16 +266,16 @@ void boxMotion()
 
         if(box_x <= BRICK_LEFT) {
             dx = (dx<0) ? -dx : dx;
-            soundTestA();
+            soundWall();
         } else if(box_x >= BRICK_RIGHT-BALLSIZE /*119*/) {
             dx = (dx>0) ? -dx : dx;
-            soundTestA();
+            soundWall();
         } else if (detectPaddleCollision(box_x,box_x+BALLSIZE,box_y, box_y+BALLSIZE,&dx,&dy)){
             //dy = (dy>0) ? -dy : dy;
             //box_y = PADDLEY-BALLSIZE-1;//height correction, maybe redundant
             dyTot=0;//neutralize accumulated y motion
             dyRem=0;
-            soundCol();
+            //soundCol();
         }
         if (!cooldown) cooldown = check_brick_collision(&box_x,&box_y,&dx,&dy,&ballSpeedShift);
         else cooldown = false;
@@ -295,7 +305,7 @@ void boxAMotion()
 
         if(boxA_y <= 7) {
             dyA = (dyA<0) ? -dyA : dyA;
-            soundTestA();
+            soundCeiling();
         } else if(boxA_y >= 120-BALLSIZE/*112*/) {
             randomizeBox(&boxA_x, &boxA_y, &dxA, &dyA, &ballSpeedShiftA);
             soundTest();
@@ -303,16 +313,16 @@ void boxAMotion()
 
         if (boxA_x <= BRICK_LEFT) {
             dxA = (dxA<0) ? -dxA : dxA;
-            soundTestA();
+            soundWall();
         } else if(boxA_x >= BRICK_RIGHT-BALLSIZE/*119*/) {
             dxA = (dxA>0) ? -dxA : dxA;
-            soundTestA();
+            soundWall();
         } else if (detectPaddleCollision(boxA_x,boxA_x+BALLSIZE,boxA_y, boxA_y+BALLSIZE,&dxA,&dyA)){
             //dyA = (dyA>0) ? -dyA : dyA;
             //boxA_y = PADDLEY-BALLSIZE-1;//height correction, maybe redundant
             dyATot = 0; //neutralize accumulated y motion
             dyARem =0;
-            soundCol();
+            //soundCol();
         }
 
         if (!cooldownA) cooldownA = check_brick_collision(&boxA_x,&boxA_y,&dxA,&dyA,&ballSpeedShiftA);
@@ -746,7 +756,7 @@ bool check_brick_collision(char *_ball_x, char *_ball_y, int *_ball_dx, int *_ba
         //play_single_note();
         score+= brickRowPoints[row];//brickRows[row].points;//(7-row)>>1;
         if (row==0) *_ballSpeedShift = 1;//double speed
-        return true;//cooldown for one frame
+        //return true;//cooldown for one frame
     }
     return false;
 }

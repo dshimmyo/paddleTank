@@ -4,17 +4,26 @@ use Cwd 'abs_path';
 use Cwd qw(chdir);
 
 #chdir("../assets/audio/");
-$framelength = @ARGV[0];#max 32 "20"in hex
-$frequency = @ARGV[1];# min 8 max 107 middleC C4 = 48
-my $outfile = "../assets/audio/perlTest.sfx";
+my $framelength = @ARGV[0];#max 32 "20"in hex
+my $frequency = @ARGV[1];# min 8 max 107 middleC C4 = 48
+my $outfile = @ARGV[2]; #"../assets/audio/perlTest.sfx";
 
 if (!@ARGV) {
-    print "using framelength 8\n";
-    print "using frequency 48\n";
+    print "Usage: \n";
+    print "./soundhack.pl <framelength> <frequency> <filename>\n\n";
+    print "framelength default 8\n";
+    print "frequency default 48 (middle c, c4) \n";
+    print "default file: ../assets/audio/perlTest.sfx\n\n";
 
     $framelength = 8;
     $frequency = 48;
-#exit;
+    $outfile = "../assets/audio/perlTest.sfx";
+    print "continue with defaults? (y/n): ";
+    my $userword = <STDIN>; # I moved chomp to a new line to make it more readable
+    chomp $userword; # Get rid of newline character at the end
+    exit 0 if ($userword eq ""); # If empty string, exit.
+    if ($userword == "y" || $userword == "Y")
+    {} else {exit 0;};
 }
 else
 {
