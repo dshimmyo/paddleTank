@@ -571,7 +571,7 @@ void DrawBricks(){
         for (col=0;col<NUMBRICKSH;col++)
         {
             if (!brickRows[row].visible[col]){
-                animFrame = animatedBricks[row*NUMBRICKSH + col]>>1;
+                animFrame = animatedBricks[row*NUMBRICKSH + col];
                 if (animFrame)
                 {
                     unsigned char xDrawStart = BRICK_LEFT + col * BRICKWIDTH;
@@ -674,7 +674,7 @@ bool check_brick_collision(char *_ball_x, char *_ball_y, int *_ball_dx, int *_ba
 
         // Destroy brick
         brickRows[row].visible[col] = 0;
-        animatedBricks[row*NUMBRICKSH + col] = 10<<1;//start animation for this brick
+        animatedBricks[row*NUMBRICKSH + col] = 10;//start animation for this brick
 
         // Calculate brick boundaries
         brick_top = BRICK_TOP + (row << 2);//assume row height of 4
