@@ -5,7 +5,7 @@ use Cwd qw(chdir);
 
 #chdir("../assets/audio/");
 my $framelength = @ARGV[0];#max 32 "20"in hex
-my $feedback = 2;
+my $feedback = 4;
 my $frequency = @ARGV[1];# min 8 max 107 middleC C4 = 48
 #my $amplitude = @ARGV[2]; #min 0 max 8 amplitudes template 0007 0606
 
