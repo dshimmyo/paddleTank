@@ -32,7 +32,7 @@
 
 //prototypes
 bool check_brick_collision(char *,char *, int *, int *, int *);
-void play_single_note();
+//void play_single_note();
 void randomizeBox(char *_box_x, char *_box_y, int *_dx, int *_dy, int *_ballSpeedShift);
 
 typedef struct {
@@ -97,17 +97,42 @@ unsigned char button_byte=0;
 //int numCollisions = 0;
 unsigned int score = 0;
 int resetTimer = 100;
-const Instrument* gtr;
+//const Instrument* gtr;
 
 // char ClampLeft(int x);
+void playBass(char row){
+
+    switch (row){
+        case 0:
+        //play_song(ASSET__audio__BassC5_mid,REPEAT_NONE);
+        play_sound_effect(ASSET__audio__buzzA4_sfx_ID,(char)0);
+        break;
+        case 1:
+        //play_song(ASSET__audio__BassC4_mid,REPEAT_NONE);
+        play_sound_effect(ASSET__audio__buzzE4_sfx_ID,(char)0);
+        break;
+        case 2:
+        //play_song(ASSET__audio__BassC3_mid,REPEAT_NONE);
+        play_sound_effect(ASSET__audio__buzzB3_sfx_ID,(char)0);
+        break;
+        case 3:
+        //play_song(ASSET__audio__BassC2_mid,REPEAT_NONE);
+        play_sound_effect(ASSET__audio__buzzF3_sfx_ID,(char)0);
+        break;
+        case 4:
+        //play_song(ASSET__audio__BassC1_mid,REPEAT_NONE);
+        play_sound_effect(ASSET__audio__buzzC3_sfx_ID,(char)0);
+        break;
+        default:
+        break;
+    }
+}
 
 void soundTest(){
     play_sound_effect(ASSET__audio__flongNew_sfx_ID,(char)1);
-    play_song(ASSET__audio__FirstRP_mid,REPEAT_NONE);
 }
 void soundTestA(){
     play_sound_effect(ASSET__audio__chirp_sfx_ID,(char)1);
-    //numCollisions++;
 }
 void soundCol(){
     play_sound_effect(ASSET__audio__bik_sfx_ID,(char)1);
@@ -715,7 +740,9 @@ bool check_brick_collision(char *_ball_x, char *_ball_y, int *_ball_dx, int *_ba
         }
 
         *_ball_dy = -(*_ball_dy);
-        soundTestA();
+        //stop_music();
+        playBass(row);
+        //soundTestA();
         //play_single_note();
         score+= brickRowPoints[row];//brickRows[row].points;//(7-row)>>1;
         if (row==0) *_ballSpeedShift = 1;//double speed
@@ -736,23 +763,23 @@ bool BricksAllGone(){
 }
 //unsigned char note_duration = 0; // Tracks the duration to play the note
 
-void play_single_note() {
-    // Load the guitar instrument only once at the start
-    init_audio_coprocessor();
-    if (!gtr) {
-        gtr = get_instrument_ptr(INSTR_IDX_PIANO);
-        load_instrument(0, gtr); // Load guitar into channel 0
-    }
+// void play_single_note() {
+//     // Load the guitar instrument only once at the start
+//     init_audio_coprocessor();
+//     if (!gtr) {
+//         gtr = get_instrument_ptr(INSTR_IDX_PIANO);
+//         load_instrument(0, gtr); // Load guitar into channel 0
+//     }
 
-    set_note(0, 60); // Set note 60 (C) on channel 0
-    audio_amplitudes[0] = 255; // Set max amplitude for channel 0
-    //set_audio_param(AMPLITUDE + 0, audio_amplitudes[0] + sine_offset); // Update audio amplitudes
-    push_audio_param(AMPLITUDE + 0, audio_amplitudes[0] + sine_offset);    
+//     set_note(0, 60); // Set note 60 (C) on channel 0
+//     audio_amplitudes[0] = 255; // Set max amplitude for channel 0
+//     //set_audio_param(AMPLITUDE + 0, audio_amplitudes[0] + sine_offset); // Update audio amplitudes
+//     push_audio_param(AMPLITUDE + 0, audio_amplitudes[0] + sine_offset);    
 
-    flush_audio_params(); // Apply audio parameters
+//     flush_audio_params(); // Apply audio parameters
 
-    //note_duration = 500; // Duration to keep the note active
-}
+//     //note_duration = 500; // Duration to keep the note active
+// }
 void BreakoutGame(){
     char * num = "   ";
     //queue_clear_screen(256);//256 black
@@ -801,8 +828,6 @@ void main () {
     scoring_init();
     //Intro_sequence();
     init_music();
-    gtr = get_instrument_ptr(INSTR_IDX_PIANO);
-    load_instrument(0, gtr); // Load guitar into channel 0
     load_spritesheet(ASSET__gfx__BreakoutBrickWide_bmp,3);
     load_spritesheet(ASSET__gfx__paddle_bmp,1);
     load_spritesheet(ASSET__gfx__BreakoutBrickBG_bmp,2);
