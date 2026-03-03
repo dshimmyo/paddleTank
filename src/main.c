@@ -699,22 +699,24 @@ bool check_brick_collision(char *_ball_x, char *_ball_y, int *_ball_dx, int *_ba
         switch(side) 
         {
             case 0: //*_ball_x = brick_left - 1; 
+            case 1:
                 *_ball_dx = -(*_ball_dx);   
-                break;  // Left
-            case 1: //*_ball_x = brick_right + 1; 
+                //break;  // Left
+            //case 1: //*_ball_x = brick_right + 1; 
                 *_ball_dx = -(*_ball_dx);
                 break;  // Right
             case 2: //*_ball_y = brick_top - 1; 
+            case 3:
                 break;    // Top
-            case 3: //*_ball_y = brick_bottom + 1; 
-                break; // Bottom
+            //case 3: //*_ball_y = brick_bottom + 1; 
+              //  break; // Bottom
         }
 
         *_ball_dy = -(*_ball_dy);
         soundTestA();
         score+= brickRowPoints[row];//brickRows[row].points;//(7-row)>>1;
         if (row==0) *_ballSpeedShift = 1;//double speed
-        return true;
+        return true;//cooldown for one frame
     }
     return false;
 }
