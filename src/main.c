@@ -422,10 +422,10 @@ int ConstVelocity(char source, char target, char vel){
     return ClampPaddleX(result);
 }
 char paddleXFromClosestBox(){
-    int paddlex=0;
-    if (box_y > boxA_y){
+    int paddlex=paddleX;
+    if (box_y > boxA_y && box_y < PADDLEY+PADDLEHEIGHT){
         paddlex=ConstVelocity(paddleX,box_x - (PADDLEWIDTH>>1),4);//
-    } else {
+    } else if (boxA_y < PADDLEY+PADDLEHEIGHT){
         paddlex=ConstVelocity(paddleX,boxA_x - (PADDLEWIDTH>>1),4);//
     }
     return ClampPaddleX(paddlex);
