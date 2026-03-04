@@ -8,7 +8,6 @@
 #include "gen/assets/gfx.h"
 #include "gt/feature/paddle/paddle.h" 
 
-
 #define BOXCOLOR WHITE//92
 #define BOXCOLORA WHITE
 #define PADDLECOLOR WHITE
@@ -32,43 +31,34 @@
 
 //prototypes
 bool check_brick_collision(char *,char *, int *, int *, int *);
-//void play_single_note();
 void randomizeBox(char *_box_x, char *_box_y, int *_dx, int *_dy, int *_ballSpeedShift);
 
+//typedefs
 typedef struct {
     int dx;
     int dy;
 } angle;
-// const angle reflectAngles[7]=
-// {{0,255},{61,247},{112,224},{181,181},{224,112},{247,61},{255,0}};
-
-//const unsigned char reflectAngles[7]=
-//{0,61,112,181,224,247,256};
-//{-255,-247,-224,-181,-112,-61,0,61,112,181,224,247,255};
-//{-255,-251,-247,-235,-224,-202,-181,-146,-112,-86,-61,-30,0,
-//30,61,86,112,146,181,202,224,235,247,251,255};
-#define NUM_ANGLES 22
-const angle reflectAnglesNew[NUM_ANGLES]=
-// {{-247<<1,-61<<1},{-224<<1,-112<<1},{-181<<1,-181<<1},{-112<<1,-224<<1},{-61<<1,-247<<1},
-// {-20<<1,-255<<1},{20<<1,-255<<1},
-// {61<<1,-247<<1},{112<<1,-224<<1},{181<<1,-181<<1},{224<<1,-112<<1},{247<<1,-61<<1}};
-{{-251<<1,-30<<1},{-247<<1,-61<<1},{-235<<1,-86<<1},{-224<<1,-112<<1},{-202<<1,-146<<1},{-181<<1,-181<<1},{-146<<1,-202<<1},{-112<<1,-224<<1},{-86<<1,-235<<1},{-61<<1,-247<<1},{-30<<1,-251<<1},
-//{0,255},
-{30<<1,-251<<1},{61<<1,-247<<1},{86<<1,-235<<1},{112<<1,-224<<1},{146<<1,-202<<1},{181<<1,-181<<1},{202<<1,-146<<1},{224<<1,-112<<1},{235<<1,-86<<1},{247<<1,-61<<1},{251<<1,-30<<1}};
-
-
-char brickColors[5]={
-0b01011011,
-0b00111101,
-0b00011111,
-0b11111101,
-0b10111100
-};
-unsigned char brickRowPoints[5]={3,2,2,1,1};
 typedef struct {
     bool visible[NUMBRICKSH];
     unsigned char placeholder;
 } EntityRow;
+#define NUM_ANGLES 22
+const angle reflectAnglesNew[NUM_ANGLES]=
+
+{{-251<<1,-30<<1},{-247<<1,-61<<1},{-235<<1,-86<<1},{-224<<1,-112<<1},{-202<<1,-146<<1},{-181<<1,-181<<1},{-146<<1,-202<<1},{-112<<1,-224<<1},{-86<<1,-235<<1},{-61<<1,-247<<1},{-30<<1,-251<<1},
+//{0,255},
+{30<<1,-251<<1},{61<<1,-247<<1},{86<<1,-235<<1},{112<<1,-224<<1},{146<<1,-202<<1},{181<<1,-181<<1},{202<<1,-146<<1},{224<<1,-112<<1},{235<<1,-86<<1},{247<<1,-61<<1},{251<<1,-30<<1}};
+
+// char brickColors[5]={
+// 0b01011011,
+// 0b00111101,
+// 0b00011111,
+// 0b11111101,
+// 0b10111100
+// };
+
+unsigned char brickRowPoints[5]={3,2,2,1,1};//number of points gained by hitting a brick in each row, top to bottom
+
 EntityRow brickRows[NUMBRICKSV] = {//top to bottom
 {{1,1,1,1,1,1,1,1,1,1},0},
 {{1,1,1,1,1,1,1,1,1,1},0},
@@ -77,51 +67,45 @@ EntityRow brickRows[NUMBRICKSV] = {//top to bottom
 {{1,1,1,1,1,1,1,1,1,1},0}
 };//should initialize this in an init function
 char animatedBricks[NUMBRICKSH*NUMBRICKSV];
-
 bool demoMode = true;
 bool debugMode = false;
+
+//boxes, make more modular
 char box_x = 30, box_y = 20;
 char boxA_x = 20, boxA_y = 30;
-
-char bgColor = 0;
 
 int ballSpeedShift = -1;//-1 start, 0 after first hit, 1 top row
 int ballSpeedShiftA = -1;//-1 start, 0 after first hit, 1 top row
 
+//ball movement variables
 //256 is 1 pixel per frame
-int dx = 256, dy = 256;//change from char to int, try 256 multiplier
-int dxA = 256, dyA = 256;//2,2
+int dx = 256, dy = 256;//range -256 to 256
+int dxA = 256, dyA = 256;
+int dxRem=0;//remainder
+int dyRem=0;
+bool cooldown;
 
-char paddleX = 64;
-unsigned char button_byte=0;
-//int numCollisions = 0;
-unsigned int score = 0;
-int resetTimer = 100;
-//const Instrument* gtr;
+char paddleX = 64;//global paddle xpos
+unsigned char button_byte=0;//8-bit byte representing button states, for debugging and potential use in game mechanics
+unsigned int score = 0;//global score variable
+int resetTimer = 100;//delay between brick reset and box reset
 
-// char ClampLeft(int x);
 void playBass(char row){
 
     switch (row){
         case 0:
-        //play_song(ASSET__audio__BassC5_mid,REPEAT_NONE);
         play_sound_effect(ASSET__audio__row0_sfx_ID,(char)0);
         break;
         case 1:
-        //play_song(ASSET__audio__BassC4_mid,REPEAT_NONE);
         play_sound_effect(ASSET__audio__row1_sfx_ID,(char)0);
         break;
         case 2:
-        //play_song(ASSET__audio__BassC3_mid,REPEAT_NONE);
         play_sound_effect(ASSET__audio__row2_sfx_ID,(char)0);
         break;
         case 3:
-        //play_song(ASSET__audio__BassC2_mid,REPEAT_NONE);
         play_sound_effect(ASSET__audio__row3_sfx_ID,(char)0);
         break;
         case 4:
-        //play_song(ASSET__audio__BassC1_mid,REPEAT_NONE);
-        //play_sound_effect(ASSET__audio__buzzC3_sfx_ID,(char)0);
         play_sound_effect(ASSET__audio__row4_sfx_ID,0);
         break;
         default:
@@ -234,9 +218,7 @@ bool detectPaddleCollision(char sourceXLow,char sourceXHi,char sourceYLow,char s
     return true;
 }
 
-int dxRem=0;//remainder
-int dyRem=0;
-bool cooldown;
+
 void boxMotion()
 {
     char px1 = paddleX;//leftmost
@@ -422,13 +404,12 @@ int ConstVelocity(char source, char target, char vel){
     return ClampPaddleX(result);
 }
 char paddleXFromClosestBox(){
-    int paddlex=paddleX;
     if (box_y > boxA_y && box_y < PADDLEY+PADDLEHEIGHT){
-        paddlex=ConstVelocity(paddleX,box_x - (PADDLEWIDTH>>1),4);//
+        return ConstVelocity(paddleX,box_x - (PADDLEWIDTH>>1),4);//
     } else if (boxA_y < PADDLEY+PADDLEHEIGHT){
-        paddlex=ConstVelocity(paddleX,boxA_x - (PADDLEWIDTH>>1),4);//
+        return ConstVelocity(paddleX,boxA_x - (PADDLEWIDTH>>1),4);//
     }
-    return ClampPaddleX(paddlex);
+    return ClampPaddleX(paddleX);
 }
 void inputButtonsDraw()
 {
