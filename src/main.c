@@ -90,6 +90,13 @@ unsigned char button_byte=0;//8-bit byte representing button states, for debuggi
 unsigned int score = 0;//global score variable
 int resetTimer = 100;//delay between brick reset and box reset
 
+unsigned char reverse(unsigned char b) {
+   b = (b & 0xF0) >> 4 | (b & 0x0F) << 4;
+   b = (b & 0xCC) >> 2 | (b & 0x33) << 2;
+   b = (b & 0xAA) >> 1 | (b & 0x55) << 1;
+   return b;
+}
+
 void playBass(char row){
 
     switch (row){
@@ -328,7 +335,7 @@ unsigned char buttons_to_byte_xyzm(int player1_buttons) {
     if (player1_buttons & INPUT_MASK_Z) result |= (1 << 6);
     if (player1_buttons & INPUT_MASK_MODE) result |= (1 << 7);
 
-    return ~result;//invert result
+    return ~result;//inverted result
 }
 
 int ClampPaddleX(int paddlex){
