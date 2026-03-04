@@ -328,7 +328,7 @@ unsigned char buttons_to_byte_xyzm(int player1_buttons) {
     if (player1_buttons & INPUT_MASK_Z) result |= (1 << 6);
     if (player1_buttons & INPUT_MASK_MODE) result |= (1 << 7);
 
-    return result;
+    return ~result;//invert result
 }
 
 int ClampPaddleX(int paddlex){
