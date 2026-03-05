@@ -350,16 +350,16 @@ int ClampPaddleX(int paddlex){
     }
     return paddlex;
 }
-int setRange(char input, char inMin, char inMax, char outMin, char outMax)
-{
-    int output = 0;
-    if (input<inMin)return outMin;
-    else if (input>inMax)return outMax;
+// int setRange(char input, char inMin, char inMax, char outMin, char outMax)
+// {
+//     int output = 0;
+//     if (input<inMin)return outMin;
+//     else if (input>inMax)return outMax;
 
-    output = ((outMax - outMin)<<8/(inMax-inMin)*(input-inMin))>>8 + outMin;
-    return output;
+//     output = ((outMax - outMin)<<8/(inMax-inMin)*(input-inMin))>>8 + outMin;
+//     return output;
     
-}
+// }
 int setRangeOpt(char input, char inMin, char inMax)
 {
     int output = 0;
@@ -370,18 +370,18 @@ int setRangeOpt(char input, char inMin, char inMax)
     return output;
     
 }
-char paddleXFromPot(unsigned char potVal)
-{
-    unsigned char newPotVal = setRange(potVal,32,96,0,127);//38,90 too fast,(32,96)maybe better
-    return ClampPaddleX(((newPotVal<<1)/3 + paddleX/3));//fast and smooth
-}
-char paddleXFromPot8(unsigned char potVal)
-{
-    //unsigned char newPotVal = setRange(potVal,0b00011111,0b11100000,0,127);//changed for 8-bit
-    unsigned char newPotVal = setRange(potVal,0b01000000,0b11000000,0,127);//changed for 8-bit
+// char paddleXFromPot(unsigned char potVal)
+// {
+//     unsigned char newPotVal = setRange(potVal,32,96,0,127);//38,90 too fast,(32,96)maybe better
+//     return ClampPaddleX(((newPotVal<<1)/3 + paddleX/3));//fast and smooth
+// }
+// char paddleXFromPot8(unsigned char potVal)
+// {
+//     //unsigned char newPotVal = setRange(potVal,0b00011111,0b11100000,0,127);//changed for 8-bit
+//     unsigned char newPotVal = setRange(potVal,0b01000000,0b11000000,0,127);//changed for 8-bit
 
-    return ClampPaddleX(((newPotVal<<1)/3 + paddleX/3));//fast and smooth
-}
+//     return ClampPaddleX(((newPotVal<<1)/3 + paddleX/3));//fast and smooth
+// }
 char paddleXFromPot8opt(unsigned char potVal)
 {
     //need to make a cheaper setrange function
