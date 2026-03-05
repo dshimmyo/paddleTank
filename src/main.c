@@ -7,6 +7,8 @@
 #include "scoring.h"
 #include "gen/assets/gfx.h"
 #include "gt/feature/paddle/paddle.h" 
+#include "gt/banking.h" //Banking API
+#include "gen/bank_nums.h" //Generated macros for named bank numbers
 
 #define BOXCOLOR WHITE//92
 #define BOXCOLORA WHITE
@@ -30,7 +32,7 @@
 #define BRICK_RIGHT  123
 
 //prototypes
-bool check_brick_collision(char *,char *, int *, int *, int *);
+bool check_brick_collision_prog1(char *,char *, int *, int *, int *);
 void randomizeBox(char *_box_x, char *_box_y, int *_dx, int *_dy, int *_ballSpeedShift);
 
 //typedefs
@@ -218,8 +220,9 @@ bool detectPaddleCollision(char sourceXLow,char sourceXHi,char sourceYLow,char s
     return true;
 }
 
+#pragma code-name (push, "PROG1")
 
-void boxMotion()
+void boxMotion_prog1()
 {
     char px1 = paddleX;//leftmost
     char px2 = paddleX + PADDLEWIDTH;//rightmost bound
@@ -259,17 +262,21 @@ void boxMotion()
             dyRem=0;
             //soundCol();
         }
-        if (!cooldown) cooldown = check_brick_collision(&box_x,&box_y,&dx,&dy,&ballSpeedShift);
+        if (!cooldown) cooldown = check_brick_collision_prog1(&box_x,&box_y,&dx,&dy,&ballSpeedShift);
         else cooldown = false;
     }
     dxRem = dxTot & 255;// % 256;//update the remainder for sub-frame movement
     dyRem = dyTot & 255;//% 256;//update the remainder for sub-frame movement
 }
+#pragma code-name (pop)
+
 
 int dxARem=0;//remainder
 int dyARem=0;
 bool cooldownA = false;
-void boxAMotion()
+
+#pragma code-name (push, "PROG1")
+void boxAMotion_prog1()
 {
     char px1 = paddleX;//leftmost
     char px2 = paddleX + PADDLEWIDTH;//rightmost bound
@@ -307,12 +314,13 @@ void boxAMotion()
             //soundCol();
         }
 
-        if (!cooldownA) cooldownA = check_brick_collision(&boxA_x,&boxA_y,&dxA,&dyA,&ballSpeedShiftA);
+        if (!cooldownA) cooldownA = check_brick_collision_prog1(&boxA_x,&boxA_y,&dxA,&dyA,&ballSpeedShiftA);
         else cooldownA = false;
     }
     dxARem = dxATot & 255;//% 256;//update the remainder for sub-frame movement
     dyARem = dyATot & 255;//% 256;//update the remainder for sub-frame movement
 }
+#pragma code-name (pop)
 
 // Convert individual button states to a 8-bit byte
 unsigned char buttons_to_byte_xyzm(int player1_buttons) {
@@ -654,8 +662,8 @@ void DrawBricks(){
 
 // brick_visible[5][16] - 1 = visible, 0 = destroyed
 //uint8_t brick_visible[5][16];
-
-bool check_brick_collision(char *_ball_x, char *_ball_y, int *_ball_dx, int *_ball_dy, int *_ballSpeedShift) {
+#pragma code-name (push, "PROG1")
+bool check_brick_collision_prog1(char *_ball_x, char *_ball_y, int *_ball_dx, int *_ball_dy, int *_ballSpeedShift) {
     unsigned char col;
     unsigned char row;
     unsigned char ballCenterX;
@@ -741,6 +749,7 @@ bool check_brick_collision(char *_ball_x, char *_ball_y, int *_ball_dx, int *_ba
     }
     return false;
 }
+#pragma code-name (pop)
 
 bool BricksAllGone(){
     unsigned char row;
@@ -794,9 +803,9 @@ void BreakoutGame(){
     }
 
     DrawBricks();
-
-    boxMotion();
-    boxAMotion();
+    change_rom_bank(BANK_PROG1);
+    boxMotion_prog1();
+    boxAMotion_prog1();
     ToggleDemoMode();
     if (demoMode){
         paddleX = paddleXFromClosestBox();
