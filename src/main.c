@@ -414,14 +414,47 @@ int ConstVelocity(char source, char target, char vel){
     }
     return ClampPaddleX(result);
 }
+
+#pragma code-name (push, "PROG1")
 char paddleXFromClosestBox(){
-    if (box_y > boxA_y && box_y < PADDLEY+PADDLEHEIGHT){
-        return ConstVelocity(paddleX,box_x - (PADDLEWIDTH>>1),4);//
-    } else if (boxA_y < PADDLEY+PADDLEHEIGHT){
-        return ConstVelocity(paddleX,boxA_x - (PADDLEWIDTH>>1),4);//
+    char midPaddle = paddleX + (PADDLEWIDTH>>1);
+    char boxA_dist = (boxA_x > midPaddle) ? boxA_x - midPaddle : midPaddle - boxA_x;
+    char box_dist = (box_x > midPaddle) ? box_x - midPaddle : midPaddle - box_x;
+    int dyList[2];
+    char PosXList[2];
+    char PosYList[2];
+    char XDistList[2];
+    char selectedDyIndex=0;
+    char lowestBallIndex=0;
+    char highestBallIndex=0;
+    char closestBallIndex=0;
+    char downestDyIndex=0;
+    char i=0;
+    XDistList[0]=box_dist;
+    XDistList[1]=boxA_dist;
+    dyList[0] = dy;
+    dyList[1] = dyA;
+    PosXList[0] = box_x;
+    PosXList[1] = boxA_x;
+    PosYList[0] = box_y;
+    PosYList[1] = boxA_y;
+    for (i=1; i<2; i++){//find the lowest, highest, closest and most downward
+        lowestBallIndex = (PosYList[i]>=PosYList[i-1]) ? i:i-1;
+        highestBallIndex = (PosYList[i]>=PosYList[i-1]) ? i-1:i;
+        closestBallIndex = (PosYList[i] - XDistList[i]>>1 >=PosYList[i-1] - XDistList[i-1]>>1 && dyList[i]>0) ? i:i-1;
+        downestDyIndex = (dyList[i]>dyList[i-1]) ? i:i-1;
     }
-    return ClampPaddleX(paddleX);
+    //return ConstVelocity(paddleX, PosXList[lowestBallIndex] - (PADDLEWIDTH>>1),4);//
+    if (dyList[downestDyIndex] < 0 ){//both up, follow the highest, most likely to bounce
+        return ConstVelocity(paddleX, PosXList[highestBallIndex] - (PADDLEWIDTH>>1),4);//
+    } else if (dyList[closestBallIndex]>0){//if the closest is downward
+        return ConstVelocity(paddleX, PosXList[closestBallIndex] - (PADDLEWIDTH>>1),4);//
+    } else { //just pick the one traveling downward
+        return ConstVelocity(paddleX, PosXList[downestDyIndex] - (PADDLEWIDTH>>1),4);//
+    }
 }
+#pragma code-name (pop)
+
 void inputButtonsDraw()
 {
     //input testing
@@ -811,6 +844,7 @@ void BreakoutGame(){
     boxAMotion_prog1();
     ToggleDemoMode();
     if (demoMode){
+        change_rom_bank(BANK_PROG1);
         paddleX = paddleXFromClosestBox();
     } else {
         paddleX = paddleXFromPot8opt(button_byte);
