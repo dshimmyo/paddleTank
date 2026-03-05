@@ -45,11 +45,12 @@ typedef struct {
     unsigned char placeholder;
 } EntityRow;
 #define NUM_ANGLES 22
-const angle reflectAnglesNew[NUM_ANGLES]=
 
+#pragma rodata-name (push, "PROG1")
+const angle reflectAnglesNew_prog1[NUM_ANGLES]=
 {{-251<<1,-30<<1},{-247<<1,-61<<1},{-235<<1,-86<<1},{-224<<1,-112<<1},{-202<<1,-146<<1},{-181<<1,-181<<1},{-146<<1,-202<<1},{-112<<1,-224<<1},{-86<<1,-235<<1},{-61<<1,-247<<1},{-30<<1,-251<<1},
-//{0,255},
 {30<<1,-251<<1},{61<<1,-247<<1},{86<<1,-235<<1},{112<<1,-224<<1},{146<<1,-202<<1},{181<<1,-181<<1},{202<<1,-146<<1},{224<<1,-112<<1},{235<<1,-86<<1},{247<<1,-61<<1},{251<<1,-30<<1}};
+#pragma rodata-name (pop)
 
 // char brickColors[5]={
 // 0b01011011,
@@ -138,9 +139,9 @@ unsigned char GetNearestReflectAngleIndex( int _dx)
     unsigned char newDiff;
     char bestIndex=0;
     for (index=0; index<NUM_ANGLES; index++){
-        if (reflectAnglesNew[index].dx == _dx) return index;
-        if (_dx > reflectAnglesNew[index].dx) newDiff = dx - reflectAnglesNew[index].dx;
-        else newDiff = reflectAnglesNew[index].dx - _dx;
+        if (reflectAnglesNew_prog1[index].dx == _dx) return index;
+        if (_dx > reflectAnglesNew_prog1[index].dx) newDiff = dx - reflectAnglesNew_prog1[index].dx;
+        else newDiff = reflectAnglesNew_prog1[index].dx - _dx;
         if (newDiff < diff){
             diff = newDiff;
             bestIndex = index;
@@ -149,7 +150,8 @@ unsigned char GetNearestReflectAngleIndex( int _dx)
     return bestIndex;
 }
 
-bool detectPaddleCollision(char sourceXLow,char sourceXHi,char sourceYLow,char sourceYHi,
+#pragma code-name (push, "PROG1")
+bool detectPaddleCollision_prog1(char sourceXLow,char sourceXHi,char sourceYLow,char sourceYHi,
     int *_dx, int *_dy)
 {
     const char angleAdjust = 32;//64
@@ -212,13 +214,14 @@ bool detectPaddleCollision(char sourceXLow,char sourceXHi,char sourceYLow,char s
     }
     nearestIndex = (nearestIndex<0) ? 0 : nearestIndex;
     nearestIndex = (nearestIndex>NUM_ANGLES-1) ? NUM_ANGLES-1 : nearestIndex;
-    nearestAngle = reflectAnglesNew[nearestIndex];
+    nearestAngle = reflectAnglesNew_prog1[nearestIndex];
     *_dx = nearestAngle.dx;
     *_dy = nearestAngle.dy;
     play_sound_effect(ASSET__audio__paddle_sfx_ID,(char)0);
 
     return true;
 }
+#pragma code-name (pop)
 
 #pragma code-name (push, "PROG1")
 
@@ -255,7 +258,7 @@ void boxMotion_prog1()
         } else if(box_x >= BRICK_RIGHT-BALLSIZE /*119*/) {
             dx = (dx>0) ? -dx : dx;
             soundWall();
-        } else if (detectPaddleCollision(box_x,box_x+BALLSIZE,box_y, box_y+BALLSIZE,&dx,&dy)){
+        } else if (detectPaddleCollision_prog1(box_x,box_x+BALLSIZE,box_y, box_y+BALLSIZE,&dx,&dy)){
             //dy = (dy>0) ? -dy : dy;
             //box_y = PADDLEY-BALLSIZE-1;//height correction, maybe redundant
             dyTot=0;//neutralize accumulated y motion
@@ -306,7 +309,7 @@ void boxAMotion_prog1()
         } else if(boxA_x >= BRICK_RIGHT-BALLSIZE/*119*/) {
             dxA = (dxA>0) ? -dxA : dxA;
             soundWall();
-        } else if (detectPaddleCollision(boxA_x,boxA_x+BALLSIZE,boxA_y, boxA_y+BALLSIZE,&dxA,&dyA)){
+        } else if (detectPaddleCollision_prog1(boxA_x,boxA_x+BALLSIZE,boxA_y, boxA_y+BALLSIZE,&dxA,&dyA)){
             //dyA = (dyA>0) ? -dyA : dyA;
             //boxA_y = PADDLEY-BALLSIZE-1;//height correction, maybe redundant
             dyATot = 0; //neutralize accumulated y motion
