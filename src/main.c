@@ -143,7 +143,7 @@ unsigned char GetNearestReflectAngleIndex( int _dx)
 
 #pragma code-name (push, "PROG1")
 bool detectPaddleCollision_prog1(char sourceXLow,char sourceXHi,char sourceYLow,char sourceYHi,
-    int *_dx, int *_dy)
+    int *_dx, int *_dy, int *_ballSpeed)
 {
     const char angleAdjust = 32;//64
     const char minAngle = 96;//64
@@ -170,8 +170,8 @@ bool detectPaddleCollision_prog1(char sourceXLow,char sourceXHi,char sourceYLow,
     //if it gets to here the ball is colliding with the paddle, now determine reflection angle based on hit region
 
     //if the ball is in slow mode, turn it up
-    ballSpeed = (ballSpeed<2) ? 2 : ballSpeed;
-    ballSpeedA = (ballSpeedA<2) ? 2 : ballSpeedA;
+    *_ballSpeed = (*_ballSpeed<2) ? 2 : *_ballSpeed;
+    //ballSpeedA = (ballSpeedA<2) ? 2 : ballSpeedA;
 
     //standard reflection
     tempDy = (tempDy<0) ? tempDy : - ((unsigned int) tempDy);
@@ -251,7 +251,7 @@ void boxMotion_prog1()
         } else if(box_x >= BRICK_RIGHT-BALLSIZE /*119*/) {
             dx = (dx>0) ? -dx : dx;
             soundWall();
-        } else if (detectPaddleCollision_prog1(box_x,box_x+BALLSIZE,box_y, box_y+BALLSIZE,&dx,&dy)){
+        } else if (detectPaddleCollision_prog1(box_x,box_x+BALLSIZE,box_y, box_y+BALLSIZE,&dx,&dy,&ballSpeed)){
             //dy = (dy>0) ? -dy : dy;
             //box_y = PADDLEY-BALLSIZE-1;//height correction, maybe redundant
             dyTot=0;//neutralize accumulated y motion
@@ -302,7 +302,7 @@ void boxAMotion_prog1()
         } else if(boxA_x >= BRICK_RIGHT-BALLSIZE/*119*/) {
             dxA = (dxA>0) ? -dxA : dxA;
             soundWall();
-        } else if (detectPaddleCollision_prog1(boxA_x,boxA_x+BALLSIZE,boxA_y, boxA_y+BALLSIZE,&dxA,&dyA)){
+        } else if (detectPaddleCollision_prog1(boxA_x,boxA_x+BALLSIZE,boxA_y, boxA_y+BALLSIZE,&dxA,&dyA,&ballSpeedA)){
             //dyA = (dyA>0) ? -dyA : dyA;
             //boxA_y = PADDLEY-BALLSIZE-1;//height correction, maybe redundant
             dyATot = 0; //neutralize accumulated y motion
