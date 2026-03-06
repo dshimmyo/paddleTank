@@ -34,7 +34,7 @@
 //prototypes
 bool check_brick_collision_prog1(char *,char *, int *, int *, int *);
 void randomizeBox(char *_box_x, char *_box_y, int *_dx, int *_dy, int *_ballSpeed);
-int speedMult(int source, int speed);
+int speedMult_prog1(int source, int speed);
 //typedefs
 typedef struct {
     int dx;
@@ -42,7 +42,6 @@ typedef struct {
 } angle;
 typedef struct {
     bool visible[NUMBRICKSH];
-    unsigned char placeholder;
 } EntityRow;
 #define NUM_ANGLES 22
 
@@ -52,22 +51,14 @@ const angle reflectAnglesNew_prog1[NUM_ANGLES]=
 {30<<1,-251<<1},{61<<1,-247<<1},{86<<1,-235<<1},{112<<1,-224<<1},{146<<1,-202<<1},{181<<1,-181<<1},{202<<1,-146<<1},{224<<1,-112<<1},{235<<1,-86<<1},{247<<1,-61<<1},{251<<1,-30<<1}};
 #pragma rodata-name (pop)
 
-// char brickColors[5]={
-// 0b01011011,
-// 0b00111101,
-// 0b00011111,
-// 0b11111101,
-// 0b10111100
-// };
-
 unsigned char brickRowPoints[5]={3,2,2,1,1};//number of points gained by hitting a brick in each row, top to bottom
 
 EntityRow brickRows[NUMBRICKSV] = {//top to bottom
-{{1,1,1,1,1,1,1,1,1,1},0},
-{{1,1,1,1,1,1,1,1,1,1},0},
-{{1,1,1,1,1,1,1,1,1,1},0},
-{{1,1,1,1,1,1,1,1,1,1},0},
-{{1,1,1,1,1,1,1,1,1,1},0}
+{1,1,1,1,1,1,1,1,1,1},
+{1,1,1,1,1,1,1,1,1,1},
+{1,1,1,1,1,1,1,1,1,1},
+{1,1,1,1,1,1,1,1,1,1},
+{1,1,1,1,1,1,1,1,1,1}
 };//should initialize this in an init function
 char animatedBricks[NUMBRICKSH*NUMBRICKSV];
 bool demoMode = true;
@@ -224,7 +215,7 @@ bool detectPaddleCollision_prog1(char sourceXLow,char sourceXHi,char sourceYLow,
 #pragma code-name (pop)
 
 #pragma code-name (push, "PROG1")
-int speedMult(int source,int mult){
+int speedMult_prog1(int source,int mult){
     return (source>>1) * mult; //1=.5,2=1, 3=1.5, 4=2;
 }
 void boxMotion_prog1()
@@ -237,8 +228,8 @@ void boxMotion_prog1()
     //check collision for every frame
     //frameskipping/subframe should only limit incrementing movement
     //boxes draw left-right top-down 0->127, 7->120
-    int scaledDx = speedMult(dx,ballSpeed);//dx * ballSpeed / 2;
-    int scaledDy = speedMult(dy,ballSpeed);//dy * ballSpeed / 2;
+    int scaledDx = speedMult_prog1(dx,ballSpeed);//dx * ballSpeed / 2;
+    int scaledDy = speedMult_prog1(dy,ballSpeed);//dy * ballSpeed / 2;
     int dxTot = scaledDx + dxRem;
     int dyTot = scaledDy + dyRem;
     if (((unsigned int) dxTot >= 255 || (unsigned int) dyTot >= 255))
@@ -288,8 +279,8 @@ void boxAMotion_prog1()
     char py1 = PADDLEY;//110 //bottom bount higher number
     char py2 = PADDLEY + PADDLEHEIGHT; //top bound, lower number
 
-    int scaledDx = speedMult(dxA,ballSpeedA);//dxA * ballSpeedA / 2;
-    int scaledDy = speedMult(dyA,ballSpeedA);//dyA * ballSpeedA / 2;
+    int scaledDx = speedMult_prog1(dxA,ballSpeedA);//dxA * ballSpeedA / 2;
+    int scaledDy = speedMult_prog1(dyA,ballSpeedA);//dyA * ballSpeedA / 2;
     int dxATot = scaledDx + dxARem;
     int dyATot = scaledDy + dyARem;
     if (((unsigned int) dxATot >= 255 || (unsigned int) dyATot >= 255))
