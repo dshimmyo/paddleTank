@@ -24,10 +24,10 @@
 
 #define NUMBRICKSH 10 
 #define NUMBRICKSV 5
-
+#define CEILING 21
 // These compile to immediate values in assembly
-#define BRICK_TOP    25
-#define BRICK_BOTTOM 44
+#define BRICK_TOP    39//25 + 18
+#define BRICK_BOTTOM 58//44 + 18
 #define BRICK_LEFT   4
 #define BRICK_RIGHT  123
 
@@ -237,7 +237,7 @@ void boxMotion_prog1()
         box_x += dxTot>>8;
         box_y += dyTot>>8;
 
-        if(box_y <= 7) {
+        if(box_y <= CEILING+1) {//7
             dy = (dy<0) ? -dy : dy;
             soundCeiling();
         } else if(box_y >= 120-BALLSIZE){//112) {
@@ -288,7 +288,7 @@ void boxAMotion_prog1()
         boxA_x += dxATot>>8;
         boxA_y += dyATot>>8;
 
-        if(boxA_y <= 7) {
+        if(boxA_y <= CEILING+1) {//7
             dyA = (dyA<0) ? -dyA : dyA;
             soundCeiling();
         } else if(boxA_y >= 120-BALLSIZE/*112*/) {
@@ -795,6 +795,7 @@ void BreakoutGame(){
     char * num = "   ";
     //queue_clear_screen(256);//256 black
     queue_draw_sprite(1,7,126,113,1,1,2);//bg in bank 2
+    queue_draw_sprite(1,(CEILING-2),126,2,1,1,2);
 
     if (BricksAllGone()) {
         if (!resetTimer--) {
