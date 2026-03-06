@@ -88,19 +88,19 @@ void playBass(char row){
 
     switch (row){
         case 0:
-        play_sound_effect(ASSET__audio__row0_sfx_ID,(char)0);
+        play_sound_effect(ASSET__audio__row0_sfx_ID,(char)127);
         break;
         case 1:
-        play_sound_effect(ASSET__audio__row1_sfx_ID,(char)0);
+        play_sound_effect(ASSET__audio__row1_sfx_ID,(char)127);
         break;
         case 2:
-        play_sound_effect(ASSET__audio__row2_sfx_ID,(char)0);
+        play_sound_effect(ASSET__audio__row2_sfx_ID,(char)127);
         break;
         case 3:
-        play_sound_effect(ASSET__audio__row3_sfx_ID,(char)0);
+        play_sound_effect(ASSET__audio__row3_sfx_ID,(char)127);
         break;
         case 4:
-        play_sound_effect(ASSET__audio__row4_sfx_ID,0);
+        play_sound_effect(ASSET__audio__row4_sfx_ID,127);
         break;
         default:
         break;
