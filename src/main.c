@@ -33,8 +33,8 @@
 
 //prototypes
 bool check_brick_collision_prog1(char *,char *, int *, int *, int *);
-void randomizeBox(char *_box_x, char *_box_y, int *_dx, int *_dy, int *_ballSpeedShift);
-
+void randomizeBox(char *_box_x, char *_box_y, int *_dx, int *_dy, int *_ballSpeed);
+int speedMult(int source, int speed);
 //typedefs
 typedef struct {
     int dx;
@@ -77,8 +77,8 @@ bool debugMode = false;
 char box_x = 30, box_y = 20;
 char boxA_x = 20, boxA_y = 30;
 
-int ballSpeedShift = -1;//-1 start, 0 after first hit, 1 top row
-int ballSpeedShiftA = -1;//-1 start, 0 after first hit, 1 top row
+int ballSpeed = 1;//actual speed is in .5 increments
+int ballSpeedA = 1;
 
 //ball movement variables
 //256 is 1 pixel per frame
@@ -179,8 +179,8 @@ bool detectPaddleCollision_prog1(char sourceXLow,char sourceXHi,char sourceYLow,
     //if it gets to here the ball is colliding with the paddle, now determine reflection angle based on hit region
 
     //if the ball is in slow mode, turn it up
-    ballSpeedShift = (ballSpeedShift<0) ? 0: ballSpeedShift;
-    ballSpeedShiftA = (ballSpeedShiftA<0) ? 0: ballSpeedShiftA;
+    ballSpeed = (ballSpeed<2) ? 2 : ballSpeed;
+    ballSpeedA = (ballSpeedA<2) ? 2 : ballSpeedA;
 
     //standard reflection
     tempDy = (tempDy<0) ? tempDy : - ((unsigned int) tempDy);
@@ -224,7 +224,9 @@ bool detectPaddleCollision_prog1(char sourceXLow,char sourceXHi,char sourceYLow,
 #pragma code-name (pop)
 
 #pragma code-name (push, "PROG1")
-
+int speedMult(int source,int mult){
+    return (source>>1) * mult; //1=.5,2=1, 3=1.5, 4=2;
+}
 void boxMotion_prog1()
 {
     char px1 = paddleX;//leftmost
@@ -235,8 +237,8 @@ void boxMotion_prog1()
     //check collision for every frame
     //frameskipping/subframe should only limit incrementing movement
     //boxes draw left-right top-down 0->127, 7->120
-    int scaledDx = (ballSpeedShift<0) ? (dx>>(-ballSpeedShift)) : (dx<<ballSpeedShift);
-    int scaledDy = (ballSpeedShift<0) ? (dy>>(-ballSpeedShift)) : (dy<<ballSpeedShift);
+    int scaledDx = speedMult(dx,ballSpeed);//dx * ballSpeed / 2;
+    int scaledDy = speedMult(dy,ballSpeed);//dy * ballSpeed / 2;
     int dxTot = scaledDx + dxRem;
     int dyTot = scaledDy + dyRem;
     if (((unsigned int) dxTot >= 255 || (unsigned int) dyTot >= 255))
@@ -248,7 +250,7 @@ void boxMotion_prog1()
             dy = (dy<0) ? -dy : dy;
             soundCeiling();
         } else if(box_y >= 120-BALLSIZE){//112) {
-            randomizeBox(&box_x, &box_y, &dx, &dy, &ballSpeedShift);
+            randomizeBox(&box_x, &box_y, &dx, &dy, &ballSpeed);
             soundTest();
         }
 
@@ -265,7 +267,7 @@ void boxMotion_prog1()
             dyRem=0;
             //soundCol();
         }
-        if (!cooldown) cooldown = check_brick_collision_prog1(&box_x,&box_y,&dx,&dy,&ballSpeedShift);
+        if (!cooldown) cooldown = check_brick_collision_prog1(&box_x,&box_y,&dx,&dy,&ballSpeed);
         else cooldown = false;
     }
     dxRem = dxTot & 255;// % 256;//update the remainder for sub-frame movement
@@ -286,8 +288,8 @@ void boxAMotion_prog1()
     char py1 = PADDLEY;//110 //bottom bount higher number
     char py2 = PADDLEY + PADDLEHEIGHT; //top bound, lower number
 
-    int scaledDx = (ballSpeedShiftA<0) ? (dxA>>(-ballSpeedShiftA)) : (dxA<<ballSpeedShiftA);
-    int scaledDy = (ballSpeedShiftA<0) ? (dyA>>(-ballSpeedShiftA)) : (dyA<<ballSpeedShiftA);
+    int scaledDx = speedMult(dxA,ballSpeedA);//dxA * ballSpeedA / 2;
+    int scaledDy = speedMult(dyA,ballSpeedA);//dyA * ballSpeedA / 2;
     int dxATot = scaledDx + dxARem;
     int dyATot = scaledDy + dyARem;
     if (((unsigned int) dxATot >= 255 || (unsigned int) dyATot >= 255))
@@ -299,7 +301,7 @@ void boxAMotion_prog1()
             dyA = (dyA<0) ? -dyA : dyA;
             soundCeiling();
         } else if(boxA_y >= 120-BALLSIZE/*112*/) {
-            randomizeBox(&boxA_x, &boxA_y, &dxA, &dyA, &ballSpeedShiftA);
+            randomizeBox(&boxA_x, &boxA_y, &dxA, &dyA, &ballSpeedA);
             soundTest();
         }
 
@@ -317,7 +319,7 @@ void boxAMotion_prog1()
             //soundCol();
         }
 
-        if (!cooldownA) cooldownA = check_brick_collision_prog1(&boxA_x,&boxA_y,&dxA,&dyA,&ballSpeedShiftA);
+        if (!cooldownA) cooldownA = check_brick_collision_prog1(&boxA_x,&boxA_y,&dxA,&dyA,&ballSpeedA);
         else cooldownA = false;
     }
     dxARem = dxATot & 255;//% 256;//update the remainder for sub-frame movement
@@ -488,12 +490,12 @@ void ToggleDemoMode()
     }
 }
 
-void randomizeBox(char *_box_x, char *_box_y, int *_dx, int *_dy, int *_ballSpeedShift){
+void randomizeBox(char *_box_x, char *_box_y, int *_dx, int *_dy, int *_ballSpeed){
     *_box_x = rnd_range(5,114);
     *_box_y = rnd_range(64,68);
     *_dx = (rnd_range(0,10) > 5) ? 255 : -255;
     *_dy = 255;//always down
-    *_ballSpeedShift = -1;
+    *_ballSpeed = 1;//default slow
 }
 
 unsigned char numBricks = 0;
@@ -504,16 +506,16 @@ void init_game()
     unsigned char y;
     int count = 0;
     numBricks = NUMBRICKSH * NUMBRICKSV;
-    ballSpeedShift = -1; //slow start
-
+    ballSpeed = 1;//slow start
+    ballSpeedA = 1;//slow start
     for (y = 0; y<NUMBRICKSV; y++){
         for (x=0; x<NUMBRICKSH; x++){
             brickRows[y].visible[x]=1;
             animatedBricks[count++]=0;//set all bricks to unanimated
         }
     }
-    randomizeBox(&box_x, &box_y, &dx, &dy, &ballSpeedShift);
-    randomizeBox(&boxA_x, &boxA_y, &dxA, &dyA, &ballSpeedShiftA);
+    randomizeBox(&box_x, &box_y, &dx, &dy, &ballSpeed);
+    randomizeBox(&boxA_x, &boxA_y, &dxA, &dyA, &ballSpeedA);
     resetTimer = 100;
 }
 // Define the structure to hold Color properties
@@ -699,7 +701,7 @@ void DrawBricks(){
 // brick_visible[5][16] - 1 = visible, 0 = destroyed
 //uint8_t brick_visible[5][16];
 #pragma code-name (push, "PROG1")
-bool check_brick_collision_prog1(char *_ball_x, char *_ball_y, int *_ball_dx, int *_ball_dy, int *_ballSpeedShift) {
+bool check_brick_collision_prog1(char *_ball_x, char *_ball_y, int *_ball_dx, int *_ball_dy, int *_ballSpeed) {
     unsigned char col;
     unsigned char row;
     unsigned char ballCenterX;
@@ -780,7 +782,7 @@ bool check_brick_collision_prog1(char *_ball_x, char *_ball_y, int *_ball_dx, in
         //soundTestA();
         //play_single_note();
         score+= brickRowPoints[row];//brickRows[row].points;//(7-row)>>1;
-        if (row==0) *_ballSpeedShift = 1;//double speed
+        if (row==0) *_ballSpeed = 3;//not double speed but 3/2 speed
         //return true;//cooldown for one frame
     }
     return false;
@@ -797,31 +799,12 @@ bool BricksAllGone(){
     }
     return true;
 }
-//unsigned char note_duration = 0; // Tracks the duration to play the note
 
-// void play_single_note() {
-//     // Load the guitar instrument only once at the start
-//     init_audio_coprocessor();
-//     if (!gtr) {
-//         gtr = get_instrument_ptr(INSTR_IDX_PIANO);
-//         load_instrument(0, gtr); // Load guitar into channel 0
-//     }
-
-//     set_note(0, 60); // Set note 60 (C) on channel 0
-//     audio_amplitudes[0] = 255; // Set max amplitude for channel 0
-//     //set_audio_param(AMPLITUDE + 0, audio_amplitudes[0] + sine_offset); // Update audio amplitudes
-//     push_audio_param(AMPLITUDE + 0, audio_amplitudes[0] + sine_offset);    
-
-//     flush_audio_params(); // Apply audio parameters
-
-//     //note_duration = 500; // Duration to keep the note active
-// }
 void BreakoutGame(){
     char * num = "   ";
     //queue_clear_screen(256);//256 black
     queue_draw_sprite(1,7,126,113,1,1,2);//bg in bank 2
 
-    //ColorTest();//expensive calculation
     if (BricksAllGone()) {
         if (!resetTimer--) {
             init_game();
@@ -849,11 +832,8 @@ void BreakoutGame(){
     } else {
         paddleX = paddleXFromPot8opt(button_byte);
     }
-    //queue_draw_box(box_x, box_y, BALLSIZE, BALLSIZE, BOXCOLOR);
     queue_draw_sprite(box_x,box_y,BALLSIZE,BALLSIZE,4,0,1);//blurry 3x3 ball gx 3 gy 8, paddle at 0,0
-    // queue_draw_box(boxA_x, boxA_y, BALLSIZE, BALLSIZE, BOXCOLORA);
     queue_draw_sprite(boxA_x,boxA_y,BALLSIZE,BALLSIZE,4,0,1);
-    //queue_draw_box(paddleX,PADDLEY,PADDLEWIDTH,PADDLEHEIGHT,PADDLECOLOR);//draw paddle
     queue_draw_sprite(paddleX,PADDLEY,PADDLEWIDTH,PADDLEHEIGHT,0,0,1);
     print_scores(score);
     
