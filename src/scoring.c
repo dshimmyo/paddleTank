@@ -40,16 +40,27 @@ void print_scores(int num)
     text_color = TEXT_COLOR_WHITE;
     text_cursor_y = 11;
     text_cursor_x = 5;
-    if (num > 9999) text_print_string("9999");
-    else
-    {
-        if (num < 10) text_print_string("000");
-        else if (num < 100) text_print_string("00");
-        else if (num < 1000) text_print_string("0");
-        //sprintf(buffer, "%d", num);
-        uint_to_string(num,buffer);
-        text_print_string(buffer);
-    }
+    #if SCORING_DIGITS==3
+        if (num > 999) text_print_string("999");
+        else
+        {
+            if (num < 10) text_print_string("00");
+            else if (num < 100) text_print_string("0");
+            //else if (num < 1000) text_print_string("0");
+            uint_to_string(num,buffer);
+            text_print_string(buffer);
+        }
+    #else //if SCORING_DIGITS==4
+        if (num > 9999) text_print_string("9999");
+        else
+        {
+            if (num < 10) text_print_string("000");
+            else if (num < 100) text_print_string("00");
+            else if (num < 1000) text_print_string("0");
+            uint_to_string(num,buffer);
+            text_print_string(buffer);
+        }
+    #endif
 }
 void scoring_init()
 {

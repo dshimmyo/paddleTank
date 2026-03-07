@@ -30,6 +30,7 @@
 #define BRICK_BOTTOM 54//58//44 + 18
 #define BRICK_LEFT   4
 #define BRICK_RIGHT  123
+#define BRICK_COOLDOWN true
 
 //prototypes
 bool check_brick_collision_prog1(char *,char *, int *, int *, int *);
@@ -158,7 +159,7 @@ bool detectPaddleCollision_prog1(char sourceXLow,char sourceXHi,char sourceYLow,
     int tempDy = *_dy;//keep changes local until done
 
     if (tempDy < 0) return false;//don't waste time on already bounced balls
-
+    //if (sourceXLow == paddleX+PADDLEWIDTH-1) paddleHitRegion = 7;
     if (sourceXLow > paddleX) paddleHitRegion = (sourceXLow - paddleX)/(PADDLEWIDTH / 8);
     else paddleHitRegion = 0;
     //paddleHitRegion = (paddleHitRegion < 0) ? 0 : paddleHitRegion;
@@ -186,7 +187,17 @@ bool detectPaddleCollision_prog1(char sourceXLow,char sourceXHi,char sourceYLow,
     {
         case 0: //A nudges the ball left twice
         //new reflect angles have no sign so left side increases dx, right side decreases dx
-        nearestIndex -= 2;
+        if (*_dx<0){
+            nearestIndex -= 2;
+        }
+        else
+        {
+            //new behavior reflect ball left if coming from left (dx>0 )
+            *_dx = -*_dx;
+            *_dy=tempDy;//remember to reflect the ball
+            play_sound_effect(ASSET__audio__paddle_sfx_ID,(char)0);
+            return true;
+        }
         break;
         case 1:
         case 2: //BC budges the ball left 
@@ -203,8 +214,20 @@ bool detectPaddleCollision_prog1(char sourceXLow,char sourceXHi,char sourceYLow,
         nearestIndex +=1;
         break; 
         case 7://H right right
-        nearestIndex +=2;
+        case 8://needs this
+        if (*_dx>0){//glancing hit
+            nearestIndex +=2;
+        }
+        else
+        {
+            //new behavior reflect ball left if coming from the right
+            *_dx = -*_dx;
+            *_dy=tempDy;//remember to reflect the ball
+            play_sound_effect(ASSET__audio__paddle_sfx_ID,(char)0);
+            return true;
+        }
         break;
+
     }
     nearestIndex = (nearestIndex<0) ? 0 : nearestIndex;
     nearestIndex = (nearestIndex>NUM_ANGLES-1) ? NUM_ANGLES-1 : nearestIndex;
@@ -778,7 +801,7 @@ bool check_brick_collision_prog1(char *_ball_x, char *_ball_y, int *_ball_dx, in
         //play_single_note();
         score+= brickRowPoints[row];//brickRows[row].points;//(7-row)>>1;
         if (row==0) *_ballSpeed = 3;//not double speed but 3/2 speed
-        //return true;//cooldown for one frame
+        if (BRICK_COOLDOWN) return true;//cooldown for one frame
     }
     return false;
 }
