@@ -26,8 +26,8 @@
 #define NUMBRICKSV 5
 #define CEILING 21
 // These compile to immediate values in assembly
-#define BRICK_TOP    39//25 + 18
-#define BRICK_BOTTOM 58//44 + 18
+#define BRICK_TOP    35//39//25 + 18
+#define BRICK_BOTTOM 54//58//44 + 18
 #define BRICK_LEFT   4
 #define BRICK_RIGHT  123
 
