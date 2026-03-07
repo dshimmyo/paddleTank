@@ -30,7 +30,7 @@
 #define BRICK_BOTTOM 54//58//44 + 18
 #define BRICK_LEFT   4
 #define BRICK_RIGHT  123
-#define BRICK_COOLDOWN true
+#define BRICK_COOLDOWN false
 
 //prototypes
 bool check_brick_collision_prog1(char *,char *, int *, int *, int *);
