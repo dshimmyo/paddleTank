@@ -178,7 +178,7 @@ bool detectPaddleCollision_prog1(char sourceXLow,char sourceXHi,char sourceYLow,
     //ballSpeedA = (ballSpeedA<2) ? 2 : ballSpeedA;
 
     //standard reflection
-    tempDy = (tempDy<0) ? tempDy : - ((unsigned int) tempDy);
+    tempDy = (tempDy<0) ? tempDy : -tempDy;
     tempDx = tempDx;
 
     //attempt to make sophisticated reflections:
@@ -258,7 +258,7 @@ void boxMotion_prog1()
     int scaledDy = speedMult_prog1(dy,ballSpeed);//dy * ballSpeed / 2;
     int dxTot = scaledDx + dxRem;
     int dyTot = scaledDy + dyRem;
-    if (((unsigned int) dxTot >= 255 || (unsigned int) dyTot >= 255))
+    if (dxTot >= 256 || dyTot >= 256 || dxTot <= -256 || dyTot <=-256)
     {
         box_x += dxTot>>8;
         box_y += dyTot>>8;
@@ -309,7 +309,7 @@ void boxAMotion_prog1()
     int scaledDy = speedMult_prog1(dyA,ballSpeedA);//dyA * ballSpeedA / 2;
     int dxATot = scaledDx + dxARem;
     int dyATot = scaledDy + dyARem;
-    if (((unsigned int) dxATot >= 255 || (unsigned int) dyATot >= 255))
+    if (dxATot >= 256 || dyATot >= 256 || dxATot <= -256 || dyATot <=-256)
     {
         boxA_x += dxATot>>8;
         boxA_y += dyATot>>8;
