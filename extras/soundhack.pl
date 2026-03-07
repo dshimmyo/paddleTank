@@ -12,17 +12,17 @@ my $frequency = $ARGV[1];# min 8 max 107 middleC C4 = 48
 my $amplitude = 6;#7;#@ARGV[2]; #min 0 max 8 amplitudes template 0007 0606
 my $attack = 5;#0 thru 8
 my $outfile = $ARGV[2]; #"../assets/audio/perlTest.sfx";
+my $framelengthFeedback = 0;
 
 if (!@ARGV) {
+    $framelength = 8;
+    $frequency = 48;
+    $outfile = "test.bin";
     print "Usage: \n";
     print "./soundhack.pl <framelength> <frequency> <filename>\n\n";
     print "framelength default 8\n";
     print "frequency default 48 (middle c, c4) \n";
-    print "default file: ../assets/audio/perlTest.sfx\n\n";
-
-    $framelength = 8;
-    $frequency = 48;
-    $outfile = "../assets/audio/perlTest.sfx";
+    print "default file: test.bin\n\n";
     print "continue with defaults? (y/n): ";
     my $userword = <STDIN>; # I moved chomp to a new line to make it more readable
     chomp $userword; # Get rid of newline character at the end
@@ -30,13 +30,18 @@ if (!@ARGV) {
     if ($userword == "y" || $userword == "Y")
     {} else {exit 0;};
 }
-else
+
 {
     if ($framelength > 32) {$framelength = 32;};
     print ("framelength set to ". $framelength ."\n");
+    print ("feedback set to ". $framelengthFeedback ."\n");
+    print ("frequency set to ". $frequency ."\n");
+    print ("amplitude set to ". $amplitude ."\n");
+    print ("attack set to ". $attack ."\n");
+    print ("output to ". $outfile ."\n");
+
 };
 
-my $framelengthFeedback = 0;
 $framelengthFeedback = $framelength + (256 * $feedback);
 my $amp0 = (256 * $amplitude);#$amplitude only on the right side
 my $amp0Special =$amp0 + $attack;#format goes to text if this !=0
@@ -81,7 +86,7 @@ for (my $i=0; $i<$framelength;$i++){
 };
 close($out);
 $out->flush();
-
+print "\n";
 
 #sfx file format
 #0800 0007 0606 2a2a 2a2a 0007 0606 2a2a
