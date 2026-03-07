@@ -25,7 +25,7 @@
 #define NUMBRICKSH 10 
 #define NUMBRICKSV 5
 #define CEILING 21
-// These compile to immediate values in assembly
+
 #define BRICK_TOP    35//39//25 + 18
 #define BRICK_BOTTOM 54//58//44 + 18
 #define BRICK_LEFT   4
@@ -35,16 +35,18 @@
 bool check_brick_collision_prog1(char *,char *, int *, int *, int *);
 void randomizeBox(char *_box_x, char *_box_y, int *_dx, int *_dy, int *_ballSpeed);
 int speedMult_prog1(int source, int speed);
+
 //typedefs
 typedef struct {
     int dx;
     int dy;
 } angle;
+
 typedef struct {
     bool visible[NUMBRICKSH];
 } EntityRow;
-#define NUM_ANGLES 22
 
+#define NUM_ANGLES 22
 #pragma rodata-name (push, "PROG1")
 const angle reflectAnglesNew_prog1[NUM_ANGLES]=
 {{-251<<1,-30<<1},{-247<<1,-61<<1},{-235<<1,-86<<1},{-224<<1,-112<<1},{-202<<1,-146<<1},{-181<<1,-181<<1},{-146<<1,-202<<1},{-112<<1,-224<<1},{-86<<1,-235<<1},{-61<<1,-247<<1},{-30<<1,-251<<1},
@@ -60,7 +62,8 @@ EntityRow brickRows[NUMBRICKSV] = {//top to bottom
 {1,1,1,1,1,1,1,1,1,1},
 {1,1,1,1,1,1,1,1,1,1}
 };//should initialize this in an init function
-char animatedBricks[NUMBRICKSH*NUMBRICKSV];
+
+char animatedBricks[NUMBRICKSH*NUMBRICKSV]; //tracking frames left to animate per brick
 bool demoMode = true;
 bool debugMode = false;
 
@@ -615,7 +618,8 @@ unsigned char ClampX(unsigned char num)
     result = (result > 127) ? 127 : result;
     return result;
 }
-void DrawBricks(){
+#pragma code-name (push, "PROG1")
+void DrawBricks_prog1(){
     unsigned char row;
     for (row=0;row<NUMBRICKSV;row++)  
     {
@@ -630,7 +634,7 @@ void DrawBricks(){
                 if (animFrame)
                 {
                     unsigned char xDrawStart = BRICK_LEFT + col * BRICKWIDTH;
-                    unsigned char gx = (10-animFrame)*BRICKWIDTH;//calculate the growing x offset based on the animation frame (0-6)
+                    unsigned char gx = ((20-animFrame)>>1)*BRICKWIDTH;//calculate the growing x offset based on the animation frame (0-6)
                     queue_draw_sprite(BRICK_LEFT + col * BRICKWIDTH,posy,BRICKWIDTH,BRICKHEIGHT,gx,(row*BRICKHEIGHT)+80,3);
                     animatedBricks[row*NUMBRICKSH + col]--;
                 }
@@ -688,7 +692,7 @@ void DrawBricks(){
     //     }
     // }
 }
-
+#pragma code-name (pop);
 // brick_visible[5][16] - 1 = visible, 0 = destroyed
 //uint8_t brick_visible[5][16];
 #pragma code-name (push, "PROG1")
@@ -729,7 +733,7 @@ bool check_brick_collision_prog1(char *_ball_x, char *_ball_y, int *_ball_dx, in
 
         // Destroy brick
         brickRows[row].visible[col] = 0;
-        animatedBricks[row*NUMBRICKSH + col] = 10;//start animation for this brick
+        animatedBricks[row*NUMBRICKSH + col] = 20;//start animation for this brick //animate at half speed
 
         // Calculate brick boundaries
         brick_top = BRICK_TOP + (row << 2);//assume row height of 4
@@ -813,8 +817,8 @@ void BreakoutGame(){
         inputBinaryDraw();//debug line
     }
 
-    DrawBricks();
     change_rom_bank(BANK_PROG1);
+    DrawBricks_prog1();
     boxMotion_prog1();
     boxAMotion_prog1();
     ToggleDemoMode();
