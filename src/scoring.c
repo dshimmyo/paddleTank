@@ -2,6 +2,7 @@
 #include "gt/feature/text/text.h"
 #include <stdio.h>
 #include <stdint.h>
+#include "gen/assets/font.h"
 
 void uint_to_string(unsigned int num, char* buffer) {
     char* ptr = buffer;
@@ -52,6 +53,7 @@ void print_scores(int num)
 }
 void scoring_init()
 {
-    text_load_font();
+    //text_load_font();
+    allocate_sprite(&ASSET__font__breakoutFont_bmp_load_list);
     text_init();
 }
