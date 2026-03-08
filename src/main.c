@@ -827,7 +827,7 @@ void BreakoutGame(){
     if (demoMode)
     {
         if (blinkTimer++>0){
-            queue_draw_sprite(20,64,87,7,0,0,4);//press start
+            queue_draw_sprite(38,64,52,6,0,14,4);//press start
             blinkTimer = (blinkTimer>45) ? blinkTimer=-80 : blinkTimer;
         }
     }
