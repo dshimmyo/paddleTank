@@ -725,19 +725,22 @@ bool check_brick_collision_prog1(char *_ball_x, char *_ball_y, int *_ball_dx, in
     unsigned char ballCenterX;
     unsigned char ballCenterY;
 
-    //if (BALLSIZE==2) {//picks collision point based on direction for 2x2 ball
-        ballCenterX = (*_ball_dx>0) ? *_ball_x+1 : *_ball_x;
-        ballCenterY = (*_ball_dy>0) ? *_ball_y+1 : *_ball_y;
-    //} else { //assume ball will never be 1 pixel
+    // if (BALLSIZE==2) {//picks collision point based on direction for 2x2 ball
+    //     ballCenterX = (*_ball_dx>0) ? *_ball_x+1 : *_ball_x;
+    //     ballCenterY = (*_ball_dy>0) ? *_ball_y+1 : *_ball_y;
+    // } else { //assume ball will never be 1 pixel
     //    ballCenterX = *_ball_x + BALLCENTEROFFSET;
     //    ballCenterY = *_ball_y + BALLCENTEROFFSET;
-    //}
+    // }
+
 
         // Quick reject if ball not in brick zone
-    if (ballCenterY < BRICK_TOP || (ballCenterY) > BRICK_BOTTOM) return false;
-    if (ballCenterX < BRICK_LEFT || ballCenterX > BRICK_RIGHT) return false;
+    if ((*_ball_y + BALLSIZE-1) < BRICK_TOP || *_ball_y > BRICK_BOTTOM) return false;
+    //if ((*_ball_x + BALLSIZE-1) < BRICK_LEFT || *_ball_x > BRICK_RIGHT) return false; //this never happens
     
     // Convert to brick coordinates
+    ballCenterX = *_ball_x;
+    ballCenterY = *_ball_y;
     col = (ballCenterX - BRICK_LEFT) / BRICKWIDTH;//>> 3;        // 0-15
     row = (ballCenterY - BRICK_TOP) >> 2;  // 0-4 //assume bricks are 4-high
     
