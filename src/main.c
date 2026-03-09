@@ -32,6 +32,17 @@
 #define BRICK_RIGHT  123
 #define BRICK_COOLDOWN false
 
+#define STATE_CONTROLLER_SELECT 10
+#define STATE_BREAKOUT_ATTRACT 20
+#define STATE_BREAKOUT_GAMEPLAY 30
+#define STATE_BREAKOUT_GAMEOVER 40
+#define STATE_BREAKOUT_LEADERBOARD 50
+
+#define CONTROLLER_STYLE_PADDLE0 0
+#define CONTROLLER_STYLE_GPAD1 1
+
+char gamestate = 0;
+char controller_style = 0;
 //prototypes
 bool check_brick_collision_prog1(char *,char *, int *, int *, int *);
 void randomizeBox(char *_box_x, char *_box_y, int *_dx, int *_dy, int *_ballSpeed);
@@ -361,14 +372,7 @@ unsigned char buttons_to_byte_xyzm(int player1_buttons) {
     return ~result;//invert result
 }
 
-int ClampPaddleX(int paddlex){
-    if (paddlex < BRICK_LEFT){
-        paddlex = BRICK_LEFT;
-    } else if (paddlex>BRICK_RIGHT-PADDLEWIDTH){
-        paddlex = BRICK_RIGHT - PADDLEWIDTH;
-    }
-    return paddlex;
-}
+
 // int setRange(char input, char inMin, char inMax, char outMin, char outMax)
 // {
 //     int output = 0;
@@ -379,35 +383,6 @@ int ClampPaddleX(int paddlex){
 //     return output;
     
 // }
-int setRangeOpt(char input, char inMin, char inMax)
-{
-    int output = 0;
-    if (input<inMin)return 0;
-    else if (input>inMax)return 127;
-
-    output = ((127<<8)/(inMax-inMin)*(input-inMin)>>8);
-    return output;
-    
-}
-// char paddleXFromPot(unsigned char potVal)
-// {
-//     unsigned char newPotVal = setRange(potVal,32,96,0,127);//38,90 too fast,(32,96)maybe better
-//     return ClampPaddleX(((newPotVal<<1)/3 + paddleX/3));//fast and smooth
-// }
-// char paddleXFromPot8(unsigned char potVal)
-// {
-//     //unsigned char newPotVal = setRange(potVal,0b00011111,0b11100000,0,127);//changed for 8-bit
-//     unsigned char newPotVal = setRange(potVal,0b01000000,0b11000000,0,127);//changed for 8-bit
-
-//     return ClampPaddleX(((newPotVal<<1)/3 + paddleX/3));//fast and smooth
-// }
-char paddleXFromPot8opt(unsigned char potVal)
-{
-    //need to make a cheaper setrange function
-    unsigned char newPotVal = setRangeOpt(potVal,0b01000000,0b11000000);//changed for 8-bit
-
-    return ClampPaddleX(newPotVal);//(((newPotVal<<1)/3 + paddleX/3));//no smoothing
-}
 // char ClampLeft(int x){
 //     if (x<1){return 1;}
 //     return x;
@@ -421,7 +396,41 @@ char paddleXFromPot8opt(unsigned char potVal)
 //     //return (target/7) + ((source*6)/7);//1/7 effort
 //     return (target>>3) + ((source*7)>>3);//1/8 effort
 // }
-int ConstVelocity(char source, char target, char vel){
+
+#pragma code-name (push, "PROG1")
+int ClampPaddleX_prog1(int paddlex){
+    if (paddlex < BRICK_LEFT){
+        paddlex = BRICK_LEFT;
+    } else if (paddlex>BRICK_RIGHT-PADDLEWIDTH){
+        paddlex = BRICK_RIGHT - PADDLEWIDTH;
+    }
+    return paddlex;
+}
+int setRangeOpt_prog1(char input, char inMin, char inMax)
+{
+    int output = 0;
+    if (input<inMin)return 0;
+    else if (input>inMax)return 127;
+
+    output = ((127<<8)/(inMax-inMin)*(input-inMin)>>8);
+    return output;
+    
+}
+char paddleXFromPot8opt_prog1(unsigned char potVal)
+{
+    //need to make a cheaper setrange function
+    unsigned char newPotVal = setRangeOpt_prog1(potVal,0b01000000,0b11000000);//changed for 8-bit
+
+    return ClampPaddleX_prog1(newPotVal);//(((newPotVal<<1)/3 + paddleX/3));//no smoothing
+}
+int paddleXFromDPad_prog1()
+{
+    int result = paddleX;
+    if ((player1_buttons & INPUT_MASK_RIGHT)) result += 3;
+    else if ((player1_buttons & INPUT_MASK_LEFT)) result -= 3;
+    return ClampPaddleX_prog1(result);
+}
+int ConstVelocity_prog1(char source, char target, char vel){
     int result = source;
     if (source < target){
         result = source + vel;
@@ -431,11 +440,9 @@ int ConstVelocity(char source, char target, char vel){
         result = source - vel;
         if (result < target) result = target;
     }
-    return ClampPaddleX(result);
+    return ClampPaddleX_prog1(result);
 }
-
-#pragma code-name (push, "PROG1")
-char paddleXFromClosestBox(){
+char paddleXFromClosestBox_prog1(){
     char midPaddle = paddleX + (PADDLEWIDTH>>1);
     char boxA_dist = (boxA_x > midPaddle) ? boxA_x - midPaddle : midPaddle - boxA_x;
     char box_dist = (box_x > midPaddle) ? box_x - midPaddle : midPaddle - box_x;
@@ -465,11 +472,11 @@ char paddleXFromClosestBox(){
     }
     //return ConstVelocity(paddleX, PosXList[lowestBallIndex] - (PADDLEWIDTH>>1),4);//
     if (dyList[downestDyIndex] < 0 ){//both up, follow the highest, most likely to bounce
-        return ConstVelocity(paddleX, PosXList[highestBallIndex] - (PADDLEWIDTH>>1),4);//
+        return ConstVelocity_prog1(paddleX, PosXList[highestBallIndex] - (PADDLEWIDTH>>1),4);//
     } else if (dyList[closestBallIndex]>0){//if the closest is downward
-        return ConstVelocity(paddleX, PosXList[closestBallIndex] - (PADDLEWIDTH>>1),4);//
+        return ConstVelocity_prog1(paddleX, PosXList[closestBallIndex] - (PADDLEWIDTH>>1),4);//
     } else { //just pick the one traveling downward
-        return ConstVelocity(paddleX, PosXList[downestDyIndex] - (PADDLEWIDTH>>1),4);//
+        return ConstVelocity_prog1(paddleX, PosXList[downestDyIndex] - (PADDLEWIDTH>>1),4);//
     }
 }
 #pragma code-name (pop)
@@ -637,7 +644,6 @@ void init_game()
 unsigned char ClampX(unsigned char num)
 {
     unsigned char result = num;
-    //result = (num < 0) ? 0 : num; //unsigned
     result = (result > 127) ? 127 : result;
     return result;
 }
@@ -820,10 +826,8 @@ bool BricksAllGone(){
 
 int blinkTimer=0;
 void BreakoutGame(){
-    char * num = "   ";
-    //queue_clear_screen(256);//256 black
     queue_draw_sprite(1,7,126,113,1,1,2);//bg in bank 2
-    queue_draw_sprite(1,(CEILING-2),126,2,1,1,2);
+    queue_draw_sprite(1,(CEILING-2),126,2,1,1,2);//ceiling bar
     if (demoMode)
     {
         if (blinkTimer++>0){
@@ -854,9 +858,17 @@ void BreakoutGame(){
     ToggleDemoMode();
     if (demoMode){
         change_rom_bank(BANK_PROG1);
-        paddleX = paddleXFromClosestBox();
+        paddleX = paddleXFromClosestBox_prog1();
     } else {
-        paddleX = paddleXFromPot8opt(button_byte);
+        if (controller_style == CONTROLLER_STYLE_PADDLE0){
+            change_rom_bank(BANK_PROG1);
+            paddleX = paddleXFromPot8opt_prog1(button_byte);
+        }
+        else if (controller_style == CONTROLLER_STYLE_GPAD1)
+        {
+            change_rom_bank(BANK_PROG1);
+            paddleX = paddleXFromDPad_prog1();
+        }
     }
     queue_draw_sprite(box_x,box_y,BALLSIZE,BALLSIZE,4,0,1);//blurry 3x3 ball gx 3 gy 8, paddle at 0,0
     queue_draw_sprite(boxA_x,boxA_y,BALLSIZE,BALLSIZE,4,0,1);
@@ -865,6 +877,28 @@ void BreakoutGame(){
     
 }
 
+void GameWrapper()
+{
+    if (gamestate == STATE_CONTROLLER_SELECT)
+    {
+        queue_draw_sprite(1,7,126,113,1,1,2);//BACKGROUND IMAGE
+        queue_draw_sprite(38,64,52,6,0,14,4);//press start
+        if (player1_buttons & INPUT_MASK_A && ~player1_old_buttons & INPUT_MASK_A) 
+        {
+            controller_style = CONTROLLER_STYLE_GPAD1;
+            gamestate = STATE_BREAKOUT_ATTRACT;
+        }
+        else if (player1_buttons & INPUT_MASK_B && ~player1_old_buttons & INPUT_MASK_B) 
+        {
+            controller_style = CONTROLLER_STYLE_PADDLE0;
+            gamestate = STATE_BREAKOUT_ATTRACT;
+        }
+    }
+    else
+    {
+    BreakoutGame();
+    }
+}
 void main () {
     //init_paddle();
     init_game();
@@ -875,10 +909,10 @@ void main () {
     load_spritesheet(ASSET__gfx__paddle_bmp,1);
     load_spritesheet(ASSET__gfx__BreakoutBrickBG_bmp,2);
     load_spritesheet(ASSET__gfx__PressStart_bmp,4);
-
+    gamestate = STATE_CONTROLLER_SELECT;
     while (1) 
     {                                     //  Run forever
-        BreakoutGame();
+        GameWrapper();
         queue_clear_border(2);
         await_draw_queue();
         await_vsync(1);
