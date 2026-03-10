@@ -43,6 +43,7 @@
 
 char gamestate = 0;
 char controller_style = 0;
+char numLives = 3;
 //prototypes
 bool check_brick_collision_prog1(char *,char *, int *, int *, int *);
 void randomizeBox(char *_box_x, char *_box_y, int *_dx, int *_dy, int *_ballSpeed);
@@ -524,22 +525,49 @@ void randomizeBox(char *_box_x, char *_box_y, int *_dx, int *_dy, int *_ballSpee
 
 unsigned char numBricks = 0;
 
-void init_game()
+void NewLevel()
 {
     unsigned char x;
     unsigned char y;
     int count = 0;
-    numBricks = NUMBRICKSH * NUMBRICKSV;
-    ballSpeed = 1;//slow start
-    ballSpeedA = 1;//slow start
     for (y = 0; y<NUMBRICKSV; y++){
         for (x=0; x<NUMBRICKSH; x++){
             brickRows[y].visible[x]=1;
             animatedBricks[count++]=0;//set all bricks to unanimated
         }
     }
+    ballSpeed = 1;//slow start
+    ballSpeedA = 1;//slow start
+    numBricks = NUMBRICKSH * NUMBRICKSV;
     randomizeBox(&box_x, &box_y, &dx, &dy, &ballSpeed);
     randomizeBox(&boxA_x, &boxA_y, &dxA, &dyA, &ballSpeedA);
+}
+void NewGame()
+{
+    numLives = 3;
+    score = 0;
+}
+void init_game()//used to refresh the screen when all the bricks are gone
+{
+    //need to rewrite the game progression
+    //select controller, attract mode, game start, game pause, end game, back to attract mode
+
+    // unsigned char x;
+    // unsigned char y;
+    // int count = 0;
+    //numBricks = NUMBRICKSH * NUMBRICKSV;
+    // ballSpeed = 1;//slow start
+    // ballSpeedA = 1;//slow start
+    numLives = 3;
+    // for (y = 0; y<NUMBRICKSV; y++){
+    //     for (x=0; x<NUMBRICKSH; x++){
+    //         brickRows[y].visible[x]=1;
+    //         animatedBricks[count++]=0;//set all bricks to unanimated
+    //     }
+    // }
+    NewLevel();
+    // randomizeBox(&box_x, &box_y, &dx, &dy, &ballSpeed);
+    // randomizeBox(&boxA_x, &boxA_y, &dxA, &dyA, &ballSpeedA);
     resetTimer = 100;
 }
 // Define the structure to hold Color properties
